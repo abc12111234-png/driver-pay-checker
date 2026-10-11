@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ドライバー給料チェッカー｜トラック運転手の残業代・最低賃金・拘束時間を無料で確認</title>
+<meta name="description" content="トラックドライバーのための無料の給料チェッカー。給与明細とその月の働き方を入れると、残業代の不足の目安、最低賃金、拘束時間（改善基準告示）、同じ車種の平均との差が分かります。入力した数字はどこにも送信されません。">
+<link rel="canonical" href="https://abc12111234-png.github.io/driver-pay-checker/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ドライバー給料チェッカー">
+<meta property="og:title" content="ドライバー給料チェッカー">
+<meta property="og:description" content="トラックドライバーのための無料の給料チェッカー。給与明細とその月の働き方を入れると、残業代の不足の目安、最低賃金、拘束時間（改善基準告示）、同じ車種の平均との差が分かります。入力した数字はどこにも送信されません。">
+<meta property="og:url" content="https://abc12111234-png.github.io/driver-pay-checker/">
+<meta name="twitter:card" content="summary">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.foot nav{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px}</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Overpass:wght@500;700;800&display=swap">
+<style>
+/* Layout: an expressway-sign plate up top and a payslip-style form below; on wide screens the results ride beside the form, on phones they come first. */
+:root{
+  --bg:#EEF2EF;
+  --surface:#FFFFFF;
+  --surface-2:#F4F7F5;
+  --ink:#17211D;
+  --muted:#56645E;
+  --line:#CBD5CF;
+  --line-strong:#98A9A1;
+  --sign:#0A6847;
+  --sign-ink:#FFFFFF;
+  --band:#0A6847;
+  --night:#2B3A78;
+  --ok:#33584A; --ok-bg:#E4EEE9; --ok-fill:#5E8A77;
+  --warn:#8A4F00; --warn-bg:#FFF1D6; --warn-fill:#E9A23B;
+  --bad:#B3261E; --bad-bg:#FDE7E4; --bad-fill:#D2483D;
+  --focus:#0A6847;
+  --shadow:rgba(23,33,29,.12);
+  --font-body:"BIZ UDPGothic","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,system-ui,sans-serif;
+  --font-num:"Overpass","BIZ UDPGothic","Hiragino Sans","Yu Gothic UI",Meiryo,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1412; --surface:#161F1B; --surface-2:#1C2722; --ink:#E5ECE8; --muted:#9AA9A2; --line:#2C3934; --line-strong:#4D5E56;
+    --sign:#0D6E4C; --sign-ink:#F4FFF9; --band:#2E9E73; --night:#8FA1F0;
+    --ok:#9CC9B5; --ok-bg:#1C2C25; --ok-fill:#6FB496;
+    --warn:#F3B54A; --warn-bg:#3A2A0B; --warn-fill:#F3B54A;
+    --bad:#FF8A7E; --bad-bg:#3D1714; --bad-fill:#FF8A7E;
+    --focus:#6FD3A8; --shadow:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1412; --surface:#161F1B; --surface-2:#1C2722; --ink:#E5ECE8; --muted:#9AA9A2; --line:#2C3934; --line-strong:#4D5E56;
+  --sign:#0D6E4C; --sign-ink:#F4FFF9; --band:#2E9E73; --night:#8FA1F0;
+  --ok:#9CC9B5; --ok-bg:#1C2C25; --ok-fill:#6FB496;
+  --warn:#F3B54A; --warn-bg:#3A2A0B; --warn-fill:#F3B54A;
+  --bad:#FF8A7E; --bad-bg:#3D1714; --bad-fill:#FF8A7E;
+  --focus:#6FD3A8; --shadow:rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:16px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+a{color:var(--band);text-underline-offset:2px}
+b{font-weight:700}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:16px 112px}
+
+/* road-sign header */
+.sign{background:var(--sign);color:var(--sign-ink);border-radius:14px;padding:6px}
+.sign-plate{border:2px solid var(--sign-ink);border-radius:9px;padding:14px 16px 16px;display:grid;gap:6px}
+.sign-top{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap}
+.sign-eyebrow{margin:0;font-size:13px;letter-spacing:.06em}
+.route{font-family:var(--font-num);font-weight:800;font-size:12px;line-height:1;border:2px solid var(--sign-ink);border-radius:6px;padding:5px 7px 4px;letter-spacing:.04em;white-space:nowrap}
+.sign h1{margin:0;font-size:clamp(26px,7vw,40px);line-height:1.2;font-weight:700;letter-spacing:.02em;text-wrap:balance}
+.sign-sub{margin:0;font-size:14px;line-height:1.65;max-width:44em}
+
+/* sample notice */
+.notice{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:10px 12px;border:1.5px dashed var(--line-strong);border-radius:12px;background:var(--surface-2)}
+.notice p{margin:0;font-size:14px;line-height:1.6;min-width:0;flex:1 1 16em}
+.notice-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-size:14px;font-weight:700;line-height:1.3;border-radius:999px;padding:8px 14px;border:1.5px solid var(--band);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--sign);border-color:var(--sign);color:var(--sign-ink)}
+.btn:hover{border-color:var(--ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* layout */
+.layout{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+.results{display:contents}
+.summary{order:1}
+.form{order:2}
+.details{order:3}
+@media (min-width:960px){
+  .wrap{padding-block:24px 48px}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+  .form{order:1}
+  .results{display:block;order:2;position:sticky;top:calc(16px + env(safe-area-inset-top,0px));max-height:calc(100vh - 32px);overflow:auto;padding:0 4px 8px 0;overscroll-behavior:contain}
+  .details{margin-top:20px}
+}
+
+/* summary */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.summary{box-shadow:0 8px 24px -14px var(--shadow)}
+.chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.chip-item{display:grid;gap:6px;justify-items:start;align-content:start;padding:8px 10px 10px;border-radius:10px;background:var(--surface-2);min-width:0}
+.chip-label{font-size:12px;color:var(--muted);letter-spacing:.04em;line-height:1.3}
+.chip{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px;line-height:1;padding:6px 9px 5px;border-radius:999px;border:1.5px solid transparent;white-space:nowrap}
+.chip::before{content:"";flex:none;width:8px;height:8px}
+.chip.ok{color:var(--ok);background:var(--ok-bg)}
+.chip.ok::before{content:"✓";width:auto;height:auto;font-size:12px}
+.chip.warn{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-fill)}
+.chip.warn::before{background:var(--warn-fill);transform:rotate(45deg);border-radius:1px}
+.chip.bad{color:var(--bad);background:var(--bad-bg);border-color:var(--bad-fill)}
+.chip.bad::before{border:2.5px solid var(--bad-fill);border-radius:50%;width:9px;height:9px}
+.chip.na{color:var(--muted);background:transparent;border-color:var(--line)}
+.chip.na::before{content:none}
+.hero{margin-top:16px;display:grid;gap:2px}
+.hero .k{margin:0;font-size:14px;color:var(--muted)}
+.hero .v{margin:0;font-family:var(--font-num);font-weight:800;font-size:clamp(42px,12vw,58px);line-height:1.05;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.hero[data-state="bad"] .v{color:var(--bad)}
+.hero[data-state="warn"] .v{color:var(--warn)}
+.hero .u{font-family:var(--font-body);font-size:16px;font-weight:700;margin-left:6px;letter-spacing:0}
+.hero .sub{margin:4px 0 0;font-size:14px}
+.hero .alt{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line-strong);color:var(--warn);font-weight:700}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 0;padding:12px 0 0;border-top:1px solid var(--line)}
+.mini div{min-width:0}
+.mini dt{font-size:12px;color:var(--muted);line-height:1.4}
+.mini dd{margin:2px 0 0;font-family:var(--font-num);font-weight:700;font-size:21px;line-height:1.2;font-variant-numeric:tabular-nums}
+.mini dd small{font-family:var(--font-body);font-size:12px;font-weight:400;margin-left:2px}
+.vcmp{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:13px;line-height:1.6}
+.vcmp b{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.sum-actions{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.copy-msg{font-size:13px;color:var(--muted)}
+.copy-area{width:100%;margin-top:8px;font:inherit;font-size:13px;line-height:1.6;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px;min-height:9em}
+
+/* form */
+.form{display:grid;gap:16px}
+.group{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 16px 8px;margin:0;min-width:0}
+.group legend{float:left;width:100%;padding:0;margin:0 0 2px;font-weight:700;font-size:16px;line-height:1.5}
+.group legend + *{clear:both}
+.group-note{margin:0 0 4px;font-size:12px;color:var(--muted);line-height:1.6}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 12px;padding:10px 0}
+.row + .row,.day + .row,.row + .day,.inline-details + .row,.row + .inline-details{border-top:1px solid var(--line)}
+.lbl{display:grid;gap:1px;min-width:0}
+.lbl label{font-weight:700;font-size:15px;line-height:1.5}
+.hint{font-size:12px;line-height:1.55;color:var(--muted)}
+.field{display:flex;align-items:baseline;gap:6px;justify-self:end}
+.unit{font-size:13px;color:var(--muted);min-width:2.2em}
+.field input,.field select{color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-bottom:2px solid var(--line-strong);border-radius:8px 8px 4px 4px}
+.field input{width:7.6em;font-family:var(--font-num);font-size:19px;font-weight:700;line-height:1.3;text-align:right;font-variant-numeric:tabular-nums;padding:6px 8px 4px}
+.field input[type=time]{width:6.4em;text-align:center}
+.field input::placeholder{color:var(--muted);font-weight:500;font-size:14px}
+.field input:focus,.field select:focus{border-bottom-color:var(--band)}
+.field select{font:inherit;font-size:15px;padding:7px 8px;max-width:11em}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.calc-out{font-family:var(--font-num);font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+.adv{padding-bottom:12px}
+.adv > summary,.inline-details > summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px;padding:2px 0}
+.adv > summary{font-size:15px}
+.inline-details{padding:10px 0}
+.inline-details > summary{font-size:14px;color:var(--band)}
+.adv > summary::-webkit-details-marker,.inline-details > summary::-webkit-details-marker{display:none}
+.adv > summary::before,.inline-details > summary::before{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s;flex:none;opacity:.8}
+.adv[open] > summary::before,.inline-details[open] > summary::before{transform:rotate(45deg)}
+.adv[open] > summary{margin-bottom:6px}
+.defs{display:grid;gap:8px;margin:10px 0 2px;padding:0;list-style:none;font-size:13px;line-height:1.65}
+.defs li{padding-left:10px;border-left:3px solid var(--line)}
+.defs b{font-size:14px}
+.tag{display:inline-block;font-size:11px;font-weight:700;line-height:1.4;padding:1px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.tag.work{color:var(--bad);background:var(--bad-bg)}
+.tag.rest{color:var(--ok);background:var(--ok-bg)}
+.tag.either{color:var(--warn);background:var(--warn-bg)}
+
+/* 24-hour chart, after the round tachograph chart paper */
+.day{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 16px;align-items:center;padding:12px 0}
+.dial{width:172px;height:172px;display:block}
+.dial .paper{fill:var(--surface-2);stroke:var(--line)}
+.dial .tick{stroke:var(--line-strong);stroke-width:1}
+.dial .tick.major{stroke:var(--muted);stroke-width:1.5}
+.dial .hr{fill:var(--muted);font-family:var(--font-num);font-size:12px;font-weight:700}
+.dial .night{fill:none;stroke:var(--night);stroke-width:7}
+.dial .bound{fill:none;stroke:var(--band);stroke-width:15}
+.dial .cap{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.dial .ck{fill:var(--muted);font-size:12px;font-family:var(--font-body)}
+.dial .cv{fill:var(--ink);font-family:var(--font-num);font-weight:800;font-size:28px}
+.dial .cs{fill:var(--muted);font-size:12px;font-family:var(--font-body)}
+.day-legend{display:grid;gap:6px;font-size:13px;line-height:1.5;min-width:0;margin:0;padding:0;list-style:none}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+.sw.bound{background:var(--band)}
+.sw.night{background:var(--night)}
+.sw.plain{background:transparent;border:1.5px solid var(--line-strong)}
+@media (max-width:400px){.day{grid-template-columns:1fr;justify-items:center}.day-legend{justify-self:stretch}}
+
+/* details */
+.details{display:grid;gap:22px}
+.block{border-top:2px solid var(--ink);padding-top:12px;min-width:0}
+.block h2{margin:0 0 8px;font-size:17px;line-height:1.4}
+.block p{margin:0 0 8px;font-size:14px}
+.small{font-size:13px !important;color:var(--muted)}
+.tbl-wrap{overflow-x:auto;margin:4px 0 8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+caption{caption-side:bottom;text-align:left;font-size:12px;color:var(--muted);padding-top:6px}
+th,td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-weight:400}
+thead th{font-size:12px;color:var(--muted);border-bottom:1.5px solid var(--line-strong)}
+th[scope=row]{font-weight:700}
+.num{text-align:right !important;font-family:var(--font-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.num{font-weight:700}
+td.num.up{color:var(--warn)}
+.rate{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+tr.total th,tr.total td{border-bottom:1.5px solid var(--line-strong)}
+tr.gap th,tr.gap td{border-bottom:0;font-size:16px;font-weight:800}
+tr.gap.bad th,tr.gap.bad td{color:var(--bad)}
+tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
+.aside{background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:13px !important}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:6px 0 10px}
+.compare div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.compare .k{font-size:12px;color:var(--muted);line-height:1.45}
+.compare .v{font-family:var(--font-num);font-weight:800;font-size:26px;line-height:1.15;font-variant-numeric:tabular-nums}
+.compare .v small{font-family:var(--font-body);font-size:13px;font-weight:400;margin-left:2px}
+.verdict{font-weight:700;font-size:15px !important}
+.verdict.ok{color:var(--ok)}
+.verdict.bad{color:var(--bad)}
+.verdict.warn{color:var(--warn)}
+.verdict.na{color:var(--muted);font-weight:400}
+
+/* gauges and checks */
+.gauges{display:grid;gap:16px}
+.gauge{display:grid;gap:2px}
+.g-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.g-name{font-weight:700;font-size:14px}
+.g-val{font-family:var(--font-num);font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+.g-val small{font-family:var(--font-body);font-size:12px;font-weight:400;margin-left:2px}
+.g-head .chip{margin-left:auto;align-self:center}
+.g-track{position:relative;height:46px}
+.g-rail{position:absolute;left:0;right:0;top:18px;height:10px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line)}
+.g-fill{position:absolute;left:0;top:18px;height:10px;border-radius:5px;background:var(--ok-fill)}
+.g-fill.warn{background:var(--warn-fill)}
+.g-fill.bad{background:var(--bad-fill)}
+.g-mark{position:absolute;top:13px;height:20px;width:0;border-left:2px solid var(--ink)}
+.g-lab{position:absolute;font-family:var(--font-num);font-size:11px;font-weight:700;line-height:1;white-space:nowrap;color:var(--muted)}
+.g-lab.up{top:0}
+.g-lab.down{top:36px}
+.g-note{margin:0 !important;font-size:12px !important;color:var(--muted);line-height:1.6}
+
+/* next steps */
+.next{display:grid;gap:10px;padding:0;margin:0 0 10px;list-style:none;font-size:14px}
+.next b{display:block}
+.slot{border:1.5px dashed var(--line-strong);border-radius:12px;padding:12px;font-size:13px;color:var(--muted)}
+.slot + .slot{margin-top:8px}
+.notes{border-top:2px solid var(--ink);padding-top:12px}
+.notes > summary{cursor:pointer;font-weight:700;font-size:16px}
+.notes ul{padding-left:1.2em;margin:10px 0 0;font-size:13px;display:grid;gap:6px;color:var(--muted)}
+.foot{margin-top:28px;font-size:12px;color:var(--muted);line-height:1.7}
+.foot p{margin:0}
+
+/* phone dock */
+.dock{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));z-index:10;box-shadow:0 -8px 20px -12px var(--shadow)}
+.dock-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.dock-k{font-size:12px;color:var(--muted);line-height:1.2}
+.dock-v{font-family:var(--font-num);font-weight:800;font-size:21px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dock-v small{font-family:var(--font-body);font-size:12px;font-weight:400;margin-left:2px}
+.dock-link{margin-left:auto;text-decoration:none}
+@media (min-width:960px){.dock{display:none !important}}
+@media (max-width:360px){.chips,.mini{gap:6px}.chip-item{padding:8px}.mini dd{font-size:18px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="sign">
+    <div class="sign-plate">
+      <div class="sign-top">
+        <p class="sign-eyebrow">トラックドライバーのための給料の答え合わせ</p>
+        <span class="route">β版</span>
+      </div>
+      <h1>ドライバー給料チェッカー</h1>
+      <p class="sign-sub">給与明細とその月の働き方を入れると、残業代の不足・最低賃金・拘束時間、同じ車種の平均との差を目安で確かめられます。</p>
+    </div>
+  </header>
+
+  <div class="notice" id="notice">
+    <p id="noticeText"><b>サンプル表示中</b>：架空のドライバー（埼玉・10tウイング・長距離）の数字が入っています。</p>
+    <div class="notice-actions">
+      <button type="button" class="btn primary" id="btnClear">自分の数字を入れる</button>
+      <button type="button" class="btn" id="btnSample" hidden>サンプルに戻す</button>
+    </div>
+  </div>
+
+  <main class="layout">
+    <div class="results">
+      <section class="summary card" id="summary" aria-label="結果のまとめ">
+        <div class="chips">
+          <div class="chip-item"><span class="chip-label">最低賃金</span><span class="chip na" id="chipMw">未入力</span></div>
+          <div class="chip-item"><span class="chip-label">残業代</span><span class="chip na" id="chipOt">未入力</span></div>
+          <div class="chip-item"><span class="chip-label">拘束時間</span><span class="chip na" id="chipBd">未入力</span></div>
+        </div>
+        <div class="hero" id="hero" data-state="na" aria-live="polite">
+          <p class="k">残業代の不足（目安）</p>
+          <p class="v"><span id="vShort">—</span><span class="u">円／月</span></p>
+          <p class="sub" id="vShortSub">支給額と働いた時間を入れると計算します。</p>
+          <p class="sub alt" id="vAlt" hidden></p>
+        </div>
+        <dl class="mini">
+          <div><dt>実質時給</dt><dd><span id="vEff">—</span><small>円</small></dd></div>
+          <div><dt>拘束1時間あたり</dt><dd><span id="vEffB">—</span><small>円</small></dd></div>
+          <div><dt>月の時間外</dt><dd><span id="vOt">—</span><small>時間</small></dd></div>
+        </dl>
+        <p class="vcmp" id="vCmp" hidden></p>
+        <div class="sum-actions">
+          <button type="button" class="btn" id="btnCopy">結果をコピー</button>
+          <span class="copy-msg" id="copyMsg" role="status"></span>
+        </div>
+        <textarea class="copy-area" id="copyArea" readonly hidden aria-label="コピー用の結果"></textarea>
+      </section>
+
+      <section class="details" aria-label="くわしい結果">
+        <article class="block" id="blkRec" hidden>
+          <h2>記録の答え合わせ</h2>
+          <p id="recLead"></p>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th scope="col">区分</th><th scope="col" class="num">会社の記録</th><th scope="col" class="num">自分の記録</th><th scope="col" class="num">差</th></tr></thead>
+              <tbody id="recBody"></tbody>
+            </table>
+          </div>
+          <p class="aside" id="recAlt" hidden></p>
+        </article>
+
+        <article class="block" id="blkOt">
+          <h2>残業代の内訳</h2>
+          <p id="otBase">—</p>
+          <div class="tbl-wrap">
+            <table>
+              <caption id="otCaption">時間は「その月の働き方」から推計しています。</caption>
+              <thead><tr><th scope="col">区分</th><th scope="col" class="num">時間</th><th scope="col" class="num">金額（円）</th></tr></thead>
+              <tbody id="otBody"></tbody>
+            </table>
+          </div>
+          <p class="aside" id="otAlt" hidden></p>
+        </article>
+
+        <article class="block" id="blkAvg">
+          <h2>同じ車種の平均と比べる</h2>
+          <p id="avgLead"></p>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th scope="col">項目</th><th scope="col" class="num">あなた</th><th scope="col" class="num">平均</th><th scope="col" class="num">差</th></tr></thead>
+              <tbody id="avgBody"></tbody>
+            </table>
+          </div>
+          <p class="small" id="avgNote"></p>
+        </article>
+
+        <article class="block" id="blkMw">
+          <h2>最低賃金</h2>
+          <div class="compare">
+            <div><span class="k">あなたの時給（最低賃金の計算方法）</span><span class="v" id="mwYou">—</span></div>
+            <div><span class="k" id="mwPrefLabel">最低賃金</span><span class="v" id="mwRate">—</span></div>
+          </div>
+          <p class="verdict na" id="mwVerdict">—</p>
+          <p class="small" id="mwBreak"></p>
+          <p class="small" id="mwNote"></p>
+        </article>
+
+        <article class="block" id="blkBd">
+          <h2>拘束時間と休息</h2>
+          <p class="small">トラック運転者の改善基準告示（2024年4月から）と、時間外労働の上限（年960時間）で見ています。</p>
+          <div class="gauges" id="gauges"></div>
+        </article>
+
+        <article class="block" id="blkNext">
+          <h2>次の一歩</h2>
+          <ul class="next">
+            <li><b>記録を残す</b>明細、運転日報、デジタコの記録、自分のメモ（出庫・帰庫の時刻、荷待ち、430の回数）を手元に残しておくと、あとで正確に確かめられます。スマホの位置情報の履歴や、写真・メッセージの時刻も記録になります。</li>
+            <li><b>無料で相談できる窓口</b><a href="https://www.mhlw.go.jp/general/seido/chihou/kaiketu/index.html" target="_blank" rel="noopener">総合労働相談コーナー</a>（各地の労働局・労働基準監督署の中にあります）、<a href="https://www.houterasu.or.jp/" target="_blank" rel="noopener">法テラス</a>（収入などの条件を満たせば、弁護士に無料で相談できます）。</li>
+            <li><b>職場を変える道</b>人材紹介会社のデータでは、転職したトラックドライバーの年収の中央値は360万円から438万円に上がっています（<a href="https://www.logi-today.com/985426" target="_blank" rel="noopener">LOGISTICS TODAY、2026年8月</a>）。</li>
+          </ul>
+        </article>
+
+        <details class="notes">
+          <summary>計算の前提と注意</summary>
+          <ul>
+            <li>この結果は、入力した数字から出した目安です。法律上の判断や、個別の相談の代わりにはなりません。</li>
+            <li>時間外労働は、1日8時間・週40時間を超えた分を、平均的な1日の長さから推計しています。日によって長さがばらつくと、実際の時間外はもっと多くなることがあります。デジタコや勤怠の数字が分かる場合は上書き欄に入れてください。</li>
+            <li>実働は「拘束時間 − 430の回数×30分 − ほかの休憩」です。荷待ちや待機は、すぐ動ける状態なら実働に入ります。</li>
+            <li>深夜（22時〜翌5時）の時間は、出庫時刻と拘束時間から推計しています。休憩は拘束時間の中に均等に入る想定です。</li>
+            <li>固定給の部分は「固定給÷月平均所定労働時間」に1.25倍（60時間を超えた分は1.5倍、法定休日は1.35倍）、歩合給の部分は「歩合給÷総労働時間」に0.25倍（60時間超は0.5倍、法定休日は0.35倍）をかけています。月60時間を超える時間外の5割増は、2023年4月から中小企業も対象です。</li>
+            <li>日給制の場合は「日給÷1日の所定労働時間」を時給にしています。週40時間を超えた時間のうち、その日の日給がすでに払われている分は、割増の部分（0.25倍、60時間超は0.5倍）だけを足しています。</li>
+            <li>固定残業代は、契約書や就業規則で何時間分・いくらかがはっきりしていないと、残業代として認められないことがあります。その場合の目安も合わせて出しています。</li>
+            <li>割増の計算から除く手当：家族手当、通勤手当、住宅手当など。最低賃金の計算から除く手当：皆勤・精勤手当、通勤手当、家族手当、残業代など。家族手当や住宅手当が全員一律の額の場合は、除けないことがあります。</li>
+            <li>車種の平均は、全日本トラック協会「2024年度版 トラック運送事業の賃金・労働時間等の実態」の男性運転者の数字（2024年5〜7月の1か月平均、時間外手当などを含み賞与を除く）です。平均の時給は、それをトラック運転者の平均的な労働時間（年約2,500時間＝月約208時間）で割った目安です。</li>
+            <li>変形労働時間制、法定内残業、休日の決め方、手当の中身によって結果は変わります。</li>
+            <li>未払いの賃金を請求できるのは、本来の支払日から3年までです（2020年4月以降に支払日が来た分）。</li>
+            <li>最低賃金の額は、厚生労働省の令和8年度の全国一覧（答申額と発効日）と、その改定前の額です。2026年3月以前の月は、県によって額が違う場合があります。</li>
+            <li>入力した数字は、この画面の中だけで計算しています。どこにも送信・保存しません。</li>
+          </ul>
+        </details>
+      </section>
+    </div>
+
+    <form class="form" id="form" novalidate autocomplete="off">
+      <fieldset class="group">
+        <legend>いつ・どこの明細？</legend>
+        <div class="row">
+          <div class="lbl"><label for="pref">都道府県</label><span class="hint">働いている営業所の場所</span></div>
+          <div class="field"><select id="pref"></select></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="ym">働いた月</label><span class="hint">給料日の月ではなく、働いた月</span></div>
+          <div class="field"><select id="ym"></select></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>あなたと車</legend>
+        <div class="row">
+          <div class="lbl"><label for="age">年齢</label></div>
+          <div class="field"><input id="age" type="number" inputmode="numeric" min="15" max="90" step="1" value="45"><span class="unit">歳</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="vehicleSize">車の大きさ</label></div>
+          <div class="field"><select id="vehicleSize">
+            <option value="k1">軽・1t</option>
+            <option value="t2">2t</option>
+            <option value="t4">4t</option>
+            <option value="zou">増トン</option>
+            <option value="t10" selected>10t</option>
+            <option value="tr">トレーラー</option>
+          </select></div>
+        </div>
+        <div class="row" id="zouRow" hidden>
+          <div class="lbl"><label for="zouLarge">大型免許が要る車？</label><span class="hint">車両総重量11t以上なら「はい」</span></div>
+          <div class="field"><select id="zouLarge">
+            <option value="yes">はい</option>
+            <option value="no">いいえ</option>
+          </select></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="body">車体</label></div>
+          <div class="field"><select id="body">
+            <option value="van">箱車（バン）</option>
+            <option value="wing" selected>ウイング</option>
+            <option value="flat">平ボディ</option>
+            <option value="unic">ユニック</option>
+            <option value="reefer">冷凍・冷蔵</option>
+            <option value="dump">ダンプ</option>
+            <option value="tank">タンクローリー</option>
+            <option value="other">その他</option>
+          </select></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>支給（明細の支給欄）</legend>
+        <div class="row">
+          <div class="lbl"><label for="basic">基本給</label><span class="hint" id="h-basic">月給の人の基本給</span></div>
+          <div class="field"><input id="basic" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-basic"><span class="unit">円</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="dailyWage">日給（1日の単価）</label><span class="hint" id="h-daily">日給制の人だけ。出勤した日数をかけて計算します</span></div>
+          <div class="field"><input id="dailyWage" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-daily"><span class="unit">円</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="fixedAllow">固定の手当</label><span class="hint" id="h-fixedAllow">職務・無事故・資格手当や、1日いくらの日当（月の合計）など</span></div>
+          <div class="field"><input id="fixedAllow" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-fixedAllow"><span class="unit">円</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="attendAllow">皆勤・精勤手当</label><span class="hint" id="h-attend">割増の計算には入れ、最低賃金の計算からは除きます</span></div>
+          <div class="field"><input id="attendAllow" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-attend"><span class="unit">円</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="piece">歩合給</label><span class="hint" id="h-piece">売上・距離・運行回数・個数で額が変わるもの</span></div>
+          <div class="field"><input id="piece" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-piece"><span class="unit">円</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="fixedOT">固定残業代</label><span class="hint" id="h-fixedOT">みなし残業手当・定額残業手当など、契約で残業代として毎月決まった額</span></div>
+          <div class="field"><input id="fixedOT" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-fixedOT"><span class="unit">円</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="otPaid">残業手当</label><span class="hint" id="h-otPaid">時間外・深夜・休日手当として出た額</span></div>
+          <div class="field"><input id="otPaid" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-otPaid"><span class="unit">円</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="housing">住宅手当</label><span class="hint" id="h-housing">割増の計算からは除いて計算します</span></div>
+          <div class="field"><input id="housing" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-housing"><span class="unit">円</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="familyCommute">家族手当・通勤手当</label><span class="hint" id="h-family">残業代と最低賃金の計算からは除きます</span></div>
+          <div class="field"><input id="familyCommute" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-family"><span class="unit">円</span></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>その月の働き方（自分の記録）</legend>
+        <div class="row">
+          <div class="lbl"><label for="days">出勤した日数</label></div>
+          <div class="field"><input id="days" type="number" inputmode="decimal" min="0" step="any"><span class="unit">日</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="startTime">出庫（始業）の時刻</label><span class="hint" id="h-start">だいたいで大丈夫です。深夜の時間の推計に使います</span></div>
+          <div class="field"><input id="startTime" type="time" step="1800" aria-describedby="h-start"><span class="unit"></span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="boundPerDay">1日の拘束時間</label><span class="hint" id="h-bound">始業から終業まで。休憩や荷待ちも含めた平均</span></div>
+          <div class="field"><input id="boundPerDay" type="number" inputmode="decimal" min="0" step="any" aria-describedby="h-bound"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="n430">430休憩の回数</label><span class="hint" id="h-430">連続運転4時間ごとの30分の中断を、1日に何回取ったか（平均）</span></div>
+          <div class="field"><input id="n430" type="number" inputmode="decimal" min="0" step="any" aria-describedby="h-430"><span class="unit">回</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="otherBreak">そのほかの休憩</label><span class="hint" id="h-other">食事・仮眠など、自由に過ごせた時間だけ（1日の平均）</span></div>
+          <div class="field"><input id="otherBreak" type="number" inputmode="decimal" min="0" step="any" aria-describedby="h-other"><span class="unit">時間</span></div>
+        </div>
+        <details class="inline-details">
+          <summary>休憩・荷待ち・待機の見分け方</summary>
+          <p class="group-note">名前ではなく中身で決まります。呼ばれたらすぐ動かないといけない状態なら実働、完全に自由なら休憩です。</p>
+          <ul class="defs">
+            <li><b>休憩</b><span class="tag rest">休憩</span><br>仕事から完全に離れて自由に過ごせる時間。荷物や車の番をしなくてよく、呼ばれても応じなくていい。</li>
+            <li><b>荷待ち</b><span class="tag work">実働</span><br>積み下ろしの順番を待つ時間。呼ばれたらすぐ車を付ける、列が進んだら詰める状態なら実働です。</li>
+            <li><b>待機</b><span class="tag either">中身しだい</span><br>決められた場所で次の指示を待つ時間。指示が来たらすぐ動く前提なら実働、完全に自由なら休憩。</li>
+            <li><b>仮眠</b><span class="tag either">中身しだい</span><br>寝ていても、呼び出しや荷物の番に対応しないといけないなら実働。完全に自由なら休憩。</li>
+            <li><b>430の中断</b><span class="tag rest">原則は休憩</span><br>2024年4月から原則として休憩。1回おおむね10分以上、合計30分以上。その時間に積み下ろしや点検をしていたら休憩になりません。</li>
+            <li><b>点呼・点検・洗車・日報</b><span class="tag work">実働</span><br>会社に決められた作業なので実働です。</li>
+            <li><b>休息期間</b><span class="tag rest">拘束外</span><br>仕事が終わってから次の始業まで、会社から何も縛られない時間。拘束時間にも入りません。</li>
+          </ul>
+        </details>
+        <div class="row">
+          <div class="lbl"><label for="driveHours">1日の運転時間</label><span class="hint" id="h-drive">任意。430が足りているかのチェックに使います</span></div>
+          <div class="field"><input id="driveHours" type="number" inputmode="decimal" min="0" step="any" aria-describedby="h-drive"><span class="unit">時間</span></div>
+        </div>
+        <div class="day">
+          <svg class="dial" viewBox="0 0 240 240" role="img" aria-labelledby="dialTitle">
+            <title id="dialTitle">1日のイメージ</title>
+            <circle class="paper" cx="120" cy="120" r="101"></circle>
+            <g id="dialTicks"></g>
+            <path class="night" id="dialNight" d=""></path>
+            <path class="bound" id="dialBound" d=""></path>
+            <circle class="cap" id="capStart" r="4.5" cx="-20" cy="-20"></circle>
+            <circle class="cap" id="capEnd" r="4.5" cx="-20" cy="-20"></circle>
+            <text class="ck" x="120" y="100" text-anchor="middle">拘束</text>
+            <text class="cv" x="120" y="131" text-anchor="middle" id="dialV">—</text>
+            <text class="cs" x="120" y="152" text-anchor="middle" id="dialSub"></text>
+          </svg>
+          <ul class="day-legend">
+            <li><span class="sw bound"></span><span id="lgBound">拘束 —</span></li>
+            <li><span class="sw night"></span><span id="lgNight">深夜帯 22時〜翌5時</span></li>
+            <li><span class="sw plain"></span><span id="lgWork">休憩 —</span></li>
+          </ul>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="holidayDays">法定休日に出た日数</label><span class="hint" id="h-hol">週1日の法定休日に出勤した日</span></div>
+          <div class="field"><input id="holidayDays" type="number" inputmode="decimal" min="0" step="any" aria-describedby="h-hol"><span class="unit">日</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="minRest">いちばん短い休息期間</label><span class="hint" id="h-rest">仕事が終わってから次の始業まで（任意）</span></div>
+          <div class="field"><input id="minRest" type="number" inputmode="decimal" min="0" step="any" aria-describedby="h-rest"><span class="unit">時間</span></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>明細に書いてある時間（会社の記録）</legend>
+        <p class="group-note">明細の勤怠欄にある月の合計を入れると、自分の記録と比べます。空欄なら比べません。</p>
+        <div class="row">
+          <div class="lbl"><label for="cOT">時間外労働時間</label></div>
+          <div class="field"><input id="cOT" type="number" inputmode="decimal" min="0" step="any"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="cNight">深夜労働時間</label></div>
+          <div class="field"><input id="cNight" type="number" inputmode="decimal" min="0" step="any"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="cHol">法定休日労働時間</label></div>
+          <div class="field"><input id="cHol" type="number" inputmode="decimal" min="0" step="any"><span class="unit">時間</span></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>会社のルール</legend>
+        <div class="row">
+          <div class="lbl"><label for="holidaysPerYear">年間休日</label><span class="hint" id="h-hpy">わからなければ105日のまま</span></div>
+          <div class="field"><input id="holidaysPerYear" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-hpy"><span class="unit">日</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="scheduledPerDay">1日の所定労働時間</label><span class="hint" id="h-spd">わからなければ8時間のまま</span></div>
+          <div class="field"><input id="scheduledPerDay" type="number" inputmode="decimal" min="0" step="any" aria-describedby="h-spd"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><b style="font-size:15px">月平均の所定労働時間</b><span class="hint">（365日−年間休日）×1日の所定労働時間÷12</span></div>
+          <div class="field"><output class="calc-out" id="hsOut" for="holidaysPerYear scheduledPerDay">—</output><span class="unit">時間</span></div>
+        </div>
+      </fieldset>
+
+      <details class="group adv">
+        <summary>デジタコや勤怠の数字で上書きする</summary>
+        <p class="group-note">自分の記録で月の合計が分かる欄だけ入れてください。空欄は推計のまま計算します。</p>
+        <div class="row">
+          <div class="lbl"><label for="ovTotalHours">1か月の総労働時間</label><span class="hint">休憩を除き、法定休日の分も含む</span></div>
+          <div class="field"><input id="ovTotalHours" type="number" inputmode="decimal" min="0" step="any"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="ovOtHours">時間外労働</label><span class="hint">1日8時間・週40時間を超えた分（法定休日の分は除く）</span></div>
+          <div class="field"><input id="ovOtHours" type="number" inputmode="decimal" min="0" step="any"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="ovNightHours">深夜労働</label><span class="hint">22時〜翌5時に働いた時間</span></div>
+          <div class="field"><input id="ovNightHours" type="number" inputmode="decimal" min="0" step="any"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="ovHolidayHours">法定休日の労働</label></div>
+          <div class="field"><input id="ovHolidayHours" type="number" inputmode="decimal" min="0" step="any"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="ovBoundMonth">1か月の拘束時間</label><span class="hint">各勤務の始業から終業までの合計</span></div>
+          <div class="field"><input id="ovBoundMonth" type="number" inputmode="decimal" min="0" step="any"><span class="unit">時間</span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="mwOverride">最低賃金（時給）</label><span class="hint">表の額と違う場合だけ</span></div>
+          <div class="field"><input id="mwOverride" type="number" inputmode="numeric" min="0" step="1"><span class="unit">円</span></div>
+        </div>
+      </details>
+    </form>
+  </main>
+
+  <footer class="foot">
+    <p>ドライバー給料チェッカー β版（2026年10月）。最低賃金：厚生労働省「<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/minimumichiran/" target="_blank" rel="noopener">地域別最低賃金の全国一覧</a>」。拘束時間の基準：<a href="https://wwwtb.mlit.go.jp/kinki/content/000306033.pdf" target="_blank" rel="noopener">トラック運転者の改善基準告示（2024年4月適用）</a>。車種の平均：全日本トラック協会「<a href="https://jta.or.jp/wp-content/uploads/2025/10/chinginjittai2024gaiyo.pdf" target="_blank" rel="noopener">2024年度版 トラック運送事業の賃金・労働時間等の実態</a>」。平均的な労働時間：<a href="https://www.jil.go.jp/institute/zassi/backnumber/2026/special/pdf/062-074.pdf" target="_blank" rel="noopener">日本労働研究雑誌（2026年）</a>。</p>
+    <nav aria-label="サイトの情報"><a href="about.html">運営者情報</a><a href="privacy.html">プライバシーポリシー・免責事項</a></nav>
+  </footer>
+</div>
+
+<div class="dock" id="dock" hidden>
+  <div class="dock-inner">
+    <div><div class="dock-k">残業代の不足（目安）</div><div class="dock-v"><span id="dockV">—</span><small>円／月</small></div></div>
+    <span class="chip na" id="dockState">未入力</span>
+    <a class="btn dock-link" href="#summary">結果を見る</a>
+  </div>
+</div>
+
+<script>
+// CALC_START
+const MW = [
+  ['北海道',1075,1131,'2026-10-01'],['青森県',1029,1090,'2026-10-29'],['岩手県',1031,1090,'2026-12-01'],
+  ['宮城県',1038,1098,'2026-10-01'],['秋田県',1031,1090,'2026-10-14'],['山形県',1032,1092,'2026-10-30'],
+  ['福島県',1033,1094,'2026-10-16'],['茨城県',1074,1136,'2026-10-18'],['栃木県',1068,1125,'2026-10-01'],
+  ['群馬県',1063,1120,'2026-10-03'],['埼玉県',1141,1196,'2026-10-01'],['千葉県',1140,1195,'2026-10-01'],
+  ['東京都',1226,1280,'2026-10-01'],['神奈川県',1225,1279,'2026-10-01'],['新潟県',1050,1108,'2026-10-01'],
+  ['富山県',1062,1119,'2026-10-01'],['石川県',1054,1113,'2026-10-03'],['福井県',1053,1112,'2026-10-04'],
+  ['山梨県',1052,1113,'2026-11-01'],['長野県',1061,1117,'2026-10-02'],['岐阜県',1065,1121,'2026-10-01'],
+  ['静岡県',1097,1154,'2026-10-15'],['愛知県',1140,1195,'2026-10-01'],['三重県',1087,1143,'2026-10-01'],
+  ['滋賀県',1080,1136,'2026-10-03'],['京都府',1122,1180,'2026-11-16'],['大阪府',1177,1231,'2026-10-01'],
+  ['兵庫県',1116,1172,'2026-10-01'],['奈良県',1051,1107,'2026-10-04'],['和歌山県',1045,1101,'2026-10-03'],
+  ['鳥取県',1030,1090,'2026-10-03'],['島根県',1033,1092,'2026-10-10'],['岡山県',1047,1104,'2026-10-02'],
+  ['広島県',1085,1141,'2026-10-11'],['山口県',1043,1101,'2026-10-08'],['徳島県',1046,1103,'2026-11-01'],
+  ['香川県',1036,1092,'2026-10-01'],['愛媛県',1033,1093,'2026-11-01'],['高知県',1023,1086,'2026-10-29'],
+  ['福岡県',1057,1114,'2026-10-04'],['佐賀県',1030,1095,'2026-11-15'],['長崎県',1031,1087,'2026-11-02'],
+  ['熊本県',1034,1092,'2026-12-01'],['大分県',1035,1096,'2026-11-01'],['宮崎県',1023,1085,'2026-10-24'],
+  ['鹿児島県',1026,1090,'2026-10-25'],['沖縄県',1023,1086,'2026-12-02']
+];
+// 全ト協「2024年度版 トラック運送事業の賃金・労働時間等の実態」男性運転者、2024年5〜7月の1か月平均（円）
+const CLASSES = {
+  futsu:  { label: '普通', wage: 342800, bonusM: 61800, age: 47.5 },
+  junchu: { label: '準中型', wage: 344500, bonusM: 47800, age: 48.0 },
+  chu:    { label: '中型', wage: 322700, bonusM: 33600, age: 49.6 },
+  ogata:  { label: '大型', wage: 379600, bonusM: 40600, age: 50.4 },
+  kenin:  { label: 'けん引', wage: 404200, bonusM: 56600, age: 50.8 }
+};
+const AVG_HOURS = 2500 / 12; // トラック運転者の平均的な労働時間：年約2,500時間（2024年）
+const SIZES = { k1: { label: '軽・1t', cls: 'futsu' }, t2: { label: '2t', cls: 'junchu' }, t4: { label: '4t', cls: 'chu' },
+  zou: { label: '増トン', cls: null }, t10: { label: '10t', cls: 'ogata' }, tr: { label: 'トレーラー', cls: 'kenin' } };
+const BODIES = { van: '箱車（バン）', wing: 'ウイング', flat: '平ボディ', unic: 'ユニック', reefer: '冷凍・冷蔵', dump: 'ダンプ', tank: 'タンクローリー', other: 'その他' };
+function classFor(size, zouLarge){
+  if (size === 'zou') return zouLarge === 'no' ? 'chu' : 'ogata';
+  return (SIZES[size] && SIZES[size].cls) || 'ogata';
+}
+function daysInMonth(y, m){ return new Date(y, m, 0).getDate(); }
+function ymd(y, m, d){ return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
+function minWageFor(idx, y, m){
+  const row = MW[idx] || MW[0];
+  const name = row[0], r7 = row[1], r8 = row[2], eff = row[3];
+  const first = ymd(y, m, 1), last = ymd(y, m, daysInMonth(y, m));
+  const isNew = first >= eff;
+  return { name, r7, r8, eff, rate: isNew ? r8 : r7, isNew, changesMidMonth: !isNew && eff <= last, beforeTable: first < '2026-04-01' };
+}
+function nightOverlap(start, span){
+  let t = 0;
+  for (let k = -1; k <= 1; k++){
+    const a = 22 + 24 * k, b = 29 + 24 * k;
+    const lo = Math.max(a, start), hi = Math.min(b, start + span);
+    if (hi > lo) t += hi - lo;
+  }
+  return t;
+}
+const RANK = { na: 0, ok: 1, warn: 2, bad: 3 };
+function worst(states){ return states.reduce((a, s) => RANK[s] > RANK[a] ? s : a, 'na'); }
+const num = v => { const x = Number(v); return Number.isFinite(x) && x > 0 ? x : 0; };
+const opt = v => { if (v === '' || v === null || v === undefined) return null; const x = Number(v); return Number.isFinite(x) && x >= 0 ? x : null; };
+
+function core(i){
+  const y = i.year, m = i.month, dim = daysInMonth(y, m);
+
+  const holidaysPerYear = Math.min(num(i.holidaysPerYear), 364);
+  const schedPerDay = Math.min(num(i.scheduledPerDay), 24);
+  const Hs = (365 - holidaysPerYear) * schedPerDay / 12;
+
+  const D = Math.min(num(i.days), dim);
+  const Dh = Math.min(num(i.holidayDays), D);
+  const Dr = D - Dh;
+  const B = Math.min(num(i.boundPerDay), 24);
+  const n430 = num(i.n430), otherBreak = num(i.otherBreak);
+  const brk = Math.min(n430 * 0.5 + otherBreak, B);
+  const hw = B - brk;
+  const start = num(i.startHour) % 24;
+
+  const est = { holiday: Dh * hw, total: D * hw, bound: D * B };
+  const ov = { total: opt(i.ovTotalHours), ot: opt(i.ovOtHours), night: opt(i.ovNightHours), holiday: opt(i.ovHolidayHours), bound: opt(i.ovBoundMonth) };
+  const Hh = ov.holiday ?? est.holiday;
+  const Ht = ov.total ?? est.total;
+  const hAvgR = Dr > 0 ? Math.max(0, (Ht - Hh) / Dr) : 0;
+  const dailyOT = Dr * Math.max(0, hAvgR - 8);
+  const regular = Dr * Math.min(hAvgR, 8);
+  const weeklyOT = Math.max(0, regular - 40 * dim / 7);
+  est.ot = dailyOT + weeklyOT;
+  const Hot = ov.ot ?? est.ot;
+  const nightPerDay = B > 0 ? nightOverlap(start, B) * (hw / B) : 0;
+  est.night = D * nightPerDay;
+  const Hn = ov.night ?? est.night;
+  const boundMonth = ov.bound ?? est.bound;
+  const boundDay = D > 0 ? boundMonth / D : 0;
+
+  const pay = {
+    basic: num(i.basic), daily: num(i.dailyWage), fixedAllow: num(i.fixedAllow), attend: num(i.attendAllow), piece: num(i.piece),
+    fixedOT: num(i.fixedOT), otPaid: num(i.otPaid), housing: num(i.housing), family: num(i.familyCommute)
+  };
+  const dailyPay = pay.daily * D;
+  const otBaseFixed = pay.basic + pay.fixedAllow + pay.attend;
+  const rfM = Hs > 0 ? otBaseFixed / Hs : 0;
+  const rfD = schedPerDay > 0 ? pay.daily / schedPerDay : 0;
+  const rf = rfM + rfD;
+  const rp = Ht > 0 ? pay.piece / Ht : 0;
+  const ot1 = Math.min(Hot, 60), ot2 = Math.max(0, Hot - 60);
+  // share of overtime on days already paid by the daily wage (over 40h a week, within 8h a day): only the premium part is owed
+  const wShare = est.ot > 0 ? weeklyOT / est.ot : 0;
+  const premium = (fM, fD, p) => ({
+    ot1: (fM * 1.25 + fD * (1.25 - wShare) + p * 0.25) * ot1,
+    ot2: (fM * 1.5 + fD * (1.5 - wShare) + p * 0.5) * ot2,
+    night: (fM + fD + p) * 0.25 * Hn,
+    holiday: (fM * 1.35 + fD * 0.35 + p * 0.35) * Hh
+  });
+  const req = premium(rfM, rfD, rp);
+  const required = req.ot1 + req.ot2 + req.night + req.holiday;
+  const paid = pay.otPaid + pay.fixedOT;
+  const shortfall = Math.max(0, required - paid);
+
+  const rfM2 = Hs > 0 ? (otBaseFixed + pay.fixedOT) / Hs : 0;
+  const req2 = premium(rfM2, rfD, rp);
+  const required2 = req2.ot1 + req2.ot2 + req2.night + req2.holiday;
+  const shortfall2 = Math.max(0, required2 - pay.otPaid);
+
+  const mw = minWageFor(i.prefIndex, y, m);
+  const mwOverride = opt(i.mwOverride);
+  const mwRate = mwOverride ?? mw.rate;
+  const mwFixedPay = pay.basic + pay.fixedAllow + pay.housing;
+  const mwMonthHourly = Hs > 0 ? mwFixedPay / Hs : 0;
+  const mwDailyHourly = schedPerDay > 0 ? pay.daily / schedPerDay : 0;
+  const mwFixedHourly = mwMonthHourly + mwDailyHourly;
+  const mwPieceHourly = Ht > 0 ? pay.piece / Ht : 0;
+  const mwHourly = mwFixedHourly + mwPieceHourly;
+  const mwNextBelow = mwOverride === null && !mw.isNew && mwHourly + 1e-9 < mw.r8;
+
+  const gross = pay.basic + dailyPay + pay.fixedAllow + pay.attend + pay.piece + pay.fixedOT + pay.otPaid + pay.housing;
+  const effHourly = Ht > 0 ? gross / Ht : 0;
+  const effBound = boundMonth > 0 ? gross / boundMonth : 0;
+
+  const st = {};
+  const mwInputs = mwFixedPay + pay.daily + pay.piece;
+  st.mw = (mwInputs <= 0 || (mwFixedPay > 0 && Hs <= 0) || (pay.daily > 0 && schedPerDay <= 0) || (pay.piece > 0 && Ht <= 0)) ? 'na'
+    : mwHourly + 1e-9 < mwRate ? 'bad' : mwNextBelow ? 'warn' : 'ok';
+  st.ot = (gross <= 0 || Ht <= 0 || (otBaseFixed > 0 && Hs <= 0)) ? 'na' : shortfall <= 3000 ? 'ok' : shortfall <= required * 0.15 ? 'warn' : 'bad';
+  st.otFixedRisk = st.ot !== 'na' && pay.fixedOT > 0 && shortfall2 > 3000;
+  if (st.otFixedRisk && st.ot === 'ok') st.ot = 'warn';
+
+  const rest = opt(i.minRest);
+  const drive = opt(i.driveHours);
+  const need430 = drive !== null && drive > 0 ? Math.max(0, Math.ceil(drive / 4 - 1e-9) - 1) : null;
+  const checks = [];
+  if (boundMonth > 0) checks.push({ key: 'month', value: boundMonth, state: boundMonth <= 284 ? 'ok' : boundMonth <= 310 ? 'warn' : 'bad' });
+  if (boundDay > 0) checks.push({ key: 'day', value: boundDay, state: boundDay <= 13 ? 'ok' : boundDay <= 15 ? 'warn' : 'bad' });
+  if (need430 !== null && D > 0) checks.push({ key: 'c430', value: n430, need: need430, drive, state: n430 + 1e-9 >= need430 ? 'ok' : 'warn' });
+  if (rest !== null && rest > 0) checks.push({ key: 'rest', value: rest, state: rest >= 9 ? 'ok' : rest >= 8 ? 'warn' : 'bad' });
+  if (Ht > 0) checks.push({ key: 'year', value: Hot * 12, state: Hot * 12 <= 960 ? 'ok' : 'warn' });
+  st.bound = worst(checks.map(c => c.state));
+
+  // same-vehicle averages
+  const classKey = classFor(i.vehicleSize, i.zouLarge);
+  const cls = CLASSES[classKey];
+  const userMonthly = gross + pay.family;
+  const cmp = {
+    classKey, label: cls.label, avgWage: cls.wage, avgBonusM: cls.bonusM, avgAge: cls.age, avgHours: AVG_HOURS,
+    avgHourly: cls.wage / AVG_HOURS, userMonthly, userHours: Ht, userHourly: Ht > 0 ? userMonthly / Ht : 0, age: opt(i.age)
+  };
+  cmp.diffMonthly = userMonthly - cmp.avgWage;
+  cmp.diffHours = Ht - AVG_HOURS;
+  cmp.diffHourly = cmp.userHourly - cmp.avgHourly;
+  cmp.ready = userMonthly > 0 && Ht > 0;
+
+  return { dim, Hs, schedPerDay, D, Dh, B, n430, otherBreak, brk, hw, start, nightPerDay, est, ov, Ht, Hh, Hot, Hn, ot1, ot2, boundMonth, boundDay,
+    pay, dailyPay, otBaseFixed, rfM, rfD, rf, rp, wShare, req, required, paid, shortfall, required2, shortfall2,
+    mw, mwRate, mwOverride, mwFixedPay, mwMonthHourly, mwDailyHourly, mwFixedHourly, mwPieceHourly, mwHourly, mwNextBelow,
+    gross, effHourly, effBound, rest, drive, need430, checks, st, cmp };
+}
+
+function calc(i){
+  const r = core(i);
+  const cOT = opt(i.cOT), cNight = opt(i.cNight), cHol = opt(i.cHol);
+  r.company = null;
+  if (cOT !== null || cNight !== null || cHol !== null){
+    const o = cOT ?? r.Hot, n = cNight ?? r.Hn, h = cHol ?? r.Hh;
+    const t = Math.max(0, r.Ht - Math.max(0, r.Hot - o) - Math.max(0, r.Hh - h));
+    const c = core(Object.assign({}, i, { ovOtHours: o, ovNightHours: n, ovHolidayHours: h, ovTotalHours: t }));
+    r.company = { Hot: o, Hn: n, Hh: h, required: c.required, required2: c.required2, shortfall: c.shortfall, shortfall2: c.shortfall2,
+      gap: r.required - c.required, gap2: r.required2 - c.required2 };
+  }
+  return r;
+}
+// CALC_END
+
+(function(){
+  const $ = id => document.getElementById(id);
+  const CHIP = { ok: 'OK', warn: '注意', bad: '要確認', na: '未入力' };
+  const nf = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 });
+  const yen = n => nf.format(Math.floor(n + 1e-6));
+  const yenUp = n => nf.format(Math.ceil(n - 1e-6));
+  const yenR = n => nf.format(Math.round(n));
+  const signed = n => (n > 0.5 ? '+' : n < -0.5 ? '−' : '±') + nf.format(Math.round(Math.abs(n)));
+  const hrs = n => (Math.round(n * 10) / 10).toFixed(1);
+  const signedH = n => (n > 0.05 ? '+' : n < -0.05 ? '−' : '±') + (Math.round(Math.abs(n) * 10) / 10).toFixed(1);
+  const man = n => { if (n < 10000) return yen(n) + '円'; const v = n / 10000; return '約' + (v >= 100 ? Math.round(v) : Math.round(v * 10) / 10) + '万円'; };
+  const hm = h => { const t = Math.round(h * 60); const mm = ((t % 1440) + 1440) % 1440; return (t >= 1440 ? '翌' : '') + Math.floor(mm / 60) + ':' + String(mm % 60).padStart(2, '0'); };
+  const fmtDate = s => { const p = s.split('-').map(Number); return p[0] + '年' + p[1] + '月' + p[2] + '日'; };
+  const fmtMD = s => { const p = s.split('-').map(Number); return p[1] + '月' + p[2] + '日'; };
+
+  const PRESET_NOTE = '<b>サンプル表示中</b>：架空のドライバー（埼玉・10tウイング・長距離）の数字が入っています。';
+  const PRESET_BACK = 'サンプルに戻す';
+  const SAMPLE = { pref: '10', ym: '2026-09', age: '45', vehicleSize: 't10', zouLarge: 'yes', body: 'wing', basic: '160000', dailyWage: '', fixedAllow: '20000', attendAllow: '10000', piece: '90000', fixedOT: '60000', otPaid: '20000', housing: '0', familyCommute: '10000', days: '23', startTime: '03:00', boundPerDay: '12.5', n430: '2', otherBreak: '0.5', driveHours: '8.5', holidayDays: '0', minRest: '10', cOT: '40', cNight: '20', cHol: '0', holidaysPerYear: '105', scheduledPerDay: '8', ovTotalHours: '', ovOtHours: '', ovNightHours: '', ovHolidayHours: '', ovBoundMonth: '', mwOverride: '' };
+  const CLEAR = { age: '', basic: '', dailyWage: '', fixedAllow: '', attendAllow: '', piece: '', fixedOT: '', otPaid: '', housing: '', familyCommute: '', days: '', boundPerDay: '', n430: '', otherBreak: '', driveHours: '', holidayDays: '', minRest: '', cOT: '', cNight: '', cHol: '', ovTotalHours: '', ovOtHours: '', ovNightHours: '', ovHolidayHours: '', ovBoundMonth: '', mwOverride: '' };
+
+  // selects
+  const prefSel = $('pref');
+  MW.forEach((row, idx) => { const o = document.createElement('option'); o.value = String(idx); o.textContent = row[0]; prefSel.appendChild(o); });
+  const ymSel = $('ym');
+  for (let k = 0; k < 24; k++){
+    const total = 2025 * 12 + 3 + k, y = Math.floor(total / 12), m = total % 12 + 1;
+    const o = document.createElement('option'); o.value = y + '-' + String(m).padStart(2, '0'); o.textContent = y + '年' + m + '月'; ymSel.appendChild(o);
+  }
+
+  function applyValues(obj){ Object.keys(obj).forEach(k => { const el = $(k); if (el) el.value = obj[k]; }); }
+
+  function readInputs(){
+    const v = id => $(id).value;
+    const ym = v('ym').split('-').map(Number);
+    const t = (v('startTime') || '0:00').split(':').map(Number);
+    return {
+      prefIndex: Number(v('pref')), year: ym[0], month: ym[1],
+      age: v('age'), vehicleSize: v('vehicleSize'), zouLarge: v('zouLarge'), body: v('body'),
+      basic: v('basic'), dailyWage: v('dailyWage'), fixedAllow: v('fixedAllow'), attendAllow: v('attendAllow'), piece: v('piece'),
+      fixedOT: v('fixedOT'), otPaid: v('otPaid'), housing: v('housing'), familyCommute: v('familyCommute'),
+      days: v('days'), startHour: (t[0] || 0) + (t[1] || 0) / 60, boundPerDay: v('boundPerDay'), n430: v('n430'), otherBreak: v('otherBreak'),
+      driveHours: v('driveHours'), holidayDays: v('holidayDays'), minRest: v('minRest'),
+      cOT: v('cOT'), cNight: v('cNight'), cHol: v('cHol'),
+      holidaysPerYear: v('holidaysPerYear'), scheduledPerDay: v('scheduledPerDay'),
+      ovTotalHours: v('ovTotalHours'), ovOtHours: v('ovOtHours'), ovNightHours: v('ovNightHours'),
+      ovHolidayHours: v('ovHolidayHours'), ovBoundMonth: v('ovBoundMonth'), mwOverride: v('mwOverride')
+    };
+  }
+
+  function setChip(el, state, label){ el.className = 'chip ' + state; el.textContent = label || CHIP[state]; }
+
+  // 24-hour chart
+  const CX = 120, CY = 120;
+  const pt = (r, h) => { const a = h / 24 * Math.PI * 2 - Math.PI / 2; return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; };
+  function arcPath(r, h1, h2){
+    const span = h2 - h1;
+    if (span <= 0.01) return '';
+    if (span >= 23.99) return 'M ' + CX + ' ' + (CY - r) + ' A ' + r + ' ' + r + ' 0 1 1 ' + CX + ' ' + (CY + r) + ' A ' + r + ' ' + r + ' 0 1 1 ' + CX + ' ' + (CY - r);
+    const a = pt(r, h1), b = pt(r, h2);
+    return 'M ' + a[0].toFixed(2) + ' ' + a[1].toFixed(2) + ' A ' + r + ' ' + r + ' 0 ' + (span > 12 ? 1 : 0) + ' 1 ' + b[0].toFixed(2) + ' ' + b[1].toFixed(2);
+  }
+  (function buildDial(){
+    let s = '';
+    for (let h = 0; h < 24; h++){
+      const major = h % 3 === 0, a = pt(major ? 87 : 92, h), b = pt(99, h);
+      s += '<line class="tick' + (major ? ' major' : '') + '" x1="' + a[0].toFixed(2) + '" y1="' + a[1].toFixed(2) + '" x2="' + b[0].toFixed(2) + '" y2="' + b[1].toFixed(2) + '"></line>';
+      if (major){ const l = pt(110, h); s += '<text class="hr" x="' + l[0].toFixed(2) + '" y="' + (l[1] + 4).toFixed(2) + '" text-anchor="middle">' + h + '</text>'; }
+    }
+    $('dialTicks').innerHTML = s;
+    $('dialNight').setAttribute('d', arcPath(64, 22, 29));
+  })();
+  function renderDial(r){
+    const has = r.B > 0;
+    $('dialBound').setAttribute('d', has ? arcPath(78, r.start, r.start + r.B) : '');
+    const a = pt(78, r.start), b = pt(78, r.start + r.B);
+    $('capStart').setAttribute('cx', has ? a[0].toFixed(2) : -20); $('capStart').setAttribute('cy', has ? a[1].toFixed(2) : -20);
+    $('capEnd').setAttribute('cx', has ? b[0].toFixed(2) : -20); $('capEnd').setAttribute('cy', has ? b[1].toFixed(2) : -20);
+    $('dialV').textContent = has ? hrs(r.B) + 'h' : '—';
+    $('dialSub').textContent = has ? '実働 ' + hrs(r.hw) + 'h' : '';
+    $('lgBound').textContent = has ? '拘束 ' + hm(r.start) + '〜' + hm(r.start + r.B) + '（' + hrs(r.B) + '時間）' : '拘束 —';
+    $('lgNight').textContent = r.ov.night !== null && r.D > 0
+      ? '深夜帯 22時〜翌5時：うち働いた時間 ' + hrs(r.Hn / r.D) + '時間／日（上書き欄の値）'
+      : '深夜帯 22時〜翌5時：うち働いた時間 約' + hrs(r.nightPerDay) + '時間／日';
+    $('lgWork').textContent = has ? '休憩 ' + hrs(r.brk) + '時間（430が' + r.n430 + '回＋ほか' + hrs(r.otherBreak) + '時間）、実働 ' + hrs(r.hw) + '時間／日' : '休憩 —';
+    $('dialTitle').textContent = has ? '1日のイメージ：' + hm(r.start) + 'から' + hrs(r.B) + '時間の拘束、実働' + hrs(r.hw) + '時間、深夜に約' + hrs(r.nightPerDay) + '時間' : '1日のイメージ';
+  }
+
+  const GAUGES = {
+    month: { name: '1か月の拘束時間', unit: '時間', scaleMin: 357, marks: [[284, '284 原則'], [310, '310 上限']],
+      note: { ok: '原則は1か月284時間以内です。', warn: '284時間を超えています。労使協定があれば310時間まで延ばせます（年6か月まで、284時間超えは連続3か月まで）。', bad: '上限の310時間を超えています。' } },
+    day: { name: '1日の拘束時間（平均）', unit: '時間', scaleMin: 17.4, marks: [[13, '13 原則'], [15, '15 上限']],
+      note: { ok: '1日の拘束は13時間以内が原則です。', warn: '13時間を超えています。上限は15時間で、14時間を超えるのは週2回までが目安です。', bad: '平均で15時間を超えています。宿泊を伴う長距離運行でも16時間・週2回までです。' } },
+    rest: { name: 'いちばん短い休息期間', unit: '時間', scaleMin: 13.2, marks: [[9, '9 下限'], [11, '11 基本']],
+      note: { ok: v => v >= 11 ? '休息は継続11時間以上が基本です。' : '下限の9時間は守れています。11時間以上が基本（努力義務）です。', warn: '9時間を下回っています。認められるのは、宿泊を伴う長距離運行で週2回まで（8時間以上）です。', bad: '8時間を下回っています。分割休息（1回3時間以上で合計10時間以上など）でなければ、基準違反の可能性があります。' } },
+    year: { name: '時間外労働（このペースで1年）', unit: '時間', scaleMin: 1104, marks: [[960, '960 上限']],
+      note: { ok: '時間外労働の上限は年960時間です。', warn: 'このペースが1年続くと、年960時間の上限を超えます。' } }
+  };
+  function renderBound(r){
+    const wrap = $('gauges');
+    if (!r.checks.length){ wrap.innerHTML = '<p class="small">働いた日数と拘束時間を入れると表示します。</p>'; return; }
+    wrap.innerHTML = r.checks.map(c => {
+      if (c.key === 'c430'){
+        const note = c.state === 'ok'
+          ? '運転' + hrs(c.drive) + '時間なら、430は最低' + c.need + '回です。連続運転は4時間まで（SA・PAが満車などのときは4時間30分まで）。'
+          : '運転' + hrs(c.drive) + '時間なら、430は最低' + c.need + '回必要です。足りない分は連続運転4時間の基準を超えている可能性があります。';
+        return '<div class="gauge"><div class="g-head"><span class="g-name">430休憩の回数</span><span class="g-val">' + c.value + '<small>回／日</small></span><span class="chip ' + c.state + '">' + CHIP[c.state] + '</span></div><p class="g-note">' + note + '</p></div>';
+      }
+      const g = GAUGES[c.key];
+      const max = Math.max(g.scaleMin, c.value * 1.08);
+      const pct = v => Math.max(0, Math.min(100, v / max * 100));
+      const marks = g.marks.map((mk, idx) => {
+        const p = pct(mk[0]), tx = p > 86 ? '-100%' : p < 14 ? '0' : '-50%';
+        return '<span class="g-mark" style="left:' + p.toFixed(2) + '%"></span><span class="g-lab ' + (idx % 2 ? 'down' : 'up') + '" style="left:' + p.toFixed(2) + '%;transform:translateX(' + tx + ')">' + mk[1] + '</span>';
+      }).join('');
+      const raw = g.note[c.state], note = typeof raw === 'function' ? raw(c.value) : raw;
+      const val = c.key === 'year' ? yen(c.value) : hrs(c.value);
+      const aria = g.name + ' ' + val + g.unit + '。' + g.marks.map(mk => mk[1].replace(' ', g.unit)).join('、');
+      return '<div class="gauge"><div class="g-head"><span class="g-name">' + g.name + '</span><span class="g-val">' + val + '<small>' + g.unit + '</small></span><span class="chip ' + c.state + '">' + CHIP[c.state] + '</span></div>'
+        + '<div class="g-track" role="img" aria-label="' + aria + '"><span class="g-rail"></span><span class="g-fill ' + c.state + '" style="width:' + pct(c.value).toFixed(2) + '%"></span>' + marks + '</div>'
+        + '<p class="g-note">' + note + '</p></div>';
+    }).join('');
+  }
+
+  function renderOt(r){
+    const parts = [];
+    if (r.otBaseFixed > 0) parts.push('月給部分 <b>' + yen(r.rfM) + '円</b>（' + yen(r.otBaseFixed) + '円÷' + hrs(r.Hs) + '時間）');
+    if (r.pay.daily > 0) parts.push('日給部分 <b>' + yen(r.rfD) + '円</b>（' + yen(r.pay.daily) + '円÷' + hrs(r.schedPerDay) + '時間）');
+    if (r.pay.piece > 0) parts.push('歩合部分 <b>' + yen(r.rp) + '円</b>（' + yen(r.pay.piece) + '円÷' + hrs(r.Ht) + '時間）');
+    $('otBase').innerHTML = parts.length ? '時給の基礎は、' + parts.join('、') + 'です。' : '支給額を入れると計算します。';
+    const rows = [
+      ['時間外（60時間まで）', '固定×1.25・歩合×0.25', r.ot1, r.req.ot1],
+      ['時間外（60時間を超えた分）', '固定×1.5・歩合×0.5', r.ot2, r.req.ot2],
+      ['深夜（22時〜翌5時）', '時給×0.25を上乗せ', r.Hn, r.req.night],
+      ['法定休日', '固定×1.35・歩合×0.35', r.Hh, r.req.holiday]
+    ];
+    $('otBody').innerHTML = rows.map(x => '<tr><th scope="row">' + x[0] + '<span class="rate">' + x[1] + '</span></th><td class="num">' + hrs(x[2]) + '</td><td class="num">' + yen(x[3]) + '</td></tr>').join('')
+      + '<tr class="total"><th scope="row">本来の額</th><td></td><td class="num">' + yen(r.required) + '</td></tr>'
+      + '<tr><th scope="row">実際に出た額<span class="rate">残業手当＋固定残業代</span></th><td></td><td class="num">' + yen(r.paid) + '</td></tr>'
+      + '<tr class="gap ' + r.st.ot + '"><th scope="row">不足の目安</th><td></td><td class="num">' + (r.st.ot === 'na' ? '—' : yen(r.shortfall)) + '</td></tr>';
+    const usedOv = r.ov.ot !== null || r.ov.night !== null || r.ov.total !== null || r.ov.holiday !== null;
+    $('otCaption').textContent = usedOv ? '時間は、上書き欄に入れた数字を使っています。' : '時間は「その月の働き方（自分の記録）」から推計しています。';
+    const alt = $('otAlt');
+    if (r.pay.fixedOT > 0 && r.st.ot !== 'na'){
+      alt.hidden = false;
+      alt.innerHTML = '固定残業代が残業代として認められない場合（参考）は、不足が<b>約' + yen(r.shortfall2) + '円</b>になります。契約書や就業規則で残業代の部分がはっきり分かれていないと、認められないことがあります。';
+    } else alt.hidden = true;
+  }
+
+  function renderRec(r){
+    const blk = $('blkRec');
+    if (!r.company || r.st.ot === 'na'){ blk.hidden = true; return; }
+    blk.hidden = false;
+    const c = r.company;
+    const row = (k, a, b) => { const d = b - a; return '<tr><th scope="row">' + k + '</th><td class="num">' + hrs(a) + '</td><td class="num">' + hrs(b) + '</td><td class="num' + (d > 0.05 ? ' up' : '') + '">' + signedH(d) + '</td></tr>'; };
+    $('recBody').innerHTML = row('時間外（時間）', c.Hot, r.Hot) + row('深夜（時間）', c.Hn, r.Hn) + row('法定休日（時間）', c.Hh, r.Hh)
+      + '<tr class="total"><th scope="row">本来の割増（円）</th><td class="num">' + yen(c.required) + '</td><td class="num">' + yen(r.required) + '</td><td class="num' + (c.gap > 0.5 ? ' up' : '') + '">' + signed(c.gap) + '</td></tr>';
+    $('recLead').textContent = c.gap > 0.5
+      ? '会社の記録の時間で計算すると本来の割増は' + yen(c.required) + '円、自分の記録だと' + yen(r.required) + '円。記録の差だけで月' + yen(c.gap) + '円の差が出ています。'
+      : '会社の記録と自分の記録で、割増の額に大きな差はありません。';
+    const alt = $('recAlt');
+    if (r.pay.fixedOT > 0 && c.gap2 > 0.5){ alt.hidden = false; alt.textContent = '固定残業代が残業代として認められない場合は、記録の差による違いは月約' + yen(c.gap2) + '円になります。'; }
+    else alt.hidden = true;
+  }
+
+  function renderAvg(r, inp){
+    const c = r.cmp, size = SIZES[inp.vehicleSize] ? SIZES[inp.vehicleSize].label : '', body = BODIES[inp.body] || '';
+    const sizeNote = inp.vehicleSize === 'zou' ? '（増トン・' + (inp.zouLarge === 'no' ? '中型免許' : '大型免許') + '）' : '';
+    $('avgLead').textContent = size + sizeNote + 'は「' + c.label + '」の平均と比べています。' + (body && inp.body !== 'other' ? body + '別の統計はないため、車の大きさで比べています。' : '');
+    if (!c.ready){ $('avgBody').innerHTML = '<tr><td colspan="4" class="small">支給額と働いた時間を入れると比べます。</td></tr>'; $('avgNote').textContent = ''; return; }
+    const rows = [
+      ['月の給料', yen(c.userMonthly) + '円', yen(c.avgWage) + '円', signed(c.diffMonthly) + '円', c.diffMonthly < -0.5],
+      ['実働時間', hrs(c.userHours) + 'h', hrs(c.avgHours) + 'h', signedH(c.diffHours) + 'h', c.diffHours > 0.05],
+      ['時給', yen(c.userHourly) + '円', yen(c.avgHourly) + '円', signed(c.diffHourly) + '円', c.diffHourly < -0.5]
+    ];
+    if (c.age !== null) rows.push(['年齢', Math.round(c.age) + '歳', c.avgAge.toFixed(1) + '歳', '', false]);
+    $('avgBody').innerHTML = rows.map(x => '<tr><th scope="row">' + x[0] + '</th><td class="num">' + x[1] + '</td><td class="num">' + x[2] + '</td><td class="num' + (x[4] ? ' up' : '') + '">' + x[3] + '</td></tr>').join('');
+    $('avgNote').textContent = '平均は全ト協の調査の男性運転者（2024年5〜7月の1か月平均）で、賞与は含みません（賞与は月割りで' + yen(c.avgBonusM) + '円）。あなたの月の給料は、家族・通勤手当も含めた支給の合計です。平均の時給は、トラック運転者の平均的な労働時間（月約208時間）で割った目安です。';
+  }
+
+  function renderMw(r, inp){
+    $('mwPrefLabel').textContent = r.mw.name + 'の最低賃金' + (r.mwOverride !== null ? '（手入力）' : '');
+    $('mwRate').innerHTML = yen(r.mwRate) + '<small>円</small>';
+    $('mwYou').innerHTML = r.st.mw === 'na' ? '—' : yen(r.mwHourly) + '<small>円</small>';
+    const ver = $('mwVerdict');
+    ver.className = 'verdict ' + r.st.mw;
+    if (r.st.mw === 'na') ver.textContent = '基本給・日給・歩合給と、働いた時間を入れると判定します。';
+    else if (r.st.mw === 'bad') ver.textContent = '最低賃金を、時給にして約' + yenUp(r.mwRate - r.mwHourly) + '円下回っています。';
+    else { const d = r.mwHourly - r.mwRate; ver.textContent = d < 1 ? '最低賃金とほぼ同じ額です（差は1円未満）。' : '最低賃金を上回っています（時給にして' + yen(d) + '円の差）。'; }
+    const mp = [];
+    if (r.mwFixedPay > 0) mp.push('月給部分 ' + yen(r.mwFixedPay) + '円÷' + hrs(r.Hs) + '時間＝' + yen(r.mwMonthHourly) + '円');
+    if (r.pay.daily > 0) mp.push('日給部分 ' + yen(r.pay.daily) + '円÷' + hrs(r.schedPerDay) + '時間＝' + yen(r.mwDailyHourly) + '円');
+    if (r.pay.piece > 0) mp.push('歩合部分 ' + yen(r.pay.piece) + '円÷' + hrs(r.Ht) + '時間＝' + yen(r.mwPieceHourly) + '円');
+    $('mwBreak').textContent = r.st.mw === 'na' ? '' : '計算：' + mp.join('、') + '。皆勤・精勤手当、通勤・家族手当、残業代（固定残業代を含む）は含めません。';
+    const notes = [];
+    if (r.mwOverride === null){
+      notes.push(r.mw.isNew ? inp.year + '年' + inp.month + '月は令和8年度の額（' + fmtDate(r.mw.eff) + 'から）で比べています。' : inp.year + '年' + inp.month + '月は改定前（令和7年度）の額で比べています。');
+      if (r.mwNextBelow && !r.mw.changesMidMonth) notes.push('同じ給料のままだと、' + fmtDate(r.mw.eff) + 'からの新しい最低賃金（' + yen(r.mw.r8) + '円）を下回ります。');
+      if (r.mw.changesMidMonth) notes.push('この月の' + fmtMD(r.mw.eff) + 'からは' + yen(r.mw.r8) + '円に上がるので、それ以降に働いた分は' + yen(r.mw.r8) + '円以上が必要です。');
+      if (r.mw.beforeTable) notes.push('2026年3月以前の月は、県によって額が違う場合があります。正しい額を上書き欄に入れてください。');
+    }
+    $('mwNote').textContent = notes.join(' ');
+  }
+
+  function renderEstimates(r){
+    $('hsOut').textContent = hrs(r.Hs);
+    const ph = (id, v) => { $(id).placeholder = '推計 ' + hrs(v); };
+    ph('ovTotalHours', r.est.total); ph('ovOtHours', r.est.ot); ph('ovNightHours', r.est.night);
+    ph('ovHolidayHours', r.est.holiday); ph('ovBoundMonth', r.est.bound);
+    $('mwOverride').placeholder = '表の額 ' + yen(r.mw.rate);
+  }
+
+  let last = null;
+  function render(){
+    const inp = readInputs();
+    $('zouRow').hidden = inp.vehicleSize !== 'zou';
+    const r = calc(inp);
+    last = { inp, r };
+    setChip($('chipMw'), r.st.mw, r.st.mw === 'bad' ? '下回る' : null);
+    setChip($('chipOt'), r.st.ot);
+    setChip($('chipBd'), r.st.bound);
+    $('hero').dataset.state = r.st.ot;
+    if (r.st.ot === 'na'){
+      $('vShort').textContent = '—';
+      $('vShortSub').textContent = '支給額と働いた時間を入れると計算します。';
+    } else {
+      $('vShort').textContent = yen(r.shortfall);
+      $('vShortSub').textContent = r.shortfall > 0 ? '同じ働き方が1年続くと ' + man(r.shortfall * 12)
+        : r.st.otFixedRisk ? '固定残業代を残業代として数えると、足りている計算です。' : '本来の額を満たしているようです。';
+    }
+    const altEl = $('vAlt');
+    if (r.st.otFixedRisk){ altEl.hidden = false; altEl.textContent = '固定残業代が残業代と認められない場合は 約' + yen(r.shortfall2) + '円／月'; }
+    else altEl.hidden = true;
+    $('vEff').textContent = r.Ht > 0 && r.gross > 0 ? yen(r.effHourly) : '—';
+    $('vEffB').textContent = r.boundMonth > 0 && r.gross > 0 ? yen(r.effBound) : '—';
+    $('vOt').textContent = r.Ht > 0 ? hrs(r.Hot) : '—';
+    const vc = $('vCmp');
+    if (r.cmp.ready){
+      vc.hidden = false;
+      vc.innerHTML = '同じ車種（' + r.cmp.label + '）の平均と比べて、月の給料 <b>' + signed(r.cmp.diffMonthly) + '円</b>、時給 <b>' + signed(r.cmp.diffHourly) + '円</b>、実働 <b>' + signedH(r.cmp.diffHours) + '時間</b>';
+    } else vc.hidden = true;
+    $('dockV').textContent = r.st.ot === 'na' ? '—' : yen(r.shortfall);
+    setChip($('dockState'), r.st.ot);
+    renderRec(r); renderOt(r); renderAvg(r, inp); renderMw(r, inp); renderBound(r); renderDial(r); renderEstimates(r);
+  }
+
+  function summaryText(){
+    if (!last) return '';
+    const r = last.r, inp = last.inp, L = [];
+    L.push('【ドライバー給料チェッカー（試作）】' + inp.year + '年' + inp.month + '月・' + r.mw.name + '・' + (SIZES[inp.vehicleSize] ? SIZES[inp.vehicleSize].label : '') + (BODIES[inp.body] ? ' ' + BODIES[inp.body] : ''));
+    L.push('総労働時間 ' + hrs(r.Ht) + '時間／時間外 ' + hrs(r.Hot) + '時間／深夜 ' + hrs(r.Hn) + '時間／法定休日 ' + hrs(r.Hh) + '時間');
+    if (r.gross > 0 && r.Ht > 0) L.push('実質時給 ' + yen(r.effHourly) + '円（拘束1時間あたり ' + yen(r.effBound) + '円）');
+    L.push('最低賃金：' + (r.st.mw === 'na' ? '未判定' : (r.st.mw === 'bad' ? '下回っている' : r.st.mw === 'warn' ? '今は届いているが、次の改定後は下回る' : '上回っている') + '（' + yen(r.mwHourly) + '円／最低賃金 ' + yen(r.mwRate) + '円）'));
+    L.push('残業代：本来 ' + yen(r.required) + '円／実際 ' + yen(r.paid) + '円／不足の目安 ' + (r.st.ot === 'na' ? '—' : yen(r.shortfall) + '円'));
+    if (r.st.otFixedRisk) L.push('（固定残業代が認められない場合の不足の目安 ' + yen(r.shortfall2) + '円）');
+    if (r.company) L.push('記録の差：会社の記録だと本来の割増 ' + yen(r.company.required) + '円、自分の記録だと ' + yen(r.required) + '円');
+    if (r.cmp.ready) L.push('同じ車種（' + r.cmp.label + '）の平均と比べて：月の給料 ' + signed(r.cmp.diffMonthly) + '円、時給 ' + signed(r.cmp.diffHourly) + '円');
+    if (r.boundMonth > 0) L.push('拘束時間：月 ' + hrs(r.boundMonth) + '時間（原則284時間・上限310時間）');
+    L.push('※入力した数字から出した目安です。');
+    return L.join('\n');
+  }
+
+  let mode = 'sample';
+  function setMode(m){
+    mode = m;
+    const t = $('noticeText');
+    if (m === 'sample') t.innerHTML = PRESET_NOTE;
+    else if (m === 'edited') t.innerHTML = '<b>書きかえ中</b>：入っていた数字を一部変えて計算しています。';
+    else t.innerHTML = '<b>あなたの数字で計算中</b>：入力はこの画面の中だけで計算し、どこにも送りません。';
+    $('btnClear').hidden = m === 'own';
+    $('btnClear').textContent = m === 'sample' ? '自分の数字を入れる' : '全部消して入れ直す';
+    $('btnSample').hidden = m === 'sample';
+  }
+
+  const form = $('form');
+  form.addEventListener('input', () => { if (mode === 'sample') setMode('edited'); render(); });
+  form.addEventListener('change', render);
+  form.addEventListener('submit', e => e.preventDefault());
+  $('btnClear').addEventListener('click', () => { applyValues(CLEAR); setMode('own'); render(); $('age').focus(); });
+  $('btnSample').addEventListener('click', () => { applyValues(SAMPLE); setMode('sample'); render(); });
+  $('btnCopy').addEventListener('click', () => {
+    const text = summaryText(), msg = $('copyMsg'), area = $('copyArea');
+    const fallback = () => { area.hidden = false; area.value = text; area.focus(); area.select(); msg.textContent = '下の文章を選んでコピーしてください。'; };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => { msg.textContent = 'コピーしました。'; area.hidden = true; }, fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  });
+
+  // phone dock: shows while the form is on screen and the summary is not
+  if ('IntersectionObserver' in window){
+    let sumVis = true, formVis = false;
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.target.id === 'summary') sumVis = e.isIntersecting; else formVis = e.isIntersecting; });
+      $('dock').hidden = sumVis || !formVis;
+    });
+    io.observe($('summary')); io.observe(form);
+  }
+
+  $('btnSample').textContent = PRESET_BACK;
+  applyValues(SAMPLE);
+  setMode('sample');
+  render();
+})();
+</script>
+
+</body>
+</html>
