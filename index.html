@@ -367,7 +367,7 @@ tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
 
         <article class="block" id="blkBd">
           <h2>拘束時間と休息</h2>
-          <p class="small">トラック運転者の改善基準告示（2024年4月から）と、時間外労働の上限（年960時間）で見ています。</p>
+          <p class="small">トラック運転者の改善基準告示（2024年4月から）と、時間外労働の上限（年960時間）で見ています。月や1日の平均から見た一次チェックなので、特定の日の15時間超えや、実際に4時間以内に中断できていたかまでは判定できません。</p>
           <div class="gauges" id="gauges"></div>
         </article>
 
@@ -484,11 +484,11 @@ tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
           <div class="field"><input id="otPaid" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-otPaid"><span class="unit">円</span></div>
         </div>
         <div class="row">
-          <div class="lbl"><label for="housing">住宅手当</label><span class="hint" id="h-housing">割増の計算からは除いて計算します</span></div>
+          <div class="lbl"><label for="housing">住宅手当</label><span class="hint" id="h-housing">家賃などに応じて額が変わるものだけ。全員一律の額なら「固定の手当」に入れてください</span></div>
           <div class="field"><input id="housing" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-housing"><span class="unit">円</span></div>
         </div>
         <div class="row">
-          <div class="lbl"><label for="familyCommute">家族手当・通勤手当</label><span class="hint" id="h-family">残業代と最低賃金の計算からは除きます</span></div>
+          <div class="lbl"><label for="familyCommute">家族手当・通勤手当</label><span class="hint" id="h-family">扶養の人数や通勤距離で額が変わるものだけ。全員一律の額なら「固定の手当」に入れてください</span></div>
           <div class="field"><input id="familyCommute" type="number" inputmode="numeric" min="0" step="1" aria-describedby="h-family"><span class="unit">円</span></div>
         </div>
       </fieldset>
@@ -967,7 +967,7 @@ function calc(i){
       + '<tr><th scope="row">実際に出た額<span class="rate">残業手当＋固定残業代</span></th><td></td><td class="num">' + yen(r.paid) + '</td></tr>'
       + '<tr class="gap ' + r.st.ot + '"><th scope="row">不足の目安</th><td></td><td class="num">' + (r.st.ot === 'na' ? '—' : yen(r.shortfall)) + '</td></tr>';
     const usedOv = r.ov.ot !== null || r.ov.night !== null || r.ov.total !== null || r.ov.holiday !== null;
-    $('otCaption').textContent = usedOv ? '時間は、上書き欄に入れた数字を使っています。' : '時間は「その月の働き方（自分の記録）」から推計しています。';
+    $('otCaption').textContent = usedOv ? '時間は、上書き欄に入れた数字を使っています。' : '時間は「その月の働き方（自分の記録）」の1日平均から推計しています。日ごとの長さがばらつくと、実際の時間外はこれより多くなります。';
     const alt = $('otAlt');
     if (r.pay.fixedOT > 0 && r.st.ot !== 'na'){
       alt.hidden = false;
@@ -1024,7 +1024,10 @@ function calc(i){
     if (r.mwOverride === null){
       notes.push(r.mw.isNew ? inp.year + '年' + inp.month + '月は令和8年度の額（' + fmtDate(r.mw.eff) + 'から）で比べています。' : inp.year + '年' + inp.month + '月は改定前（令和7年度）の額で比べています。');
       if (r.mwNextBelow && !r.mw.changesMidMonth) notes.push('同じ給料のままだと、' + fmtDate(r.mw.eff) + 'からの新しい最低賃金（' + yen(r.mw.r8) + '円）を下回ります。');
-      if (r.mw.changesMidMonth) notes.push('この月の' + fmtMD(r.mw.eff) + 'からは' + yen(r.mw.r8) + '円に上がるので、それ以降に働いた分は' + yen(r.mw.r8) + '円以上が必要です。');
+      if (r.mw.changesMidMonth){
+        const d = r.mwHourly - r.mw.r8;
+        notes.push('この月の' + fmtMD(r.mw.eff) + 'からは' + yen(r.mw.r8) + '円に上がります。その日以降に働いた分は、' + (d + 1e-9 >= 0 ? '新しい額も上回っています。' : '時給にして約' + yenUp(-d) + '円足りません。'));
+      }
       if (r.mw.beforeTable) notes.push('2026年3月以前の月は、県によって額が違う場合があります。正しい額を上書き欄に入れてください。');
     }
     $('mwNote').textContent = notes.join(' ');
@@ -1045,7 +1048,8 @@ function calc(i){
     const r = calc(inp);
     last = { inp, r };
     setChip($('chipMw'), r.st.mw, r.st.mw === 'bad' ? '下回る' : null);
-    setChip($('chipOt'), r.st.ot);
+    const otLabel = r.st.ot === 'ok' && r.shortfall >= 1 ? 'ほぼ一致' : null;
+    setChip($('chipOt'), r.st.ot, otLabel);
     setChip($('chipBd'), r.st.bound);
     $('hero').dataset.state = r.st.ot;
     if (r.st.ot === 'na'){
@@ -1053,7 +1057,8 @@ function calc(i){
       $('vShortSub').textContent = '支給額と働いた時間を入れると計算します。';
     } else {
       $('vShort').textContent = yen(r.shortfall);
-      $('vShortSub').textContent = r.shortfall > 0 ? '同じ働き方が1年続くと ' + man(r.shortfall * 12)
+      $('vShortSub').textContent = r.shortfall >= 1 && r.st.ot === 'ok' ? '差は小さめです。推計の誤差の範囲かもしれません。'
+        : r.shortfall >= 1 ? '同じ働き方が1年続くと ' + man(r.shortfall * 12)
         : r.st.otFixedRisk ? '固定残業代を残業代として数えると、足りている計算です。' : '本来の額を満たしているようです。';
     }
     const altEl = $('vAlt');
@@ -1068,7 +1073,7 @@ function calc(i){
       vc.innerHTML = '同じ車種（' + r.cmp.label + '）の平均と比べて、月の給料 <b>' + signed(r.cmp.diffMonthly) + '円</b>、時給 <b>' + signed(r.cmp.diffHourly) + '円</b>、実働 <b>' + signedH(r.cmp.diffHours) + '時間</b>';
     } else vc.hidden = true;
     $('dockV').textContent = r.st.ot === 'na' ? '—' : yen(r.shortfall);
-    setChip($('dockState'), r.st.ot);
+    setChip($('dockState'), r.st.ot, otLabel);
     renderRec(r); renderOt(r); renderAvg(r, inp); renderMw(r, inp); renderBound(r); renderDial(r); renderEstimates(r);
   }
 
