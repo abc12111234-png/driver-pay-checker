@@ -150,7 +150,7 @@ b{font-weight:700}
 .unit{font-size:13px;color:var(--muted);min-width:2.2em}
 .field input,.field select{color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-bottom:2px solid var(--line-strong);border-radius:8px 8px 4px 4px}
 .field input{width:7.6em;font-family:var(--font-num);font-size:19px;font-weight:700;line-height:1.3;text-align:right;font-variant-numeric:tabular-nums;padding:6px 8px 4px}
-.field input[type=time]{width:6.4em;text-align:center}
+.field input[type=time]{width:7.6em;text-align:center}
 .field input::placeholder{color:var(--muted);font-weight:500;font-size:14px}
 .field input:focus,.field select:focus{border-bottom-color:var(--band)}
 .field select{font:inherit;font-size:15px;padding:7px 8px;max-width:11em}
@@ -374,7 +374,7 @@ tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
         <article class="block" id="blkNext">
           <h2>次の一歩</h2>
           <ul class="next">
-            <li><b>記録を残す</b>明細、運転日報、デジタコの記録、自分のメモ（出庫・帰庫の時刻、荷待ち、430の回数）を手元に残しておくと、あとで正確に確かめられます。スマホの位置情報の履歴や、写真・メッセージの時刻も記録になります。</li>
+            <li><b>記録を残す</b>明細、運転日報、デジタコの記録、自分のメモ（出勤・退勤の時刻、荷待ち、430の回数）を手元に残しておくと、あとで正確に確かめられます。スマホの位置情報の履歴や、写真・メッセージの時刻も記録になります。</li>
             <li><b>無料で相談できる窓口</b><a href="https://www.mhlw.go.jp/general/seido/chihou/kaiketu/index.html" target="_blank" rel="noopener">総合労働相談コーナー</a>（各地の労働局・労働基準監督署の中にあります）、<a href="https://www.houterasu.or.jp/" target="_blank" rel="noopener">法テラス</a>（収入などの条件を満たせば、弁護士に無料で相談できます）。</li>
             <li><b>職場を変える道</b>人材紹介会社のデータでは、転職したトラックドライバーの年収の中央値は360万円から438万円に上がっています（<a href="https://www.logi-today.com/985426" target="_blank" rel="noopener">LOGISTICS TODAY、2026年8月</a>）。</li>
           </ul>
@@ -386,7 +386,7 @@ tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
             <li>この結果は、入力した数字から出した目安です。法律上の判断や、個別の相談の代わりにはなりません。</li>
             <li>時間外労働は、1日8時間・週40時間を超えた分を、平均的な1日の長さから推計しています。日によって長さがばらつくと、実際の時間外はもっと多くなることがあります。デジタコや勤怠の数字が分かる場合は上書き欄に入れてください。</li>
             <li>実働は「拘束時間 − 430の回数×30分 − ほかの休憩」です。荷待ちや待機は、すぐ動ける状態なら実働に入ります。</li>
-            <li>深夜（22時〜翌5時）の時間は、出庫時刻と拘束時間から推計しています。休憩は拘束時間の中に均等に入る想定です。</li>
+            <li>深夜（22時〜翌5時）の時間は、出勤から退勤までの時間帯から推計しています。休憩は拘束時間の中に均等に入る想定です。出勤の時刻が空欄のときは、深夜の時間を0として計算します。</li>
             <li>固定給の部分は「固定給÷月平均所定労働時間」に1.25倍（60時間を超えた分は1.5倍、法定休日は1.35倍）、歩合給の部分は「歩合給÷総労働時間」に0.25倍（60時間超は0.5倍、法定休日は0.35倍）をかけています。月60時間を超える時間外の5割増は、2023年4月から中小企業も対象です。</li>
             <li>日給制の場合は「日給÷1日の所定労働時間」を時給にしています。週40時間を超えた時間のうち、その日の日給がすでに払われている分は、割増の部分（0.25倍、60時間超は0.5倍）だけを足しています。</li>
             <li>固定残業代は、契約書や就業規則で何時間分・いくらかがはっきりしていないと、残業代として認められないことがあります。その場合の目安も合わせて出しています。</li>
@@ -500,11 +500,15 @@ tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
           <div class="field"><input id="days" type="number" inputmode="decimal" min="0" step="any"><span class="unit">日</span></div>
         </div>
         <div class="row">
-          <div class="lbl"><label for="startTime">出庫（始業）の時刻</label><span class="hint" id="h-start">だいたいで大丈夫です。深夜の時間の推計に使います</span></div>
-          <div class="field"><input id="startTime" type="time" step="1800" aria-describedby="h-start"><span class="unit"></span></div>
+          <div class="lbl"><label for="startTime">出勤の時刻</label><span class="hint" id="h-start">点呼・点検を始めた時刻（出庫より前）。日によって違うなら、だいたいで大丈夫です</span></div>
+          <div class="field"><input id="startTime" type="time" step="60" aria-describedby="h-start"><span class="unit"></span></div>
         </div>
         <div class="row">
-          <div class="lbl"><label for="boundPerDay">1日の拘束時間</label><span class="hint" id="h-bound">始業から終業まで。休憩や荷待ちも含めた平均</span></div>
+          <div class="lbl"><label for="endTime">退勤の時刻</label><span class="hint" id="h-end">洗車・日報・点呼まで終えた時刻（帰庫より後）。日付が変わってもそのまま入れてください</span></div>
+          <div class="field"><input id="endTime" type="time" step="60" aria-describedby="h-end"><span class="unit"></span></div>
+        </div>
+        <div class="row">
+          <div class="lbl"><label for="boundPerDay">1日の拘束時間</label><span class="hint" id="h-bound">出勤と退勤から自動で出ます。泊まりの運行などは、1日あたりの平均を直接入れてください</span></div>
           <div class="field"><input id="boundPerDay" type="number" inputmode="decimal" min="0" step="any" aria-describedby="h-bound"><span class="unit">時間</span></div>
         </div>
         <div class="row">
@@ -693,6 +697,8 @@ function nightOverlap(start, span){
   }
   return t;
 }
+// hours from 出勤 to 退勤 on a 24-hour clock; a 退勤 at or before the 出勤 time is read as the next day (equal times give 0)
+function spanHours(start, end){ return ((end - start) % 24 + 24) % 24; }
 const RANK = { na: 0, ok: 1, warn: 2, bad: 3 };
 function worst(states){ return states.reduce((a, s) => RANK[s] > RANK[a] ? s : a, 'na'); }
 const num = v => { const x = Number(v); return Number.isFinite(x) && x > 0 ? x : 0; };
@@ -712,7 +718,8 @@ function core(i){
   const n430 = num(i.n430), otherBreak = num(i.otherBreak);
   const brk = Math.min(n430 * 0.5 + otherBreak, B);
   const hw = B - brk;
-  const start = num(i.startHour) % 24;
+  const hasStart = i.startHour !== null && i.startHour !== undefined && i.startHour !== '' && Number.isFinite(Number(i.startHour));
+  const start = hasStart ? (Number(i.startHour) % 24 + 24) % 24 : 0;
 
   const est = { holiday: Dh * hw, total: D * hw, bound: D * B };
   const ov = { total: opt(i.ovTotalHours), ot: opt(i.ovOtHours), night: opt(i.ovNightHours), holiday: opt(i.ovHolidayHours), bound: opt(i.ovBoundMonth) };
@@ -724,7 +731,7 @@ function core(i){
   const weeklyOT = Math.max(0, regular - 40 * dim / 7);
   est.ot = dailyOT + weeklyOT;
   const Hot = ov.ot ?? est.ot;
-  const nightPerDay = B > 0 ? nightOverlap(start, B) * (hw / B) : 0;
+  const nightPerDay = hasStart && B > 0 ? nightOverlap(start, B) * (hw / B) : 0;
   est.night = D * nightPerDay;
   const Hn = ov.night ?? est.night;
   const boundMonth = ov.bound ?? est.bound;
@@ -806,7 +813,7 @@ function core(i){
   cmp.diffHourly = cmp.userHourly - cmp.avgHourly;
   cmp.ready = userMonthly > 0 && Ht > 0;
 
-  return { dim, Hs, schedPerDay, D, Dh, B, n430, otherBreak, brk, hw, start, nightPerDay, est, ov, Ht, Hh, Hot, Hn, ot1, ot2, boundMonth, boundDay,
+  return { dim, Hs, schedPerDay, D, Dh, B, n430, otherBreak, brk, hw, start, hasStart, nightPerDay, est, ov, Ht, Hh, Hot, Hn, ot1, ot2, boundMonth, boundDay,
     pay, dailyPay, otBaseFixed, rfM, rfD, rf, rp, wShare, req, required, paid, shortfall, required2, shortfall2,
     mw, mwRate, mwOverride, mwFixedPay, mwMonthHourly, mwDailyHourly, mwFixedHourly, mwPieceHourly, mwHourly, mwNextBelow,
     gross, effHourly, effBound, rest, drive, need430, checks, st, cmp };
@@ -844,8 +851,8 @@ function calc(i){
 
   const PRESET_NOTE = '<b>サンプル表示中</b>：架空のドライバー（埼玉・10tウイング・長距離）の数字が入っています。';
   const PRESET_BACK = 'サンプルに戻す';
-  const SAMPLE = { pref: '10', ym: '2026-09', age: '45', vehicleSize: 't10', zouLarge: 'yes', body: 'wing', basic: '160000', dailyWage: '', fixedAllow: '20000', attendAllow: '10000', piece: '90000', fixedOT: '60000', otPaid: '20000', housing: '0', familyCommute: '10000', days: '23', startTime: '03:00', boundPerDay: '12.5', n430: '2', otherBreak: '0.5', driveHours: '8.5', holidayDays: '0', minRest: '10', cOT: '40', cNight: '20', cHol: '0', holidaysPerYear: '105', scheduledPerDay: '8', ovTotalHours: '', ovOtHours: '', ovNightHours: '', ovHolidayHours: '', ovBoundMonth: '', mwOverride: '' };
-  const CLEAR = { age: '', basic: '', dailyWage: '', fixedAllow: '', attendAllow: '', piece: '', fixedOT: '', otPaid: '', housing: '', familyCommute: '', days: '', boundPerDay: '', n430: '', otherBreak: '', driveHours: '', holidayDays: '', minRest: '', cOT: '', cNight: '', cHol: '', ovTotalHours: '', ovOtHours: '', ovNightHours: '', ovHolidayHours: '', ovBoundMonth: '', mwOverride: '' };
+  const SAMPLE = { pref: '10', ym: '2026-09', age: '45', vehicleSize: 't10', zouLarge: 'yes', body: 'wing', basic: '160000', dailyWage: '', fixedAllow: '20000', attendAllow: '10000', piece: '90000', fixedOT: '60000', otPaid: '20000', housing: '0', familyCommute: '10000', days: '23', startTime: '03:00', endTime: '15:30', boundPerDay: '12.5', n430: '2', otherBreak: '0.5', driveHours: '8.5', holidayDays: '0', minRest: '10', cOT: '40', cNight: '20', cHol: '0', holidaysPerYear: '105', scheduledPerDay: '8', ovTotalHours: '', ovOtHours: '', ovNightHours: '', ovHolidayHours: '', ovBoundMonth: '', mwOverride: '' };
+  const CLEAR = { age: '', basic: '', dailyWage: '', fixedAllow: '', attendAllow: '', piece: '', fixedOT: '', otPaid: '', housing: '', familyCommute: '', days: '', startTime: '', endTime: '', boundPerDay: '', n430: '', otherBreak: '', driveHours: '', holidayDays: '', minRest: '', cOT: '', cNight: '', cHol: '', ovTotalHours: '', ovOtHours: '', ovNightHours: '', ovHolidayHours: '', ovBoundMonth: '', mwOverride: '' };
 
   // selects
   const prefSel = $('pref');
@@ -858,16 +865,41 @@ function calc(i){
 
   function applyValues(obj){ Object.keys(obj).forEach(k => { const el = $(k); if (el) el.value = obj[k]; }); }
 
+  // 出勤・退勤 and 1日の拘束時間 fill each other; whichever of 退勤 or 拘束時間 was typed last decides
+  const toHours = s => { if (!s) return null; const p = s.split(':').map(Number); return Number.isFinite(p[0]) ? p[0] + (p[1] || 0) / 60 : null; };
+  const toClock = h => { const t = Math.round((h % 24 + 24) % 24 * 60) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); };
+  const BOUND_HINT = $('h-bound').textContent;
+  let boundFrom = 'times';
+  function resetTimes(){ boundFrom = 'times'; $('h-bound').textContent = BOUND_HINT; }
+  function syncTimes(id){
+    if (id !== 'startTime' && id !== 'endTime' && id !== 'boundPerDay') return;
+    if (id === 'endTime') boundFrom = 'times';
+    if (id === 'boundPerDay') boundFrom = 'manual';
+    const s = toHours($('startTime').value), e = toHours($('endTime').value), bEl = $('boundPerDay');
+    $('h-bound').textContent = BOUND_HINT;
+    if (boundFrom === 'times'){
+      if (e === null){ if (id === 'endTime') bEl.value = ''; return; }
+      if (s === null) return;
+      const span = spanHours(s, e);
+      if (span <= 0){ bEl.value = ''; $('h-bound').textContent = '出勤と退勤が同じ時刻になっています。確かめてください'; return; }
+      bEl.value = String(Math.round(span * 100) / 100);
+    } else {
+      if (s === null) return;
+      const b = Number(bEl.value);
+      $('endTime').value = bEl.value !== '' && Number.isFinite(b) && b > 0 ? toClock(s + Math.min(b, 24)) : '';
+    }
+  }
+
   function readInputs(){
     const v = id => $(id).value;
     const ym = v('ym').split('-').map(Number);
-    const t = (v('startTime') || '0:00').split(':').map(Number);
+    const startHour = toHours(v('startTime'));
     return {
       prefIndex: Number(v('pref')), year: ym[0], month: ym[1],
       age: v('age'), vehicleSize: v('vehicleSize'), zouLarge: v('zouLarge'), body: v('body'),
       basic: v('basic'), dailyWage: v('dailyWage'), fixedAllow: v('fixedAllow'), attendAllow: v('attendAllow'), piece: v('piece'),
       fixedOT: v('fixedOT'), otPaid: v('otPaid'), housing: v('housing'), familyCommute: v('familyCommute'),
-      days: v('days'), startHour: (t[0] || 0) + (t[1] || 0) / 60, boundPerDay: v('boundPerDay'), n430: v('n430'), otherBreak: v('otherBreak'),
+      days: v('days'), startHour, boundPerDay: v('boundPerDay'), n430: v('n430'), otherBreak: v('otherBreak'),
       driveHours: v('driveHours'), holidayDays: v('holidayDays'), minRest: v('minRest'),
       cOT: v('cOT'), cNight: v('cNight'), cHol: v('cHol'),
       holidaysPerYear: v('holidaysPerYear'), scheduledPerDay: v('scheduledPerDay'),
@@ -899,19 +931,21 @@ function calc(i){
     $('dialNight').setAttribute('d', arcPath(64, 22, 29));
   })();
   function renderDial(r){
-    const has = r.B > 0;
-    $('dialBound').setAttribute('d', has ? arcPath(78, r.start, r.start + r.B) : '');
+    const has = r.B > 0, placed = has && r.hasStart;
+    $('dialBound').setAttribute('d', placed ? arcPath(78, r.start, r.start + r.B) : '');
     const a = pt(78, r.start), b = pt(78, r.start + r.B);
-    $('capStart').setAttribute('cx', has ? a[0].toFixed(2) : -20); $('capStart').setAttribute('cy', has ? a[1].toFixed(2) : -20);
-    $('capEnd').setAttribute('cx', has ? b[0].toFixed(2) : -20); $('capEnd').setAttribute('cy', has ? b[1].toFixed(2) : -20);
+    $('capStart').setAttribute('cx', placed ? a[0].toFixed(2) : -20); $('capStart').setAttribute('cy', placed ? a[1].toFixed(2) : -20);
+    $('capEnd').setAttribute('cx', placed ? b[0].toFixed(2) : -20); $('capEnd').setAttribute('cy', placed ? b[1].toFixed(2) : -20);
     $('dialV').textContent = has ? hrs(r.B) + 'h' : '—';
     $('dialSub').textContent = has ? '実働 ' + hrs(r.hw) + 'h' : '';
-    $('lgBound').textContent = has ? '拘束 ' + hm(r.start) + '〜' + hm(r.start + r.B) + '（' + hrs(r.B) + '時間）' : '拘束 —';
+    $('lgBound').textContent = placed ? '拘束 ' + hm(r.start) + '〜' + hm(r.start + r.B) + '（' + hrs(r.B) + '時間）'
+      : has ? '拘束 ' + hrs(r.B) + '時間（出勤の時刻を入れると時計に出ます）' : '拘束 —';
     $('lgNight').textContent = r.ov.night !== null && r.D > 0
       ? '深夜帯 22時〜翌5時：うち働いた時間 ' + hrs(r.Hn / r.D) + '時間／日（上書き欄の値）'
-      : '深夜帯 22時〜翌5時：うち働いた時間 約' + hrs(r.nightPerDay) + '時間／日';
+      : r.hasStart ? '深夜帯 22時〜翌5時：うち働いた時間 約' + hrs(r.nightPerDay) + '時間／日'
+      : '深夜帯 22時〜翌5時：出勤の時刻を入れると推計します';
     $('lgWork').textContent = has ? '休憩 ' + hrs(r.brk) + '時間（430が' + r.n430 + '回＋ほか' + hrs(r.otherBreak) + '時間）、実働 ' + hrs(r.hw) + '時間／日' : '休憩 —';
-    $('dialTitle').textContent = has ? '1日のイメージ：' + hm(r.start) + 'から' + hrs(r.B) + '時間の拘束、実働' + hrs(r.hw) + '時間、深夜に約' + hrs(r.nightPerDay) + '時間' : '1日のイメージ';
+    $('dialTitle').textContent = placed ? '1日のイメージ：' + hm(r.start) + 'から' + hm(r.start + r.B) + 'まで' + hrs(r.B) + '時間の拘束、実働' + hrs(r.hw) + '時間、深夜に約' + hrs(r.nightPerDay) + '時間' : '1日のイメージ';
   }
 
   const GAUGES = {
@@ -967,7 +1001,9 @@ function calc(i){
       + '<tr><th scope="row">実際に出た額<span class="rate">残業手当＋固定残業代</span></th><td></td><td class="num">' + yen(r.paid) + '</td></tr>'
       + '<tr class="gap ' + r.st.ot + '"><th scope="row">不足の目安</th><td></td><td class="num">' + (r.st.ot === 'na' ? '—' : yen(r.shortfall)) + '</td></tr>';
     const usedOv = r.ov.ot !== null || r.ov.night !== null || r.ov.total !== null || r.ov.holiday !== null;
-    $('otCaption').textContent = usedOv ? '時間は、上書き欄に入れた数字を使っています。' : '時間は「その月の働き方（自分の記録）」の1日平均から推計しています。日ごとの長さがばらつくと、実際の時間外はこれより多くなります。';
+    const noStart = !r.hasStart && r.B > 0 && r.ov.night === null;
+    $('otCaption').textContent = (usedOv ? '時間は、上書き欄に入れた数字を使っています。' : '時間は「その月の働き方（自分の記録）」の1日平均から推計しています。日ごとの長さがばらつくと、実際の時間外はこれより多くなります。')
+      + (noStart ? '出勤の時刻が空欄なので、深夜の時間は0で計算しています。' : '');
     const alt = $('otAlt');
     if (r.pay.fixedOT > 0 && r.st.ot !== 'na'){
       alt.hidden = false;
@@ -1080,7 +1116,8 @@ function calc(i){
   function summaryText(){
     if (!last) return '';
     const r = last.r, inp = last.inp, L = [];
-    L.push('【ドライバー給料チェッカー（試作）】' + inp.year + '年' + inp.month + '月・' + r.mw.name + '・' + (SIZES[inp.vehicleSize] ? SIZES[inp.vehicleSize].label : '') + (BODIES[inp.body] ? ' ' + BODIES[inp.body] : ''));
+    L.push('【ドライバー給料チェッカー】' + inp.year + '年' + inp.month + '月・' + r.mw.name + '・' + (SIZES[inp.vehicleSize] ? SIZES[inp.vehicleSize].label : '') + (BODIES[inp.body] ? ' ' + BODIES[inp.body] : ''));
+    if (r.B > 0) L.push('1日の平均：' + (r.hasStart ? '出勤 ' + hm(r.start) + '〜退勤 ' + hm(r.start + r.B) + '、' : '') + '拘束 ' + hrs(r.B) + '時間・実働 ' + hrs(r.hw) + '時間（' + r.D + '日出勤）');
     L.push('総労働時間 ' + hrs(r.Ht) + '時間／時間外 ' + hrs(r.Hot) + '時間／深夜 ' + hrs(r.Hn) + '時間／法定休日 ' + hrs(r.Hh) + '時間');
     if (r.gross > 0 && r.Ht > 0) L.push('実質時給 ' + yen(r.effHourly) + '円（拘束1時間あたり ' + yen(r.effBound) + '円）');
     L.push('最低賃金：' + (r.st.mw === 'na' ? '未判定' : (r.st.mw === 'bad' ? '下回っている' : r.st.mw === 'warn' ? '今は届いているが、次の改定後は下回る' : '上回っている') + '（' + yen(r.mwHourly) + '円／最低賃金 ' + yen(r.mwRate) + '円）'));
@@ -1106,11 +1143,11 @@ function calc(i){
   }
 
   const form = $('form');
-  form.addEventListener('input', () => { if (mode === 'sample') setMode('edited'); render(); });
-  form.addEventListener('change', render);
+  form.addEventListener('input', e => { syncTimes(e.target.id); if (mode === 'sample') setMode('edited'); render(); });
+  form.addEventListener('change', e => { syncTimes(e.target.id); render(); });
   form.addEventListener('submit', e => e.preventDefault());
-  $('btnClear').addEventListener('click', () => { applyValues(CLEAR); setMode('own'); render(); $('age').focus(); });
-  $('btnSample').addEventListener('click', () => { applyValues(SAMPLE); setMode('sample'); render(); });
+  $('btnClear').addEventListener('click', () => { applyValues(CLEAR); resetTimes(); setMode('own'); render(); $('age').focus(); });
+  $('btnSample').addEventListener('click', () => { applyValues(SAMPLE); resetTimes(); setMode('sample'); render(); });
   $('btnCopy').addEventListener('click', () => {
     const text = summaryText(), msg = $('copyMsg'), area = $('copyArea');
     const fallback = () => { area.hidden = false; area.value = text; area.focus(); area.select(); msg.textContent = '下の文章を選んでコピーしてください。'; };
