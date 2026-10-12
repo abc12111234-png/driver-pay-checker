@@ -250,8 +250,14 @@ const J = s => new Date(s + '+09:00');
       const vals = await page.evaluate(() => ['ym', 'days', 'holidayDays', 'boundPerDay', 'minRest', 'ovTotalHours', 'ovOtHours', 'ovNightHours', 'ovHolidayHours', 'ovBoundMonth', 'basic'].map(k => k + '=' + document.getElementById(k).value).join(' '));
       check('checker values', /ym=2026-10/.test(vals) && /days=12/.test(vals) && /basic= /.test(vals + ' '), vals);
       check('transfer cleared', (await page.evaluate(() => localStorage.getItem('dpc_transfer_v1'))) === null);
+      await page.screenshot({ path: out + '/v2-checker-from-log.png' });
+      await Promise.all([page.waitForURL(/log\.html$/), page.click('#noticeText a[href="log.html"]')]);
+      check('back to the log from the checker', (await page.locator('h1').innerText()) === '勤務の記録' && (await page.locator('#shifts > li').count()) > 0);
       await page.goto(base);
       check('plain visit sample', /サンプル表示中/.test(await page.locator('#noticeText').innerText()));
+      check('checker links to the log', (await page.locator('a.to-log[href="log.html"]').count()) === 1 && (await page.locator('.foot a[href="log.html"]').count()) === 1);
+      await page.screenshot({ path: out + '/v2-checker-top.png' });
+      await noHScroll(page, 'checker top');
     }
     await ctx.close();
   }

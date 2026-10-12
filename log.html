@@ -262,6 +262,7 @@ textarea{resize:vertical;line-height:1.5}
   <details class="card how">
     <summary>数え方と注意</summary>
     <ul>
+      <li>始業は、出庫したときではなく、点呼や点検など仕事を始めたときに押します。終業は、帰庫のあとの点呼や日報などが全部終わったときに押します。出庫の前と帰庫のあとの仕事も、拘束時間と労働時間に入ります。</li>
       <li>1日の拘束時間は、始業から24時間の中で数えます。次の始業が24時間以内に来ると、重なった分は前の勤務の拘束にも入ります（改善基準告示の数え方）。</li>
       <li>判定の基準（2024年4月から）：1日の拘束は13時間以内で、延ばしても15時間まで（14時間を超えるのは週2回までが目安）。宿泊を伴う長距離の運行は、週2回まで16時間。休息期間は継続11時間が基本で、9時間を下回らないこと（宿泊を伴う長距離は週2回まで8時間）。1か月の拘束は284時間まで（労使協定で310時間まで）。</li>
       <li>労働時間は、拘束時間から休憩を引いた時間です。荷待ちは労働時間に入ります。</li>
@@ -752,7 +753,7 @@ function transferValues(s){
       $('state').textContent = '勤務していません';
       const last = store.shifts.filter(x => x.end != null).sort((a, b) => b.end - a.end)[0];
       $('stateSub').textContent = last ? '前の終業から ' + fmtHM((Date.now() - last.end) / HOUR) + '（休息期間）' : '仕事を始めるときに押してください。';
-      html = btn('start', '始業', 'main full', '出庫・点呼など、仕事を始めたとき');
+      html = btn('start', '始業', 'main full', '仕事を始めたとき（点呼・点検から）');
       $('flags').hidden = true;
     } else {
       const b = openOf(sh.breaks), w = openOf(sh.waits);
@@ -761,8 +762,8 @@ function transferValues(s){
       else if (w){ $('state').textContent = '荷待ち中'; $('stateSub').textContent = clock(w.s) + ' から ・ ' + since; }
       else { $('state').textContent = '勤務中'; $('stateSub').textContent = since; }
       if (b) html = btn('breakEnd', '休憩おわり', 'main') + btn('end', '終業', 'end', '仕事を終えたとき');
-      else if (w) html = btn('waitEnd', '荷待ちおわり', 'main') + btn('break', '休憩') + btn('end', '終業', 'end full', '仕事を終えたとき');
-      else html = btn('break', '休憩') + btn('wait', '荷待ち') + btn('end', '終業', 'end full', '仕事を終えたとき・休息に入るとき');
+      else if (w) html = btn('waitEnd', '荷待ちおわり', 'main') + btn('break', '休憩') + btn('end', '終業', 'end full', '仕事を全部終えたとき');
+      else html = btn('break', '休憩') + btn('wait', '荷待ち') + btn('end', '終業', 'end full', '仕事を全部終えたとき・休息に入るとき');
       $('flags').hidden = false;
       $('fHoliday').checked = !!sh.holiday; $('fLodging').checked = !!sh.lodging;
     }
