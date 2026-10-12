@@ -8,8 +8,8 @@ const a = src.indexOf('// LOGCALC_START'), b = src.indexOf('// LOGCALC_END');
 if (a < 0 || b < 0) { console.error('LOGCALC markers not found'); process.exit(1); }
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(src.slice(a, b) + '\nthis.api = { analyze, summarize, transferValues, shiftStats, clipSum, dayKey, weekKey };', ctx);
-const { analyze, summarize, transferValues, shiftStats, clipSum, weekKey } = ctx.api;
+vm.runInContext(src.slice(a, b) + '\nthis.api = { analyze, summarize, transferValues, shiftStats, clipSum, dayKey, weekKey, odoDist };', ctx);
+const { analyze, summarize, transferValues, shiftStats, clipSum, weekKey, odoDist } = ctx.api;
 
 let fails = 0, passes = 0;
 const near = (x, y) => Math.abs(x - y) < 1e-6;
@@ -128,6 +128,30 @@ if (new Date(2026, 9, 12).getTimezoneOffset() !== -540) { console.error('Run wit
   const sum = summarize([A, B], '2026-10');
   eq('12 days', sum.days, 1); eq('12 work', sum.work, 10); eq('12 ot', sum.ot, 2);
   eq('12 night', sum.night, 4 + 1);
+}
+
+// 13. distance from the meter at the start and the end
+{
+  eq('13 dist', odoDist(S(0, 1, { odo: { s: 123456, e: 123789 } })), 333);
+  eq('13 dist decimal', odoDist(S(0, 1, { odo: { s: 100.4, e: 250.1 } })), 149.7);
+  eq('13 only start', odoDist(S(0, 1, { odo: { s: 123456, e: null } })), null);
+  eq('13 end smaller', odoDist(S(0, 1, { odo: { s: 500, e: 400 } })), null);
+  eq('13 no odo', odoDist(S(0, 1)), null);
+  eq('13 string ignored', odoDist(S(0, 1, { odo: { s: '100', e: 200 } })), null);
+  eq('13 same number', odoDist(S(0, 1, { odo: { s: 100, e: 100 } })), 0);
+  const list = [
+    S(T(2026,10,5,6), T(2026,10,5,18), { odo: { s: 1000, e: 1350 } }),
+    S(T(2026,10,6,6), T(2026,10,6,18), { odo: { s: 1350, e: 1700.5 } }),
+    S(T(2026,10,7,6), T(2026,10,7,18), { odo: { s: 1700.5, e: null } }),   // end meter missing: not counted
+    S(T(2026,10,31,22), T(2026,11,1,6), { odo: { s: 2000, e: 2400 } }),     // counted in the month it started
+    S(T(2026,11,2,6), T(2026,11,2,18), { odo: { s: 2400, e: 2600 } }),
+    S(T(2026,10,8,6), null, { odo: { s: 1800, e: 1900 } })                  // still working: not counted
+  ];
+  const oct = summarize(list, '2026-10'), nov = summarize(list, '2026-11');
+  eq('13 oct km', oct.km, 1100.5); eq('13 oct count', oct.kmCount, 3);
+  eq('13 nov km', nov.km, 200); eq('13 nov count', nov.kmCount, 1);
+  eq('13 empty month km', summarize(list, '2026-12').km, null); eq('13 empty month count', summarize(list, '2026-12').kmCount, 0);
+  eq('13 transfer unchanged', Object.keys(transferValues(oct)).join(','), 'ym,days,holidayDays,boundPerDay,minRest,ovTotalHours,ovOtHours,ovNightHours,ovHolidayHours,ovBoundMonth');
 }
 
 console.log(fails ? `${fails} FAILED, ${passes} passed` : `ALL PASS (${passes})`);

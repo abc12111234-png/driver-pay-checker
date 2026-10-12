@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>勤務の記録｜ドライバー給料チェッカー</title>
-<meta name="description" content="始業、休憩、荷待ち・待機、終業をその場でボタンで記録し、トラック運転者の拘束時間と休息期間を2024年4月からの改善基準告示でチェックします。場所や時刻つきのメモも残せて、記録はスマホの中だけに保存します。">
+<meta name="description" content="始業、休憩、荷待ち・待機、終業をその場でボタンで記録し、トラック運転者の拘束時間と休息期間を2024年4月からの改善基準告示でチェックします。場所や時刻つきのメモ、乗った車両と走行距離も残せて、記録はスマホの中だけに保存します。">
 <link rel="canonical" href="https://abc12111234-png.github.io/driver-pay-checker/log.html">
 <meta name="theme-color" content="#0A6847">
 <link rel="manifest" href="log.webmanifest">
@@ -198,6 +198,16 @@ textarea{resize:vertical;line-height:1.5}
 .install{margin-top:12px;padding:10px 12px;border:1.5px solid var(--band);border-radius:12px;display:grid;gap:6px}
 .install p{margin:0;font-size:14px;line-height:1.6}
 .install .btn{justify-self:start;margin-top:4px}
+/* vehicles and the meter */
+#vpick{margin-top:8px}
+.pp-part{display:grid;gap:8px}
+.veh-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.veh-row label{display:grid;gap:2px;font-size:13px;font-weight:700;min-width:0}
+.veh-row input{width:100%;min-width:0}
+#odoHint:empty,#eOdoNote:empty{display:none}
+#eOdoNote{margin:0}
+.sh-veh{margin:0;font-size:14px;line-height:1.55;display:flex;flex-wrap:wrap;gap:2px 14px;overflow-wrap:anywhere}
+.sh-veh .k{color:var(--muted);font-size:12px;margin-right:6px}
 </style>
 </head>
 <body>
@@ -224,13 +234,39 @@ textarea{resize:vertical;line-height:1.5}
       <ul class="saved-places" id="savedPlaces"></ul>
       <div class="pp-row"><button type="button" class="btn small" id="btnPlacesClose">閉じる</button></div>
     </div>
+    <div class="pick" id="vpick">
+      <label for="vehSel">車両</label>
+      <select id="vehSel" hidden></select>
+      <span class="pick-hint" id="vpickHint">乗る車（車種と車番）を登録すると、始業の前に選べます</span>
+      <button type="button" class="link" id="btnVehs">車両を登録する</button>
+    </div>
+    <div class="prompt" id="vehsPanel" hidden>
+      <p class="pp-title"><b>乗る車両</b></p>
+      <p class="hint">始業の前に選んでおくと、その日の記録に入ります。デジタコや日報は車ごとの記録なので、車番が残っていると、会社の記録のどれと比べればいいかすぐわかります。登録から消しても、今までの記録に残した車両は消えません。</p>
+      <div class="veh-row"><label>車種<input type="text" id="newVehKind" list="kindList" maxlength="20" autocomplete="off" placeholder="例：10t車"></label><label>車番<input type="text" id="newVehNo" maxlength="30" autocomplete="off" enterkeyhint="done" placeholder="例：12-34"></label></div>
+      <div class="pp-row"><button type="button" class="btn small primary" id="btnAddVeh">登録</button></div>
+      <ul class="saved-places" id="savedVehs"></ul>
+      <div class="pp-row"><button type="button" class="btn small" id="btnVehsClose">閉じる</button></div>
+    </div>
     <div class="actions" id="actions"></div>
     <p class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastText"></span> <button type="button" class="link" id="btnUndo">取り消す</button> <button type="button" class="link" id="btnShareNow" hidden>この日の記録を送る</button></p>
     <div class="prompt" id="placePrompt" hidden>
-      <label for="placeInput" id="placeLabel">場所（任意）</label>
-      <div class="pchips" id="placeChips"></div>
-      <input type="text" id="placeInput" list="placeList" autocomplete="off" enterkeyhint="done" maxlength="60">
-      <label class="chk small"><input type="checkbox" id="placeRemember"> この場所を登録して、次から選べるようにする</label>
+      <div class="pp-part" id="ppPlace">
+        <label for="placeInput" id="placeLabel">場所（任意）</label>
+        <div class="pchips" id="placeChips"></div>
+        <input type="text" id="placeInput" list="placeList" autocomplete="off" enterkeyhint="done" maxlength="60">
+        <label class="chk small"><input type="checkbox" id="placeRemember"> この場所を登録して、次から選べるようにする</label>
+      </div>
+      <div class="pp-part" id="ppVeh" hidden>
+        <label for="ppVehSel">車両</label>
+        <select id="ppVehSel"></select>
+      </div>
+      <div class="pp-part" id="ppOdo" hidden>
+        <label for="odoInput" id="odoLabel">始業のメーター（km、任意）</label>
+        <input type="text" id="odoInput" inputmode="decimal" autocomplete="off" enterkeyhint="done" maxlength="14" placeholder="例：123456">
+        <p class="hint" id="odoHint"></p>
+      </div>
+      <p class="err" id="ppErr" role="alert"></p>
       <div class="pp-row"><button type="button" class="btn small primary" id="placeSave">残す</button><button type="button" class="btn small" id="placeSkip">書かない</button></div>
     </div>
     <div class="prompt" id="notePrompt" hidden>
@@ -239,7 +275,7 @@ textarea{resize:vertical;line-height:1.5}
       <p class="hint">書いた日時と一緒に残ります。中身をあとから書き換える機能はありません。</p>
       <div class="pp-row"><button type="button" class="btn small primary" id="noteSave">残す</button><button type="button" class="btn small" id="noteCancel">やめる</button></div>
     </div>
-    <div class="now-tools" id="nowTools" hidden><button type="button" class="btn small" id="btnNote">メモを書く</button></div>
+    <div class="now-tools" id="nowTools" hidden><button type="button" class="btn small" id="btnNote">メモを書く</button><button type="button" class="btn small" id="btnOdo" hidden>メーターを入れる</button></div>
     <div class="flags" id="flags" hidden>
       <label><input type="checkbox" id="fHoliday"> この勤務は法定休日の出勤</label>
       <label><input type="checkbox" id="fLodging"> 宿泊を伴う長距離の運行</label>
@@ -297,6 +333,9 @@ textarea{resize:vertical;line-height:1.5}
       <li>メモは書いた日時と一緒に残ります。中身をあとから書き換える機能はありません。荷待ち・待機の理由、会社からの指示、日報との違いなどを、その場で書いておけます。</li>
       <li>この記録はスマホの中のデータなので、それだけでは、その日に作ったものだと示しきれません。終業のあとに「送る」で、その日の記録を自分あてのLINEやメールに送っておくと、送った日時がスマホの外に残り、その日のうちに作った記録だという裏づけになります。</li>
       <li>時刻のわかるものも取っておくと、記録の裏づけになります。たとえば、高速道路の利用明細、給油のレシート、伝票や受領書、荷主の受付の時刻、その場で撮った写真などです。</li>
+      <li>車両（車種と車番）を残しておくと、デジタコや日報のどの記録と比べればいいかがすぐわかります。始業と終業のメーターを入れると、その日と月の走行距離が出るので、デジタコの距離や会社が言う距離と比べられます。</li>
+      <li>写真は、このページではなく、スマホの普段のカメラで撮ってください。撮った日時（設定によっては場所も）がファイルに入り、Googleフォトなどのバックアップで日付つきで残ります。撮っておくといいのは、始業と終業のメーター、荷待ちの列や受付の時刻、伝票や受領書、デジタコの表示や日報の控えです。何を撮ったかは「メモを書く」に一言残すと、あとで写真と合わせられます。写真は必ず止まってから撮ってください。</li>
+      <li>記録の画面をXやnoteなどに出すときは、車番や会社の名前がわかるところを隠してください。</li>
       <li>争いになったときに、この記録がどこまで認められるかは、ほかの資料とあわせて判断されます。困ったときは、労働基準監督署などの相談窓口や弁護士に、この記録を見せて相談してください。</li>
     </ul>
   </details>
@@ -310,18 +349,21 @@ textarea{resize:vertical;line-height:1.5}
       <li>労働時間は、拘束時間から休憩を引いた時間です。荷待ち・待機（指示があればすぐ動けるように待っている時間）は、労働時間に入ります。</li>
       <li>時間外は、1日8時間を超えた分と、週40時間を超えた分（週は日曜から土曜）の合計です。日をまたぐ勤務は、始業した日の労働として数えます。法定休日の出勤は時間外に入れず、法定休日の労働として別に数えます。</li>
       <li>深夜は、22時から翌朝5時までの労働時間（休憩を除く）です。</li>
+      <li>走行距離は、終業のメーターから始業のメーターを引いた数字です。月の走行距離は、始業と終業の両方のメーターを入れた記録だけを足しています。</li>
       <li>場所（GPS）は、ボタンを押したときの位置だけを残します（始業、休憩、荷待ち・待機、それぞれのおわり、終業）。ずっと追いかけることはしません。位置はこのスマホの中に保存し、外に出るのは、「地図」を押したとき（その地点がGoogleマップに送られます）と、「送る」で送る文章に入れたとき（自分で選んだ送り先に届きます）だけです。</li>
       <li>変形労働時間制、分割休息、2人乗務、フェリーの特例、連続運転（430）は数えていません。結果は目安で、法律上の判断の代わりにはなりません。</li>
     </ul>
   </details>
 
   <footer class="foot">
-    <p>記録・場所・メモはこのブラウザの中だけに保存し、運営者には送られません。</p>
+    <p>記録・場所・メモ・車両・メーターの数字はこのブラウザの中だけに保存し、運営者には送られません。</p>
     <nav aria-label="サイトの情報"><a href="./">給料チェッカーに戻る</a><a href="about.html">運営者情報</a><a href="privacy.html">プライバシーポリシー・免責事項</a></nav>
   </footer>
 </div>
 
 <datalist id="placeList"></datalist>
+<datalist id="kindList"></datalist>
+<datalist id="vehNoList"></datalist>
 
 <dialog id="dlg" aria-labelledby="dlgTitle">
   <form class="dlg-body" id="dlgForm" method="dialog">
@@ -331,6 +373,11 @@ textarea{resize:vertical;line-height:1.5}
     <label class="f sub">始業の場所（任意）<input type="text" id="eStartPlace" list="placeList" autocomplete="off" maxlength="60"></label>
     <label class="f">終業（勤務中なら空のまま）<input type="datetime-local" id="eEnd"></label>
     <label class="f sub">終業・休息の場所（任意）<input type="text" id="eEndPlace" list="placeList" autocomplete="off" maxlength="60"></label>
+    <fieldset><legend>車両とメーター（任意）</legend>
+      <div class="veh-row"><label>車種<input type="text" id="eVehKind" list="kindList" autocomplete="off" maxlength="20"></label><label>車番<input type="text" id="eVehNo" list="vehNoList" autocomplete="off" maxlength="30"></label></div>
+      <div class="veh-row"><label>始業のメーター（km）<input type="text" id="eOdoS" inputmode="decimal" autocomplete="off" maxlength="14"></label><label>終業のメーター（km）<input type="text" id="eOdoE" inputmode="decimal" autocomplete="off" maxlength="14"></label></div>
+      <p class="hint" id="eOdoNote"></p>
+    </fieldset>
     <fieldset><legend>休憩</legend><div id="eBreaks" class="pers"></div><button type="button" class="btn small" id="eAddBreak">休憩を足す</button></fieldset>
     <fieldset><legend>荷待ち・待機</legend><div id="eWaits" class="pers"></div><button type="button" class="btn small" id="eAddWait">荷待ち・待機を足す</button></fieldset>
     <label class="chk"><input type="checkbox" id="eHoliday"> この勤務は法定休日の出勤</label>
@@ -400,6 +447,13 @@ function shiftStats(sh){
   return { bound, brk, wait, work: bound - brk, night: night / HOUR };
 }
 
+// km driven in one shift from the meter at the start and at the end; null unless both are there and the end is not smaller
+function odoDist(sh){
+  const o = sh && sh.odo;
+  if (!o || typeof o.s !== 'number' || typeof o.e !== 'number' || !isFinite(o.s) || !isFinite(o.e) || o.e < o.s) return null;
+  return Math.round((o.e - o.s) * 10) / 10;
+}
+
 const EPS = 1e-6;
 // every finished shift with its numbers and checks, oldest first, plus overtime per day
 function analyze(shifts){
@@ -456,8 +510,10 @@ function summarize(shifts, ym){
   const rests = m.filter(x => x.rest != null).map(x => x.rest);
   const bound = sum(x => x.bound);
   const weeks14 = Object.keys(a.over14).filter(w => a.over14[w] > 2 && m.some(x => x.week === w));
+  const dists = m.map(x => odoDist(x.sh)).filter(d => d != null);
   return {
     ym, shifts: m,
+    km: dists.length ? Math.round(dists.reduce((t, d) => t + d, 0) * 10) / 10 : null, kmCount: dists.length,
     days: new Set(m.map(x => x.day)).size,
     holidayDays: new Set(m.filter(x => x.sh.holiday).map(x => x.day)).size,
     bound, work: sum(x => x.work), brk: sum(x => x.brk), wait: sum(x => x.wait), night: sum(x => x.night),
@@ -495,11 +551,16 @@ function transferValues(s){
     end: ['終業・休息の場所（任意）', '例：〇〇PAで車中泊、営業所']
   };
 
-  const blank = () => ({ v: 1, shifts: [], settings: { geo: false, places: [], startPlace: '' }, audit: [] });
+  const KINDS = ['軽貨物', '2t車', '4t車', '増トン車', '10t車', 'トレーラー'];
+  const ODOREC = { now: '入力', manual: 'あとで入力', edited: '直した' };
+  const MAX_VEH = 20, ODO_CHECK_KM = 1500;
+
+  const blank = () => ({ v: 1, shifts: [], settings: { geo: false, places: [], startPlace: '', vehicles: [], lastVehicle: null }, audit: [] });
   const clone = o => JSON.parse(JSON.stringify(o));
   const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   let store = blank(), canSave = true, lastSaved = null, undo = null, viewYm = null;
   let placeTarget = null, lastTarget = null, geoReq = 0, geoPending = false, lastPress = 0, lastActions = '', lastPick = '', pickState = null;
+  let vehAsk = null, odoAsk = null, promptAt = 0, promptTool = false, lastVPick = '', vpickState = null;
 
   // ---------- storage ----------
   const arr = v => Array.isArray(v) ? v : [];
@@ -508,6 +569,23 @@ function transferValues(s){
   const own = o => { const r = {}; Object.keys(o).forEach(k => { if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') r[k] = o[k]; }); return r; };
   const cleanPlaces = v => { const out = []; arr(v).forEach(x => { const t = str(x, 60).trim(); if (t && out.indexOf(t) < 0 && out.length < 30) out.push(t); }); return out; };
   const cleanMeta = m => m && typeof m === 'object' && !Array.isArray(m) ? Object.assign(own(m), { place: str(m.place, 60) }) : null;
+  // a vehicle is its type (車種) and number (車番); either may be blank, not both
+  const cleanVeh = v => { if (!v || typeof v !== 'object' || Array.isArray(v)) return null; const kind = str(v.kind, 20).trim(), no = str(v.no, 30).trim(); return kind || no ? { kind, no } : null; };
+  const vkey = v => v ? JSON.stringify([v.kind, v.no]) : '';
+  const cleanVehicles = list => { const out = [], seen = new Set(); arr(list).forEach(x => { const v = cleanVeh(x); if (v && !seen.has(vkey(v)) && out.length < MAX_VEH){ seen.add(vkey(v)); out.push(v); } }); return out; };
+  // the meter at the start (s) and the end (e), with when and how each number was put in
+  const okOdo = v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v < 1e7;
+  function cleanOdo(o){
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+    const r = {};
+    ['s', 'e'].forEach(k => {
+      const ok = okOdo(o[k]);
+      r[k] = ok ? Math.round(o[k] * 10) / 10 : null;
+      r[k + 'At'] = ok && fin(o[k + 'At']) ? o[k + 'At'] : null;
+      r[k + 'Rec'] = ok && ODOREC[o[k + 'Rec']] ? o[k + 'Rec'] : null;
+    });
+    return r.s == null && r.e == null ? null : r;
+  }
   function cleanPeriod(p){
     if (!p || typeof p !== 'object' || !fin(p.s) || !(p.e == null || fin(p.e))) return null;
     return Object.assign(own(p), { id: typeof p.id === 'string' && p.id ? p.id : newId(), e: p.e == null ? null : p.e, place: str(p.place, 60), sMeta: cleanMeta(p.sMeta), eMeta: cleanMeta(p.eMeta) });
@@ -520,7 +598,7 @@ function transferValues(s){
     if (!breaks || !waits) return null;
     return Object.assign(own(x), {
       id: typeof x.id === 'string' && x.id ? x.id : newId(), end: x.end == null ? null : x.end, breaks, waits,
-      holiday: !!x.holiday, lodging: !!x.lodging, startMeta: cleanMeta(x.startMeta), endMeta: cleanMeta(x.endMeta),
+      holiday: !!x.holiday, lodging: !!x.lodging, startMeta: cleanMeta(x.startMeta), endMeta: cleanMeta(x.endMeta), vehicle: cleanVeh(x.vehicle), odo: cleanOdo(x.odo),
       history: arr(x.history).filter(h => h && fin(h.at) && typeof h.what === 'string'),
       notes: arr(x.notes).filter(n => n && fin(n.at) && typeof n.text === 'string')
     });
@@ -536,7 +614,7 @@ function transferValues(s){
     if (strict && shifts.filter(x => x.end == null).length > 1) return null;
     const audit = arr(o.audit).filter(a => a && fin(a.at) && typeof a.what === 'string').map(a => Object.assign(own(a), { aid: typeof a.aid === 'string' && a.aid ? a.aid : newId() }));
     const st = o.settings && typeof o.settings === 'object' ? o.settings : {};
-    return { v: 1, shifts, settings: { geo: !!st.geo, places: cleanPlaces(st.places), startPlace: str(st.startPlace, 60) }, audit };
+    return { v: 1, shifts, settings: { geo: !!st.geo, places: cleanPlaces(st.places), startPlace: str(st.startPlace, 60), vehicles: cleanVehicles(st.vehicles), lastVehicle: cleanVeh(st.lastVehicle) }, audit };
   }
   function load(){
     try {
@@ -591,6 +669,18 @@ function transferValues(s){
   const ymd = () => { const d = new Date(); return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()); };
   const isIme = e => e.isComposing || e.keyCode === 229;
   const r5 = v => Math.round(v * 1e5) / 1e5;
+  const fmtKm = v => Number(v).toLocaleString('ja-JP', { maximumFractionDigits: 1 });
+  const vehLabel = v => v ? [v.kind, v.no].filter(Boolean).join('・') : '';
+  // '' when empty, null when it is not a meter reading; full-width digits, commas and "km" are accepted
+  function parseOdo(raw){
+    const t = String(raw == null ? '' : raw).replace(/[０-９．]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+      .replace(/[,，\s　]/g, '').replace(/(km|ｋｍ|キロ)$/i, '');
+    if (!t) return '';
+    return /^\d{1,7}(\.\d)?$/.test(t) ? Number(t) : null;
+  }
+  // when a meter number was put in: （6:20 に入力） / （10/13 8:00 に直した）
+  const odoWhen = (o, k, base) => o[k + 'At'] == null ? '' : '（' + tm(o[k + 'At'], base) + ' に' + (ODOREC[o[k + 'Rec']] || ODOREC.now) + '）';
+  const odoWhenLong = (o, k) => o[k + 'At'] == null ? '入力した日時は不明' : stamp(o[k + 'At']) + ' に' + (ODOREC[o[k + 'Rec']] || ODOREC.now);
 
   // ---------- when, how and where each entry was made ----------
   const meta = rec => ({ rec, at: Date.now(), loc: null, place: '' });
@@ -657,11 +747,15 @@ function transferValues(s){
     const t = nowMs();
     if (kind === 'end' && t <= sh.start){ notice('始業と同じ時刻です。少し待ってから押すか、あとで時刻を直してください。'); return; }
     const chosen = store.settings.places.indexOf($('placeSel').value) >= 0 ? $('placeSel').value : '';
+    const vk = kind === 'start' ? $('vehSel').value : '';
+    const veh = vk ? store.settings.vehicles.find(v => vkey(v) === vk) || null : null;
     const u = { id: sh ? sh.id : null, before: sh ? clone(sh) : null };
     let msg = '', target = null;
     if (kind === 'start'){
-      sh = { id: newId(), start: t, end: null, breaks: [], waits: [], holiday: false, lodging: false, src: 'button', created: Date.now(), startMeta: meta('button'), endMeta: null, history: [], notes: [] };
+      sh = { id: newId(), start: t, end: null, breaks: [], waits: [], holiday: false, lodging: false, src: 'button', created: Date.now(), startMeta: meta('button'), endMeta: null,
+        vehicle: veh ? clone(veh) : null, odo: null, history: [], notes: [] };
       store.shifts.push(sh); u.id = sh.id;
+      if (veh) store.settings.lastVehicle = clone(veh);
       msg = clock(t) + ' に始業を記録しました。'; target = { id: sh.id, kind: 'start' };
     } else if (kind === 'break' || kind === 'wait'){
       const ends = closeAll(sh, t);
@@ -687,7 +781,9 @@ function transferValues(s){
     lastTarget = target;
     if (target) captureLoc(target);
     toast(msg, u, kind === 'end' ? sh.id : null);
-    if (placed){ toastAdd('場所：' + chosen); hidePlacePrompt(); } else showPlacePrompt(target);
+    if (placed) toastAdd('場所：' + chosen);
+    if (veh) toastAdd('車両：' + vehLabel(veh));
+    showPrompt(target, placed);
     viewYm = monthKey(sh.start); renderAll();
   }
 
@@ -737,36 +833,133 @@ function transferValues(s){
     items.forEach(it => { if (!seen.has(it[1])){ seen.add(it[1]); out.push(it[1]); } });
     return out.slice(0, 50);
   }
-  function refreshPlaceList(){ $('placeList').innerHTML = allPlaces().map(p => '<option value="' + esc(p) + '"></option>').join(''); }
-  function hidePlacePrompt(){ $('placePrompt').hidden = true; placeTarget = null; }
-  function showPlacePrompt(target){
-    if (!target || !PLACE[target.kind]){ hidePlacePrompt(); return; }
-    placeTarget = Object.assign({ shownAt: Date.now() }, target);
-    $('placeLabel').textContent = PLACE[target.kind][0];
-    $('placeInput').placeholder = PLACE[target.kind][1];
-    $('placeInput').value = '';
-    $('placeRemember').checked = false;
-    $('placeChips').innerHTML = store.settings.places.map(p => '<button type="button" class="pchip" data-place="' + esc(p) + '">' + esc(p) + '</button>').join('');
+  function refreshPlaceList(){
+    $('placeList').innerHTML = allPlaces().map(p => '<option value="' + esc(p) + '"></option>').join('');
+    const kinds = new Set(), nos = new Set();
+    store.settings.vehicles.concat(store.shifts.slice().sort((a, b) => b.start - a.start).map(x => x.vehicle).filter(Boolean)).forEach(v => { if (v.kind) kinds.add(v.kind); if (v.no) nos.add(v.no); });
+    KINDS.forEach(k => kinds.add(k));
+    const opts = set => Array.from(set).slice(0, 40).map(k => '<option value="' + esc(k) + '"></option>').join('');
+    $('kindList').innerHTML = opts(kinds); $('vehNoList').innerHTML = opts(nos);
+  }
+  function hidePlacePrompt(){ $('placePrompt').hidden = true; placeTarget = null; vehAsk = null; odoAsk = null; promptTool = false; $('ppErr').textContent = ''; }
+  // the meter is asked for once the driver has registered a vehicle or put a meter number in, so the others get no extra prompt
+  const usesOdo = () => store.settings.vehicles.length > 0 || store.shifts.some(x => x.odo);
+  // after a press: the place (unless it was picked), the vehicle (始業, when none was picked) and the meter (始業 and 終業)
+  function showPrompt(target, placed){
+    const sh = target ? store.shifts.find(x => x.id === target.id) : null;
+    const which = !sh ? null : target.kind === 'start' ? 's' : target.kind === 'end' ? 'e' : null;
+    const askPlace = !!(sh && PLACE[target.kind]) && !placed;
+    const askVeh = !!(sh && target.kind === 'start' && !sh.vehicle && store.settings.vehicles.length);
+    const askOdo = !!which && usesOdo() && !(sh.odo && sh.odo[which] != null);
+    openPrompt(askPlace ? target : null, askVeh ? sh.id : null, askOdo ? { id: sh.id, which } : null, false);
+  }
+  function openPrompt(pt, vid, odo, tool){
+    if (!pt && !vid && !odo){ hidePlacePrompt(); return; }
+    placeTarget = pt; vehAsk = vid; odoAsk = odo; promptTool = !!tool; promptAt = Date.now();
+    $('ppPlace').hidden = !pt;
+    if (pt){
+      $('placeLabel').textContent = PLACE[pt.kind][0];
+      $('placeInput').placeholder = PLACE[pt.kind][1];
+      $('placeInput').value = '';
+      $('placeRemember').checked = false;
+      $('placeChips').innerHTML = store.settings.places.map(p => '<button type="button" class="pchip" data-place="' + esc(p) + '">' + esc(p) + '</button>').join('');
+    }
+    $('ppVeh').hidden = !vid;
+    if (vid) $('ppVehSel').innerHTML = '<option value="">選ばない</option>' + store.settings.vehicles.map(v => '<option value="' + esc(vkey(v)) + '">' + esc(vehLabel(v)) + '</option>').join('');
+    $('ppOdo').hidden = !odo;
+    if (odo){ $('odoLabel').textContent = (odo.which === 's' ? '始業' : '終業') + 'のメーター（km、任意）'; $('odoInput').value = ''; paintOdoHint(); }
+    $('ppErr').textContent = '';
+    $('placeSkip').textContent = tool ? 'やめる' : '書かない';
     if (!$('noteInput').value.trim()) $('notePrompt').hidden = true;
     refreshPlaceList();
     $('placePrompt').hidden = false;
   }
-  function savePlace(v){
-    v = (v || '').trim().slice(0, 60);
-    if (placeTarget && v){
-      sync();
-      const f = findTarget(placeTarget);
-      if (f){
-        (f.holder || f.meta).place = v;
-        if ($('placeRemember').checked && store.settings.places.indexOf(v) < 0 && store.settings.places.length < 30) store.settings.places.push(v);
-        if (placeTarget.kind === 'start') store.settings.startPlace = v;
-        save(); toastAdd('場所：' + v);
-      }
-    }
-    hidePlacePrompt(); renderAll();
+  // the last meter number (of the same vehicle, when one is set) helps catch a mistyped digit
+  function lastOdo(exceptId, veh){
+    let best = null;
+    store.shifts.forEach(x => {
+      if (x.id === exceptId || !x.odo || (veh && vkey(x.vehicle) !== vkey(veh))) return;
+      const k = x.odo.e != null ? 'e' : x.odo.s != null ? 's' : null;
+      if (k && (!best || x.start > best.sh.start)) best = { sh: x, k, v: x.odo[k] };
+    });
+    return best;
   }
-  $('placeSave').addEventListener('click', () => savePlace($('placeInput').value));
-  $('placeChips').addEventListener('click', e => { const b = e.target.closest('[data-place]'); if (b) savePlace(b.dataset.place); });
+  function paintOdoHint(){
+    let t = '';
+    const sh = odoAsk ? store.shifts.find(x => x.id === odoAsk.id) : null;
+    if (sh && odoAsk.which === 'e'){ if (sh.odo && sh.odo.s != null) t = '始業は ' + fmtKm(sh.odo.s) + 'km でした。'; }
+    else if (sh){
+      const picked = vehAsk ? store.settings.vehicles.find(v => vkey(v) === $('ppVehSel').value) : null;
+      const veh = sh.vehicle || picked || null, l = lastOdo(sh.id, veh);
+      const md = ms => { const d = new Date(ms); return (d.getMonth() + 1) + '月' + d.getDate() + '日'; };
+      if (l) t = '前回' + (veh ? 'この車の' : '') + (l.k === 'e' ? '終業' : '始業') + 'は ' + fmtKm(l.v) + 'km でした（' + (!veh && l.sh.vehicle ? vehLabel(l.sh.vehicle) + '、' : '') + md(l.sh.start) + '）。';
+    }
+    $('odoHint').textContent = t;
+  }
+  $('ppVehSel').addEventListener('change', paintOdoHint);
+  // writes what the prompt asked for; a meter number that does not fit is refused before anything is written
+  function savePrompt(chipPlace){
+    const ov = odoAsk ? parseOdo($('odoInput').value) : '';
+    if (ov === null){ $('ppErr').textContent = 'メーターは数字で入れてください（例：123456）。'; return; }
+    sync();
+    const pv = placeTarget ? String(chipPlace != null ? chipPlace : $('placeInput').value).trim().slice(0, 60) : '';
+    const fp = pv ? findTarget(placeTarget) : null;
+    const vsh = vehAsk ? store.shifts.find(x => x.id === vehAsk) : null;
+    const veh = vsh && !vsh.vehicle ? store.settings.vehicles.find(v => vkey(v) === $('ppVehSel').value) || null : null;
+    const osh = odoAsk && ov !== '' ? store.shifts.find(x => x.id === odoAsk.id) : null;
+    if (osh && osh.odo){
+      const o = osh.odo;
+      if (o[odoAsk.which] != null){ $('ppErr').textContent = 'この' + (odoAsk.which === 's' ? '始業' : '終業') + 'のメーターは、もう入っています（' + fmtKm(o[odoAsk.which]) + 'km）。直すときは、一覧の「直す」から直してください。'; return; }
+      if (odoAsk.which === 'e' && o.s != null && ov < o.s){ $('ppErr').textContent = '終業のメーターが、始業（' + fmtKm(o.s) + 'km）より小さくなっています。数字を確かめてください。'; return; }
+      if (odoAsk.which === 's' && o.e != null && ov > o.e){ $('ppErr').textContent = '始業のメーターが、終業（' + fmtKm(o.e) + 'km）より大きくなっています。数字を確かめてください。'; return; }
+    }
+    const before = osh && promptTool ? clone(osh) : null, done = [];
+    if (fp){
+      (fp.holder || fp.meta).place = pv;
+      if ($('placeRemember').checked && store.settings.places.indexOf(pv) < 0 && store.settings.places.length < 30) store.settings.places.push(pv);
+      if (placeTarget.kind === 'start') store.settings.startPlace = pv;
+      done.push('場所：' + pv);
+    }
+    if (veh){ vsh.vehicle = clone(veh); store.settings.lastVehicle = clone(veh); done.push('車両：' + vehLabel(veh)); }
+    let odoMsg = '', check = '';
+    if (osh){
+      const k = odoAsk.which, o = osh.odo || (osh.odo = { s: null, e: null, sAt: null, eAt: null, sRec: null, eRec: null });
+      o[k] = ov; o[k + 'At'] = Date.now(); o[k + 'Rec'] = 'now';
+      odoMsg = (k === 's' ? '始業' : '終業') + 'のメーター ' + fmtKm(ov) + 'km';
+      const d = odoDist(osh);
+      if (d != null) odoMsg += '（走行 ' + fmtKm(d) + 'km）';
+      if (d != null && d > ODO_CHECK_KM) check = '1回の勤務で ' + fmtKm(d) + 'km になっています。数字が合っているか確かめてください';
+    }
+    if (fp || veh || osh) save();
+    const tool = promptTool;
+    hidePlacePrompt();
+    if (tool && before){ toast(odoMsg + 'を残しました。', { id: before.id, before }); if (check) toastAdd(check); }
+    else { done.forEach(toastAdd); if (odoMsg) toastAdd(odoMsg); if (check) toastAdd(check); }
+    renderAll();
+  }
+  $('placeSave').addEventListener('click', () => savePrompt(null));
+  $('placeChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-place]'); if (!b) return;
+    if (!odoAsk && !vehAsk){ savePrompt(b.dataset.place); return; }
+    $('placeInput').value = b.dataset.place;   // the meter is still to come, so the chip only fills the box
+    if (odoAsk) $('odoInput').focus();
+  });
+  $('odoInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !isIme(e)){ e.preventDefault(); savePrompt(null); } });
+  $('odoInput').addEventListener('input', () => { $('ppErr').textContent = ''; });
+
+  // the meter can also be put in later, while the prompt after the press is gone (点検 often takes longer than 10 minutes)
+  function odoTarget(){
+    if (!usesOdo()) return null;
+    const sh = openShift();
+    if (sh){ const o = sh.odo || {}; return o.s == null ? { id: sh.id, which: 's' } : o.e == null ? { id: sh.id, which: 'e' } : null; }
+    const last = store.shifts.filter(x => x.end != null).sort((a, b) => b.end - a.end)[0];
+    return last && (!last.odo || last.odo.e == null) && Date.now() - last.end < 12 * HOUR ? { id: last.id, which: 'e' } : null;
+  }
+  $('btnOdo').addEventListener('click', () => {
+    sync();
+    const t = odoTarget(); if (!t){ renderAll(); return; }
+    openPrompt(null, null, t, true); renderNow(); $('odoInput').focus();
+  });
 
   // saved places: registered by the driver, picked above the buttons
   function renderPick(){
@@ -804,8 +997,54 @@ function transferValues(s){
     if (store.settings.startPlace === p) store.settings.startPlace = '';
     save(); renderPlacesPanel(); renderNow();
   });
-  $('placeInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !isIme(e)){ e.preventDefault(); $('placeSave').click(); } });
-  $('placeSkip').addEventListener('click', hidePlacePrompt);
+  $('placeInput').addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || isIme(e)) return;
+    e.preventDefault();
+    if (odoAsk) $('odoInput').focus(); else $('placeSave').click();   // with the meter still to come, Enter moves on to it
+  });
+  $('placeSkip').addEventListener('click', () => { hidePlacePrompt(); renderNow(); });
+
+  // ---------- vehicles: registered by the driver, picked before 始業 ----------
+  function renderVPick(){
+    const vs = store.settings.vehicles, sel = $('vehSel'), sh = openShift();
+    const html = '<option value="">選ばない</option>' + vs.map(v => '<option value="' + esc(vkey(v)) + '">' + esc(vehLabel(v)) + '</option>').join('');
+    const has = k => vs.some(v => vkey(v) === k);
+    if (html !== lastVPick){ const cur = sel.value; sel.innerHTML = html; lastVPick = html; sel.value = has(cur) ? cur : ''; }
+    const key = sh ? 'work' : 'off';
+    if (key !== vpickState){ vpickState = key; if (key === 'off') sel.value = has(vkey(store.settings.lastVehicle)) ? vkey(store.settings.lastVehicle) : ''; }
+    $('vpick').hidden = !!sh;
+    if (sh) $('vehsPanel').hidden = true;
+    sel.hidden = !vs.length; $('vpickHint').hidden = vs.length > 0;
+    $('btnVehs').textContent = vs.length ? '登録・消す' : '車両を登録する';
+  }
+  function renderVehsPanel(){
+    const vs = store.settings.vehicles;
+    $('savedVehs').innerHTML = vs.length ? vs.map(v => '<li><span>' + esc(vehLabel(v)) + '</span><button type="button" class="link" data-delveh="' + esc(vkey(v)) + '">消す</button></li>').join('') : '<li class="none">まだ登録していません。</li>';
+  }
+  $('btnVehs').addEventListener('click', () => { sync(); renderVehsPanel(); refreshPlaceList(); $('vehsPanel').hidden = !$('vehsPanel').hidden; if (!$('vehsPanel').hidden) $('newVehKind').focus(); });
+  $('btnVehsClose').addEventListener('click', () => { $('vehsPanel').hidden = true; });
+  $('btnAddVeh').addEventListener('click', () => {
+    const v = cleanVeh({ kind: $('newVehKind').value, no: $('newVehNo').value });
+    if (!v){ $('newVehKind').focus(); return; }
+    sync();
+    const vs = store.settings.vehicles;
+    if (!vs.some(x => vkey(x) === vkey(v))){
+      if (vs.length >= MAX_VEH){ notice('登録できる車両は' + MAX_VEH + '台までです。使わない車両を消してから登録してください。'); return; }
+      vs.push(v); save();
+    }
+    $('newVehKind').value = ''; $('newVehNo').value = ''; renderVehsPanel(); renderNow(); $('vehSel').value = vkey(v);
+  });
+  $('newVehKind').addEventListener('keydown', e => { if (e.key === 'Enter' && !isIme(e)){ e.preventDefault(); $('newVehNo').focus(); } });
+  $('newVehNo').addEventListener('keydown', e => { if (e.key === 'Enter' && !isIme(e)){ e.preventDefault(); $('btnAddVeh').click(); } });
+  $('savedVehs').addEventListener('click', e => {
+    const b = e.target.closest('[data-delveh]'); if (!b) return;
+    const k = b.dataset.delveh, v = store.settings.vehicles.find(x => vkey(x) === k); if (!v) return;
+    if (!confirm('「' + vehLabel(v) + '」を登録から消しますか？今までの記録に残した車両は消えません。')) return;
+    sync();
+    store.settings.vehicles = store.settings.vehicles.filter(x => vkey(x) !== k);
+    if (vkey(store.settings.lastVehicle) === k) store.settings.lastVehicle = null;
+    save(); renderVehsPanel(); renderNow();
+  });
 
   // ---------- notes with the time they were written ----------
   $('btnNote').addEventListener('click', () => {
@@ -813,7 +1052,7 @@ function transferValues(s){
     const sh = openShift() || latestShift(); if (!sh) return;
     $('noteLabel').textContent = 'メモ（' + mdw(sh.start) + 'の勤務に残します）';
     $('notePrompt').dataset.id = sh.id;
-    $('placePrompt').hidden = true;
+    hidePlacePrompt();
     $('notePrompt').hidden = false; $('noteInput').focus();
   });
   $('noteSave').addEventListener('click', () => {
@@ -853,12 +1092,16 @@ function transferValues(s){
   // ---------- the card at the top ----------
   function renderNow(){
     refreshUndo();
-    if (placeTarget && Date.now() - placeTarget.shownAt > UNDO_MIN * 60000) hidePlacePrompt();
+    if (!$('placePrompt').hidden && Date.now() - promptAt > UNDO_MIN * 60000) hidePlacePrompt();
     const sh = openShift(), A = $('actions');
     const btn = (kind, label, cls, sub) => '<button type="button" class="act ' + (cls || '') + '" data-act="' + kind + '">' + label + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
     if (!geoPending) $('geoToggle').checked = !!store.settings.geo;
     $('nowTools').hidden = !store.shifts.length;
+    const ot = odoTarget();
+    $('btnOdo').hidden = !ot || (!!odoAsk && !$('placePrompt').hidden);
+    if (ot) $('btnOdo').textContent = (ot.which === 's' ? '始業' : '終業') + 'のメーターを入れる';
     renderPick();
+    renderVPick();
     renderRemind();
     let html;
     if (!sh){
@@ -869,7 +1112,7 @@ function transferValues(s){
       $('flags').hidden = true;
     } else {
       const b = openOf(sh.breaks), w = openOf(sh.waits);
-      const since = '始業 ' + mdw(sh.start) + ' ' + clock(sh.start) + '（拘束 ' + fmtHM((Date.now() - sh.start) / HOUR) + '）';
+      const since = '始業 ' + mdw(sh.start) + ' ' + clock(sh.start) + '（拘束 ' + fmtHM((Date.now() - sh.start) / HOUR) + '）' + (sh.vehicle ? ' ・ ' + vehLabel(sh.vehicle) : '');
       if (b){ $('state').textContent = '休憩中'; $('stateSub').textContent = clock(b.s) + ' から ・ ' + since; }
       else if (w){ $('state').textContent = '荷待ち・待機中'; $('stateSub').textContent = clock(w.s) + ' から ・ ' + since; }
       else { $('state').textContent = '勤務中'; $('stateSub').textContent = since; }
@@ -923,6 +1166,17 @@ function transferValues(s){
     const n = sh.notes || [];
     return n.length ? '<ul class="sh-notes">' + n.map(x => '<li><span class="k">メモ ' + (dayKey(x.at) === dayKey(sh.start) ? clock(x.at) : mdhm(x.at)) + '</span>' + esc(x.text) + '</li>').join('') + '</ul>' : '';
   }
+  function vehOdoHtml(sh){
+    const parts = [], o = sh.odo;
+    if (sh.vehicle) parts.push('<span><span class="k">車両</span>' + esc(vehLabel(sh.vehicle)) + '</span>');
+    if (o && (o.s != null || o.e != null)){
+      const d = odoDist(sh);
+      const txt = o.s != null && o.e != null ? fmtKm(o.s) + ' → ' + fmtKm(o.e) + 'km' + (d != null ? '（走行 ' + fmtKm(d) + 'km）' : '')
+        : o.s != null ? '始業 ' + fmtKm(o.s) + 'km' : '終業 ' + fmtKm(o.e) + 'km';
+      parts.push('<span><span class="k">メーター</span>' + esc(txt) + '</span>');
+    }
+    return parts.length ? '<p class="sh-veh">' + parts.join('') + '</p>' : '';
+  }
   const isEdited = sh => (sh.history || []).some(h => h.kind === 'edit');
   function tagsHtml(sh){
     return (sh.holiday ? '<span class="tag">法定休日</span>' : '') + (sh.lodging ? '<span class="tag">宿泊を伴う長距離</span>' : '') +
@@ -947,7 +1201,9 @@ function transferValues(s){
       tile('法定休日の労働', fmtHM(s.holidayWork), '') +
       tile('荷待ち・待機', fmtHM(s.wait), '労働時間に入っています') +
       tile('いちばん短い休息期間', s.minRest == null ? '―' : fmtHM(s.minRest), '基本11時間・下限9時間', minRestState) +
-      tile('1日の拘束（いちばん長い日）', s.maxB24 == null ? '―' : fmtHM(s.maxB24), '始業から24時間で数える', maxB24State);
+      tile('1日の拘束（いちばん長い日）', s.maxB24 == null ? '―' : fmtHM(s.maxB24), '始業から24時間で数える', maxB24State) +
+      tile('走行距離', s.km == null ? '―' : fmtKm(s.km) + '<small>km</small>', s.kmCount ? 'メーターを入れた' + s.kmCount + '回分の合計'
+        : usesOdo() ? '始業と終業のメーターを入れると出ます' : '車両を登録すると、始業と終業にメーターを入れられます');
 
     const alerts = [], g = { bBad: [], bWarn: [], rBad: [], rWarn: [] };
     const dd = ms => new Date(ms).getDate() + '日';
@@ -969,11 +1225,11 @@ function transferValues(s){
 
     const open = openShift(), items = [];
     if (open && monthKey(open.start) === viewYm){
-      items.push('<li class="shift open"><div class="sh-top"><span class="sh-date">' + mdw(open.start) + '</span><span class="sh-time">' + clock(open.start) + '〜</span><span class="tag">勤務中</span>' + tagsHtml(open) + '</div>' + placesHtml(open) + notesHtml(open) +
+      items.push('<li class="shift open"><div class="sh-top"><span class="sh-date">' + mdw(open.start) + '</span><span class="sh-time">' + clock(open.start) + '〜</span><span class="tag">勤務中</span>' + tagsHtml(open) + '</div>' + vehOdoHtml(open) + placesHtml(open) + notesHtml(open) +
         '<div class="sh-checks"><span class="tile-sub">終業を押すと、時間とチェックが出ます</span><span class="sh-btns"><button type="button" class="btn small" data-edit="' + esc(open.id) + '">直す</button></span></div></li>');
     }
     s.shifts.slice().reverse().forEach(x => {
-      items.push('<li class="shift"><div class="sh-top"><span class="sh-date">' + mdw(x.sh.start) + '</span><span class="sh-time">' + span(x.sh.start, x.sh.end) + '</span>' + tagsHtml(x.sh) + '</div>' + placesHtml(x.sh) + notesHtml(x.sh) +
+      items.push('<li class="shift"><div class="sh-top"><span class="sh-date">' + mdw(x.sh.start) + '</span><span class="sh-time">' + span(x.sh.start, x.sh.end) + '</span>' + tagsHtml(x.sh) + '</div>' + vehOdoHtml(x.sh) + placesHtml(x.sh) + notesHtml(x.sh) +
         '<div class="sh-nums">拘束 ' + fmtHM(x.bound) + '／休憩 ' + fmtHM(x.brk) + (x.wait > 0 ? '／荷待ち・待機 ' + fmtHM(x.wait) : '') + '／労働 ' + fmtHM(x.work) + (x.night > 0 ? '／深夜 ' + fmtHM(x.night) : '') + '</div>' +
         '<div class="sh-checks"><span class="tile-sub">1日の拘束</span>' + chip(x.bState) + '<span class="tile-sub">' + fmtHM(x.b24) + '</span>' +
         (x.rest != null ? '<span class="tile-sub sep">休息</span>' + chip(x.rState) + '<span class="tile-sub">' + fmtHM(x.rest) + '</span>' : '') +
@@ -1004,9 +1260,14 @@ function transferValues(s){
     const L = ['【勤務の記録】' + mdw(sh.start)];
     const mark = r => r === REC.button ? '' : '（' + r + '）';
     const at = (k, ms, m) => k + ' ' + mdhm(ms) + (m && m.place ? ' ' + m.place : '') + mark(recOf(m));
+    if (sh.vehicle) L.push('車両 ' + vehLabel(sh.vehicle));
     L.push(at('始業', sh.start, sh.startMeta));
     periods(sh).forEach(([k, p]) => L.push(k + ' ' + pspan(p, sh.start) + (p.place ? ' ' + p.place : '') + mark(recP(p))));
     L.push(at('終業', sh.end, sh.endMeta));
+    const o = sh.odo, dist = odoDist(sh);
+    if (o && o.s != null) L.push('始業のメーター ' + fmtKm(o.s) + 'km' + odoWhen(o, 's', sh.start));
+    if (o && o.e != null) L.push('終業のメーター ' + fmtKm(o.e) + 'km' + odoWhen(o, 'e', sh.start));
+    if (dist != null) L.push('走行距離 ' + fmtKm(dist) + 'km');
     if (x){
       L.push('拘束 ' + fmtHM(x.bound) + '／休憩 ' + fmtHM(x.brk) + (x.wait > 0 ? '／荷待ち・待機 ' + fmtHM(x.wait) : '') + '／労働 ' + fmtHM(x.work) + (x.night > 0 ? '／深夜 ' + fmtHM(x.night) : ''));
       L.push('1日の拘束（始業から24時間）' + fmtHM(x.b24) + '：' + CHIP[x.bState]);
@@ -1051,7 +1312,7 @@ function transferValues(s){
   let editId = null, editSkel = null;
   // what the editor shows; if this changes while the editor is open, saving would mix two versions
   const skel = sh => JSON.stringify([sh.start, sh.end, sh.holiday, sh.lodging, sh.breaks.map(p => [p.id, p.s, p.e, p.place]), sh.waits.map(p => [p.id, p.s, p.e, p.place]),
-    sh.notes.map(n => [n.at, n.text]), sh.startMeta && sh.startMeta.place, sh.endMeta && sh.endMeta.place]);
+    sh.notes.map(n => [n.at, n.text]), sh.startMeta && sh.startMeta.place, sh.endMeta && sh.endMeta.place, vkey(sh.vehicle), sh.odo && [sh.odo.s, sh.odo.e]]);
   function perRow(p, idx){
     return '<div class="per" data-orig="' + (idx == null ? '' : idx) + '"><label>から<input type="datetime-local" class="ps" value="' + toInput(p ? p.s : null) + '"></label>' +
       '<label>まで<input type="datetime-local" class="pe" value="' + toInput(p ? p.e : null) + '"></label>' +
@@ -1085,6 +1346,11 @@ function transferValues(s){
     $('eEnd').value = toInput(sh ? sh.end : null);
     $('eStartPlace').value = sh && sh.startMeta ? sh.startMeta.place || '' : '';
     $('eEndPlace').value = sh && sh.endMeta ? sh.endMeta.place || '' : '';
+    $('eVehKind').value = sh && sh.vehicle ? sh.vehicle.kind : '';
+    $('eVehNo').value = sh && sh.vehicle ? sh.vehicle.no : '';
+    $('eOdoS').value = sh && sh.odo && sh.odo.s != null ? String(sh.odo.s) : '';
+    $('eOdoE').value = sh && sh.odo && sh.odo.e != null ? String(sh.odo.e) : '';
+    editorOdoNote();
     fillPers($('eBreaks'), sh ? sh.breaks : []);
     fillPers($('eWaits'), sh ? sh.waits : []);
     $('eHoliday').checked = !!(sh && sh.holiday); $('eLodging').checked = !!(sh && sh.lodging);
@@ -1102,6 +1368,12 @@ function transferValues(s){
     if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
   }
   function closeEditor(){ const dlg = $('dlg'); if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); }
+  function editorOdoNote(){
+    const a = parseOdo($('eOdoS').value), b = parseOdo($('eOdoE').value);
+    $('eOdoNote').textContent = typeof a === 'number' && typeof b === 'number'
+      ? (b >= a ? '走行距離 ' + fmtKm(Math.round((b - a) * 10) / 10) + 'km' : '終業のメーターが始業より小さくなっています。') : '';
+  }
+  ['eOdoS', 'eOdoE'].forEach(id => $(id).addEventListener('input', editorOdoNote));
   $('eCancel').addEventListener('click', closeEditor);
   $('dlgForm').addEventListener('input', () => { $('eErr').textContent = ''; });
   $('btnAdd').addEventListener('click', () => openEditor(null));
@@ -1159,6 +1431,12 @@ function transferValues(s){
       }
       const clash = store.shifts.find(x => x.id !== editId && s < (x.end == null ? Infinity : x.end) && (e == null ? Infinity : e) > x.start);
       if (clash) throw 'ほかの記録（' + mdw(clash.start) + ' ' + span(clash.start, clash.end) + '）と時間が重なっています。';
+      const vk = $('eVehKind').value.trim().slice(0, 20), vn = $('eVehNo').value.trim().slice(0, 30);
+      const vehicle = vk || vn ? { kind: vk, no: vn } : null;
+      const os = parseOdo($('eOdoS').value), oe = parseOdo($('eOdoE').value);
+      if (os === null) throw '始業のメーターは数字で入れてください（例：123456）。';
+      if (oe === null) throw '終業のメーターは数字で入れてください（例：123456）。';
+      if (os !== '' && oe !== '' && oe < os) throw '終業のメーターが始業のメーターより小さくなっています。';
 
       const sp = $('eStartPlace').value.trim().slice(0, 60), ep = $('eEndPlace').value.trim().slice(0, 60);
       let startMeta, endMeta = null;
@@ -1189,6 +1467,17 @@ function transferValues(s){
       const nv = $('eNote').value.trim().slice(0, 400);
       if (nv) notes.push({ at: now, text: nv });
 
+      // the vehicle and the meter; a number put in or changed here keeps the time it was put in, and a change keeps the old number
+      if (old && vkey(old.vehicle) !== vkey(vehicle)) info.push('車両 ' + (old.vehicle ? '「' + vehLabel(old.vehicle) + '」' : '（なし）') + ' → ' + (vehicle ? '「' + vehLabel(vehicle) + '」' : '（なし）'));
+      const oo = (old && old.odo) || {}, odo = {};
+      [['s', os, '始業'], ['e', oe, '終業']].forEach(([k, v, label]) => {
+        const was = oo[k] == null ? null : oo[k], val = v === '' ? null : v;
+        odo[k] = val;
+        if (val === was){ odo[k + 'At'] = val == null || oo[k + 'At'] == null ? null : oo[k + 'At']; odo[k + 'Rec'] = val == null ? null : oo[k + 'Rec'] || null; return; }
+        odo[k + 'At'] = val == null ? null : now; odo[k + 'Rec'] = val == null ? null : was == null ? 'manual' : 'edited';
+        if (old) info.push(label + 'のメーター ' + (was == null ? '（なし）' : fmtKm(was) + 'km') + ' → ' + (val == null ? '（なし）' : fmtKm(val) + 'km'));
+      });
+
       const history = old ? old.history.slice() : [];
       const edits = head.concat(changed);
       if (!old) history.push({ at: now, kind: 'add', what: '記録を手で足した（' + mdhm(s) + '〜' + (e == null ? '' : mdhm(e)) + '）' });
@@ -1200,7 +1489,8 @@ function transferValues(s){
       const u = { id: old ? old.id : null, before: old ? clone(old) : null };
       const rec = Object.assign({}, old || {}, {
         id: old ? old.id : newId(), start: s, end: e, breaks: breaks.sort((a, b) => a.s - b.s), waits: waits.sort((a, b) => a.s - b.s), holiday: $('eHoliday').checked, lodging: $('eLodging').checked,
-        src: old ? (old.src || 'legacy') : 'manual', created: old ? (old.created || null) : now, startMeta, endMeta, history, notes
+        src: old ? (old.src || 'legacy') : 'manual', created: old ? (old.created || null) : now, startMeta, endMeta, history, notes,
+        vehicle, odo: odo.s == null && odo.e == null ? null : odo
       });
       u.id = rec.id;
       const i = store.shifts.findIndex(x => x.id === rec.id);
@@ -1242,14 +1532,17 @@ function transferValues(s){
     const ll = m => hasLoc(m) ? (+m.loc.lat) + ' ' + (+m.loc.lng) + (fin(m.loc.acc) ? ' ±' + m.loc.acc + 'm' : '') : '';
     const per = (list, base) => list.map(p => pspan(p, base) + (p.place ? ' ' + p.place : '') + (hasLoc(p.sMeta) ? ' (' + ll(p.sMeta) + ')' : '') + (hasLoc(p.eMeta) ? ' (おわり ' + ll(p.eMeta) + ')' : '') + ' [' + recP(p) + ']').join(' / ');
     const head = ['日付', '曜日', '始業', '終業', '拘束(時間)', '休憩(時間)', '荷待ち・待機(時間)', '労働(時間)', '深夜(時間)', '始業から24時間の拘束(時間)', '休息期間(時間)', '法定休日', '宿泊を伴う長距離',
+      '車種', '車番', '始業のメーター(km)', '終業のメーター(km)', '走行距離(km)',
       '始業の場所', '始業の位置', '終業の場所', '終業の位置', '休憩', '荷待ち・待機', 'メモ', '記録の仕方', '変更', '送った日時'];
     const rows = [head];
     a.info.forEach(x => {
-      const sh = x.sh;
+      const sh = x.sh, o = sh.odo || {}, d = odoDist(sh);
+      const odoRec = ['s', 'e'].filter(k => o[k] != null).map(k => (k === 's' ? '始業' : '終業') + 'のメーター：' + odoWhenLong(o, k));
       rows.push([x.day, WD[new Date(sh.start).getDay()], toInput(sh.start).replace('T', ' '), toInput(sh.end).replace('T', ' '), h2(x.bound), h2(x.brk), h2(x.wait), h2(x.work), h2(x.night), h2(x.b24), x.rest == null ? '' : h2(x.rest), sh.holiday ? '○' : '', sh.lodging ? '○' : '',
+        sh.vehicle ? sh.vehicle.kind : '', sh.vehicle ? sh.vehicle.no : '', o.s == null ? '' : String(o.s), o.e == null ? '' : String(o.e), d == null ? '' : String(d),
         (sh.startMeta && sh.startMeta.place) || '', ll(sh.startMeta), (sh.endMeta && sh.endMeta.place) || '', ll(sh.endMeta), per(sh.breaks, sh.start), per(sh.waits, sh.start),
         sh.notes.map(n => mdhm(n.at) + ' ' + n.text).join(' / '),
-        '始業：' + recOf(sh.startMeta) + ' / 終業：' + recOf(sh.endMeta), sh.history.map(h => stamp(h.at) + ' ' + h.what).join(' / '),
+        ['始業：' + recOf(sh.startMeta), '終業：' + recOf(sh.endMeta)].concat(odoRec).join(' / '), sh.history.map(h => stamp(h.at) + ' ' + h.what).join(' / '),
         sh.sharedAt ? stamp(sh.sharedAt) + (sh.sharedVia === 'copy' ? '（コピー）' : '') : '']);
     });
     store.audit.forEach(x => { const r = head.map(() => ''); r[0] = '消した・戻した記録'; r[head.indexOf('変更')] = stamp(x.at) + ' ' + x.what; rows.push(r); });
@@ -1281,7 +1574,8 @@ function transferValues(s){
       const before = JSON.stringify(store);
       const audit = mergeAudit(store.audit, fresh.audit);
       audit.push({ aid: newId(), at: Date.now(), what: 'バックアップ（' + when + '、' + fresh.shifts.length + '件）から戻した。戻す前の記録' + cur.length + '件の写しを残した', shifts: clone(cur) });
-      store = { v: 1, shifts: fresh.shifts, settings: Object.assign({}, store.settings, { places: cleanPlaces(store.settings.places.concat(fresh.settings.places)) }), audit };
+      store = { v: 1, shifts: fresh.shifts, audit, settings: Object.assign({}, store.settings, { places: cleanPlaces(store.settings.places.concat(fresh.settings.places)),
+        vehicles: cleanVehicles(store.settings.vehicles.concat(fresh.settings.vehicles)), lastVehicle: store.settings.lastVehicle || fresh.settings.lastVehicle }) };
       save(); hidePlacePrompt(); toast('バックアップから戻しました。', { store: before });
       const open = openShift(); viewYm = monthKey(open ? open.start : Date.now()); renderAll();
     };

@@ -41,6 +41,7 @@ const J = s => new Date(s + '+09:00');
     await page.click('[data-act="start"]');
     check('start -> 勤務中', (await page.locator('#state').innerText()) === '勤務中');
     check('place prompt for start', await page.locator('#placePrompt').isVisible() && /始業の場所/.test(await page.locator('#placeLabel').innerText()));
+    check('no meter or vehicle asked without a registered vehicle', await page.locator('#ppOdo').isHidden() && await page.locator('#ppVeh').isHidden() && await page.locator('#btnOdo').isHidden());
     await page.screenshot({ path: out + '/v2-start-prompt.png' });
     await page.fill('#placeInput', '東京営業所');
     await page.click('#placeSave');
@@ -288,7 +289,9 @@ const J = s => new Date(s + '+09:00');
     const evil = { v: 1, exportedAt: '<i>x</i>', shifts: [{ id: 'a"><img src=x onerror="window.__pwn=1">', start: J('2026-10-05T06:00:00').getTime(), end: J('2026-10-05T15:00:00').getTime(),
       breaks: [{ s: J('2026-10-05T12:00:00').getTime(), e: J('2026-10-05T13:00:00').getTime(), place: '<img src=x onerror="window.__pwn=3">', sMeta: { rec: '<b>', loc: { lat: '1" onmouseover="window.__pwn=4', lng: 2 } } }], waits: [],
       startMeta: { rec: 'button', at: 0, loc: { lat: '1" onmouseover="x', lng: 2 }, place: '<b>太字</b>' }, notes: [{ at: 0, text: '<img src=x onerror="window.__pwn=2">' }],
+      vehicle: { kind: '<img src=x onerror="window.__pwn=7">', no: '"><b>9</b>' }, odo: { s: '1" onmouseover="x', e: 5, eAt: '<i>', eRec: '<b>' },
       history: [{ at: 0, kind: 'edit', what: '<img src=x onerror="window.__pwn=5">' }] }],
+      settings: { vehicles: [{ kind: '<img src=x onerror="window.__pwn=8">', no: '1' }, 'x', null] },
       audit: [{ at: 0, what: '<img src=x onerror="window.__pwn=6">' }] };
     const p = out + '/evil.json'; fs.writeFileSync(p, JSON.stringify(evil));
     page.once('dialog', d => d.accept());
@@ -297,8 +300,11 @@ const J = s => new Date(s + '+09:00');
     await page.locator('#shifts [data-edit]').first().click();
     await page.click('#eCancel');
     await page.waitForTimeout(200);
+    await page.click('#btnVehs');
     check('crafted backup restored as text', (await page.locator('#shifts > li').count()) === 1 && /<b>太字<\/b>/.test(await page.locator('#shifts').innerText()));
-    check('no injected elements', (await page.locator('#shifts img, #auditList img, #eNotes img, #eHist img, #shifts a[onmouseover]').count()) === 0);
+    check('crafted vehicle and meter shown as text (車種 cut to 20 characters)', (await page.locator('#shifts').innerText()).includes('<img src=x onerror="・"><b>9</b>') && /終業 5km/.test(await page.locator('#shifts').innerText()) &&
+      (await page.locator('#savedVehs li').count()) === 1, await page.locator('#shifts').innerText());
+    check('no injected elements', (await page.locator('#shifts img, #shifts b, #auditList img, #eNotes img, #eHist img, #savedVehs img, #shifts a[onmouseover]').count()) === 0);
     check('no script ran', (await page.evaluate(() => window.__pwn)) === undefined);
     check('bad location gives no map link', (await page.locator('#shifts a[href*="maps"]').count()) === 0);
     await ctx.close();
@@ -436,7 +442,8 @@ const J = s => new Date(s + '+09:00');
     await at('2026-10-14T06:00:00');
     await page.click('[data-act="start"]');
     let st = await page.evaluate(() => JSON.parse(localStorage.getItem('dpc_log_v1')));
-    check('start with the picked place, no prompt', st.shifts[0].startMeta.place === '〇〇運輸 本社車庫' && await page.locator('#placePrompt').isHidden() && /場所：〇〇運輸 本社車庫/.test(await page.locator('#toastText').innerText()));
+    check('start with the picked place, no prompt (no vehicle registered, so no meter either)', st.shifts[0].startMeta.place === '〇〇運輸 本社車庫' && await page.locator('#placePrompt').isHidden() &&
+      await page.locator('#btnOdo').isHidden() && /場所：〇〇運輸 本社車庫/.test(await page.locator('#toastText').innerText()));
     check('picker resets while working', (await page.inputValue('#placeSel')) === '');
     await at('2026-10-14T09:00:00');
     await page.click('[data-act="wait"]');
@@ -459,6 +466,154 @@ const J = s => new Date(s + '+09:00');
     check('deleting a place keeps the records', st.settings.places.indexOf('〇〇センター') < 0 && st.shifts[0].waits[0].place === '〇〇センター');
     await page.click('#btnPlacesClose');
     await noHScroll(page, 'G');
+    await ctx.close();
+  }
+
+
+  // ---------- H. vehicles (車種・車番) picked before 始業, and the meter at 始業 and 終業 ----------
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, timezoneId: 'Asia/Tokyo', locale: 'ja-JP', acceptDownloads: true,
+      permissions: ['clipboard-read', 'clipboard-write'] });
+    const page = await ctx.newPage(); watch(page, 'H');
+    await page.clock.install({ time: J('2026-10-15T05:50:00') });
+    await page.goto(base + 'log.html');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    const at = s => page.clock.setSystemTime(J(s));
+    const store = () => page.evaluate(() => JSON.parse(localStorage.getItem('dpc_log_v1')));
+    const flat = async sel => (await page.locator(sel).innerText()).replace(/\s/g, '');
+
+    check('no vehicles yet: hint shown', await page.locator('#vpickHint').isVisible() && await page.locator('#vehSel').isHidden());
+    await page.click('#btnVehs');
+    await page.fill('#newVehKind', '10t車'); await page.fill('#newVehNo', '12-34'); await page.click('#btnAddVeh');
+    await page.fill('#newVehKind', '4t車'); await page.press('#newVehKind', 'Enter'); await page.fill('#newVehNo', '56-78'); await page.press('#newVehNo', 'Enter');
+    check('vehicles registered', (await page.locator('#savedVehs li').count()) === 2 && (await page.locator('#vehSel option').count()) === 3);
+    check('the vehicle just registered is picked', (await page.locator('#vehSel option:checked').innerText()) === '4t車・56-78');
+    await page.screenshot({ path: out + '/v3-vehicle-panel.png' });
+    await page.click('#btnVehsClose');
+    await page.selectOption('#vehSel', { label: '10t車・12-34' });
+    await page.screenshot({ path: out + '/v3-vehicle-pick.png' });
+    await noHScroll(page, 'H pick');
+
+    await at('2026-10-15T06:00:00');
+    await page.click('[data-act="start"]');
+    let st = await store();
+    check('start with the picked vehicle', st.shifts[0].vehicle && st.shifts[0].vehicle.kind === '10t車' && st.shifts[0].vehicle.no === '12-34' && st.settings.lastVehicle.no === '12-34', JSON.stringify(st.shifts[0].vehicle));
+    check('vehicle shown while working, picker hidden', /10t車・12-34/.test(await page.locator('#stateSub').innerText()) && await page.locator('#vpick').isHidden());
+    check('start prompt asks place and meter, not the vehicle', await page.locator('#ppPlace').isVisible() && await page.locator('#ppOdo').isVisible() && await page.locator('#ppVeh').isHidden() &&
+      /始業のメーター/.test(await page.locator('#odoLabel').innerText()));
+    check('toast mentions the vehicle', /車両：10t車・12-34/.test(await page.locator('#toastText').innerText()));
+    await page.screenshot({ path: out + '/v3-start-prompt.png' });
+    await page.fill('#placeInput', '本社車庫');
+    await page.fill('#odoInput', 'abc');
+    await page.click('#placeSave');
+    check('bad meter refused, nothing saved', /数字で/.test(await page.locator('#ppErr').innerText()) && !(await store()).shifts[0].startMeta.place);
+    await page.fill('#odoInput', '１２３，４５６');   // full-width digits and comma from a Japanese keyboard
+    await page.click('#placeSave');
+    st = await store();
+    check('start meter saved from full-width input', st.shifts[0].odo.s === 123456 && st.shifts[0].odo.sRec === 'now' && st.shifts[0].startMeta.place === '本社車庫' && await page.locator('#placePrompt').isHidden(), JSON.stringify(st.shifts[0].odo));
+    check('toast mentions place and meter', /場所：本社車庫/.test(await page.locator('#toastText').innerText()) && /始業のメーター 123,456km/.test(await page.locator('#toastText').innerText()), await page.locator('#toastText').innerText());
+    check('meter tool now offers the end', (await page.locator('#btnOdo').innerText()) === '終業のメーターを入れる');
+    check('open shift shows vehicle and meter', /車両10t車・12-34/.test(await flat('.shift.open')) && /始業123,456km/.test(await flat('.shift.open')), await flat('.shift.open'));
+
+    await at('2026-10-15T18:00:00');
+    await page.click('[data-act="end"]');
+    check('end prompt asks the end meter, with the start as a hint', await page.locator('#ppOdo').isVisible() && /終業のメーター/.test(await page.locator('#odoLabel').innerText()) &&
+      /始業は 123,456km/.test(await page.locator('#odoHint').innerText()));
+    await page.fill('#odoInput', '123000');
+    await page.press('#odoInput', 'Enter');
+    check('end meter smaller than the start refused', /始業（123,456km）より小さく/.test(await page.locator('#ppErr').innerText()));
+    await page.fill('#odoInput', '123789');
+    await page.press('#odoInput', 'Enter');
+    st = await store();
+    check('end meter saved', st.shifts[0].odo.e === 123789 && await page.locator('#placePrompt').isHidden());
+    check('list shows the distance', /123,456→123,789km（走行333km）/.test(await flat('#shifts')), (await flat('#shifts')).slice(0, 200));
+    check('month tile shows the distance', /走行距離333km/.test(await flat('#tiles')) && /1回分/.test(await flat('#tiles')));
+    check('meter tool hidden when both are in', await page.locator('#btnOdo').isHidden());
+    await page.screenshot({ path: out + '/v3-after-day.png', fullPage: true });
+    await noHScroll(page, 'H after day');
+
+    await page.click('#btnShareNow');
+    await page.waitForTimeout(300);
+    const clip = (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, '\n');
+    check('share text has vehicle and meter', clip.includes('車両 10t車・12-34\n始業 10/15 6:00 本社車庫\n') && clip.includes('始業のメーター 123,456km（6:00 に入力）') &&
+      clip.includes('終業のメーター 123,789km（18:00 に入力）') && clip.includes('走行距離 333km'), clip);
+    fs.writeFileSync(out + '/share-text-vehicle.txt', clip);
+
+    // next day: the vehicle is picked again; if it is not, the prompt asks for it, and the hint shows this vehicle's last number
+    await at('2026-10-16T06:00:00');
+    check('next start picks the last vehicle', (await page.locator('#vehSel option:checked').innerText()) === '10t車・12-34');
+    await page.selectOption('#vehSel', '');
+    await page.click('[data-act="start"]');
+    check('prompt asks for the vehicle when none was picked', await page.locator('#ppVeh').isVisible() && await page.locator('#ppOdo').isVisible());
+    await page.selectOption('#ppVehSel', { label: '10t車・12-34' });
+    check('hint shows this vehicle’s last end', /前回この車の終業は 123,789km/.test(await page.locator('#odoHint').innerText()), await page.locator('#odoHint').innerText());
+    await page.screenshot({ path: out + '/v3-start-prompt-vehicle.png' });
+    await page.click('#placeSkip');
+    st = await store();
+    check('skipping saves nothing', !st.shifts[1].vehicle && !st.shifts[1].odo);
+
+    // the meter put in later with the tool, after the prompt is gone
+    await at('2026-10-16T06:25:00');
+    await page.click('#btnOdo');
+    check('tool opens the start meter only', await page.locator('#ppOdo').isVisible() && await page.locator('#ppPlace').isHidden() && /始業のメーター/.test(await page.locator('#odoLabel').innerText()));
+    await page.fill('#odoInput', '123,790 km');
+    await page.click('#placeSave');
+    st = await store();
+    check('tool saves with its own undo', st.shifts[1].odo && st.shifts[1].odo.s === 123790 && /始業のメーター 123,790kmを残しました/.test(await page.locator('#toastText').innerText()) &&
+      await page.locator('#btnUndo').isVisible(), await page.locator('#toastText').innerText());
+    await page.click('#btnUndo');
+    st = await store();
+    check('undo removes the tool entry', !st.shifts[1].odo || st.shifts[1].odo.s == null);
+    // a number that another tab put in first is not overwritten
+    await page.click('#btnOdo');
+    await page.evaluate(() => { const o = JSON.parse(localStorage.getItem('dpc_log_v1')); o.shifts[1].odo = { s: 111, e: null, sAt: Date.now(), eAt: null, sRec: 'now', eRec: null }; localStorage.setItem('dpc_log_v1', JSON.stringify(o)); });
+    await page.fill('#odoInput', '123790'); await page.click('#placeSave');
+    check('a number put in elsewhere is not overwritten', /もう入っています（111km）/.test(await page.locator('#ppErr').innerText()) && (await store()).shifts[1].odo.s === 111);
+    await page.click('#placeSkip');
+    check('the tool comes back after やめる', await page.locator('#btnOdo').isVisible() && (await page.locator('#btnOdo').innerText()) === '終業のメーターを入れる');   // the start (111) is in now
+    await page.evaluate(() => { const o = JSON.parse(localStorage.getItem('dpc_log_v1')); o.shifts[1].odo = null; localStorage.setItem('dpc_log_v1', JSON.stringify(o)); });
+    await page.click('#btnOdo'); await page.fill('#odoInput', '123790'); await page.click('#placeSave');
+
+    // fixing the vehicle and the meter in the editor leaves a trail
+    await at('2026-10-16T20:00:00');
+    await page.click('[data-act="end"]');
+    await page.fill('#odoInput', '124100'); await page.click('#placeSave');
+    await page.locator('#shifts [data-edit]').first().click();
+    check('editor shows vehicle and meter', (await page.inputValue('#eVehKind')) === '' && (await page.inputValue('#eOdoS')) === '123790' && (await page.inputValue('#eOdoE')) === '124100' &&
+      /走行距離 310km/.test(await page.locator('#eOdoNote').innerText()));
+    await page.fill('#eVehKind', '10t車'); await page.fill('#eVehNo', '12-34');
+    await page.fill('#eOdoE', '124000');
+    check('editor note follows the input', /走行距離 210km/.test(await page.locator('#eOdoNote').innerText()));
+    await page.screenshot({ path: out + '/v3-editor.png' });
+    await page.fill('#eOdoS', 'x');
+    await page.click('#eSave');
+    check('editor refuses a bad meter', /始業のメーターは数字で/.test(await page.locator('#eErr').innerText()));
+    await page.fill('#eOdoS', '123790');
+    await page.click('#eSave');
+    st = await store();
+    const sh2 = st.shifts.find(x => x.start === J('2026-10-16T06:00:00').getTime());
+    check('editor saved', sh2.vehicle && sh2.vehicle.no === '12-34' && sh2.odo.e === 124000 && sh2.odo.eRec === 'edited' && sh2.odo.sRec === 'now', JSON.stringify(sh2.odo));
+    check('history has vehicle and meter', sh2.history.some(h => /車両 （なし） → 「10t車・12-34」/.test(h.what) && /終業のメーター 124,100km → 124,000km/.test(h.what)), JSON.stringify(sh2.history));
+    check('month total', /走行距離543km/.test(await flat('#tiles')) && /2回分/.test(await flat('#tiles')), await flat('#tiles'));
+
+    const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#btnCsv')]);
+    const csv = fs.readFileSync(await dl.path(), 'utf8');
+    fs.writeFileSync(out + '/log-vehicle.csv', csv);
+    check('csv vehicle columns', /宿泊を伴う長距離,車種,車番,始業のメーター\(km\),終業のメーター\(km\),走行距離\(km\),始業の場所/.test(csv) && csv.includes(',10t車,12-34,123456,123789,333,') &&
+      csv.includes('終業のメーター：2026年10月16日 20:00 に直した') && csv.includes('始業のメーター：2026年10月15日 6:00 に入力'), csv.slice(0, 900));
+
+    // a backup keeps the vehicles; deleting a vehicle keeps the records
+    const [bk] = await Promise.all([page.waitForEvent('download'), page.click('#btnBackup')]);
+    const bkObj = JSON.parse(fs.readFileSync(await bk.path(), 'utf8'));
+    check('backup has vehicles and meters', bkObj.settings.vehicles.length === 2 && bkObj.shifts.every(x => x.odo && x.odo.e != null));
+    await page.click('#btnVehs');
+    page.once('dialog', d => d.accept());
+    await page.locator('#savedVehs li', { hasText: '10t車・12-34' }).locator('[data-delveh]').click();
+    st = await store();
+    check('deleting a vehicle keeps the records', st.settings.vehicles.length === 1 && st.shifts.every(x => x.vehicle && x.vehicle.no === '12-34') && !st.settings.lastVehicle);
+    await page.click('#btnVehsClose');
+    await noHScroll(page, 'H end');
     await ctx.close();
   }
 
