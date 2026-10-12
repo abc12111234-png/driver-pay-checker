@@ -402,7 +402,7 @@ tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
             <li>日給制の場合は「日給÷1日の所定労働時間」を時給にしています。週40時間を超えた時間のうち、その日の日給がすでに払われている分は、割増の部分（0.25倍、60時間超は0.5倍）だけを足しています。</li>
             <li>固定残業代は、契約書や就業規則で何時間分・いくらかがはっきりしていないと、残業代として認められないことがあります。その場合の目安も合わせて出しています。</li>
             <li>割増の計算から除く手当：家族手当、通勤手当、住宅手当など。最低賃金の計算から除く手当：皆勤・精勤手当、通勤手当、家族手当、残業代など。家族手当や住宅手当が全員一律の額の場合は、除けないことがあります。</li>
-            <li>車種の平均は、全日本トラック協会「2024年度版 トラック運送事業の賃金・労働時間等の実態」の男性運転者の数字（2024年5〜7月の1か月平均、時間外手当などを含み賞与を除く）です。平均の時給は、それをトラック運転者の平均的な労働時間（年約2,500時間＝月約208時間）で割った目安です。</li>
+            <li>車種の平均は、全日本トラック協会「2025年度版 トラック運送事業の賃金・労働時間等の実態」の男性運転者の数字（2025年5〜7月の1か月平均、時間外手当などを含み賞与を除く）です。ユニックや特殊車両だけの平均は、この調査にはないため、車の大きさで比べています。平均の時給は、それをトラック運転者の平均的な労働時間（年約2,500時間＝月約208時間）で割った目安です。</li>
             <li>変形労働時間制、法定内残業、休日の決め方、手当の中身によって結果は変わります。</li>
             <li>未払いの賃金を請求できるのは、本来の支払日から3年までです（2020年4月以降に支払日が来た分）。</li>
             <li>最低賃金の額は、厚生労働省の令和8年度の全国一覧（答申額と発効日）と、その改定前の額です。2026年3月以前の月は、県によって額が違う場合があります。</li>
@@ -452,13 +452,24 @@ tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
         <div class="row">
           <div class="lbl"><label for="body">車体</label></div>
           <div class="field"><select id="body">
-            <option value="van">箱車（バン）</option>
-            <option value="wing" selected>ウイング</option>
-            <option value="flat">平ボディ</option>
-            <option value="unic">ユニック</option>
-            <option value="reefer">冷凍・冷蔵</option>
-            <option value="dump">ダンプ</option>
-            <option value="tank">タンクローリー</option>
+            <optgroup label="よくある車体">
+              <option value="van">箱車（バン）</option>
+              <option value="wing" selected>ウイング</option>
+              <option value="flat">平ボディ</option>
+              <option value="reefer">冷凍・冷蔵</option>
+            </optgroup>
+            <optgroup label="ユニック・特殊車両">
+              <option value="unic">ユニック（クレーン付き）</option>
+              <option value="dump">ダンプ</option>
+              <option value="tank">タンクローリー</option>
+              <option value="mixer">ミキサー車</option>
+              <option value="carrier">車両運搬車（キャリアカー）</option>
+              <option value="heavy">重機運搬（セルフ・低床）</option>
+              <option value="container">海上コンテナ</option>
+              <option value="bulk">粉粒体運搬車（バルク車）</option>
+              <option value="packer">パッカー車（ごみ収集）</option>
+              <option value="armroll">アームロール（脱着ボデー）</option>
+            </optgroup>
             <option value="other">その他</option>
           </select></div>
         </div>
@@ -641,7 +652,7 @@ tr.gap.warn th,tr.gap.warn td{color:var(--warn)}
   </main>
 
   <footer class="foot">
-    <p>ドライバー給料チェッカー β版（2026年10月）。最低賃金：厚生労働省「<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/minimumichiran/" target="_blank" rel="noopener">地域別最低賃金の全国一覧</a>」。拘束時間の基準：<a href="https://wwwtb.mlit.go.jp/kinki/content/000306033.pdf" target="_blank" rel="noopener">トラック運転者の改善基準告示（2024年4月適用）</a>。車種の平均：全日本トラック協会「<a href="https://jta.or.jp/wp-content/uploads/2025/10/chinginjittai2024gaiyo.pdf" target="_blank" rel="noopener">2024年度版 トラック運送事業の賃金・労働時間等の実態</a>」。平均的な労働時間：<a href="https://www.jil.go.jp/institute/zassi/backnumber/2026/special/pdf/062-074.pdf" target="_blank" rel="noopener">日本労働研究雑誌（2026年）</a>。</p>
+    <p>ドライバー給料チェッカー β版（2026年10月）。最低賃金：厚生労働省「<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/minimumichiran/" target="_blank" rel="noopener">地域別最低賃金の全国一覧</a>」。拘束時間の基準：<a href="https://wwwtb.mlit.go.jp/kinki/content/000306033.pdf" target="_blank" rel="noopener">トラック運転者の改善基準告示（2024年4月適用）</a>。車種の平均：全日本トラック協会「<a href="https://jta.or.jp/wp-content/uploads/2026/06/chinginjittai2025bassui.pdf" target="_blank" rel="noopener">2025年度版 トラック運送事業の賃金・労働時間等の実態</a>」。平均的な労働時間：<a href="https://www.jil.go.jp/institute/zassi/backnumber/2026/special/pdf/062-074.pdf" target="_blank" rel="noopener">日本労働研究雑誌（2026年）</a>。</p>
     <nav aria-label="サイトの情報"><a href="log.html">勤務の記録</a><a href="shindan.html">適性・進路診断</a><a href="about.html">運営者情報</a><a href="privacy.html">プライバシーポリシー・免責事項</a></nav>
   </footer>
 </div>
@@ -674,18 +685,20 @@ const MW = [
   ['熊本県',1034,1092,'2026-12-01'],['大分県',1035,1096,'2026-11-01'],['宮崎県',1023,1085,'2026-10-24'],
   ['鹿児島県',1026,1090,'2026-10-25'],['沖縄県',1023,1086,'2026-12-02']
 ];
-// 全ト協「2024年度版 トラック運送事業の賃金・労働時間等の実態」男性運転者、2024年5〜7月の1か月平均（円）
+// 全ト協「2025年度版 トラック運送事業の賃金・労働時間等の実態」第3表、男性運転者、2025年5〜7月の1か月平均（円）
 const CLASSES = {
-  futsu:  { label: '普通', wage: 342800, bonusM: 61800, age: 47.5 },
-  junchu: { label: '準中型', wage: 344500, bonusM: 47800, age: 48.0 },
-  chu:    { label: '中型', wage: 322700, bonusM: 33600, age: 49.6 },
-  ogata:  { label: '大型', wage: 379600, bonusM: 40600, age: 50.4 },
-  kenin:  { label: 'けん引', wage: 404200, bonusM: 56600, age: 50.8 }
+  futsu:  { label: '普通', wage: 347100, bonusM: 57500, age: 48.7 },
+  junchu: { label: '準中型', wage: 357400, bonusM: 50100, age: 48.8 },
+  chu:    { label: '中型', wage: 336000, bonusM: 44000, age: 49.6 },
+  ogata:  { label: '大型', wage: 395300, bonusM: 45800, age: 50.8 },
+  kenin:  { label: 'けん引', wage: 423800, bonusM: 57700, age: 50.7 }
 };
 const AVG_HOURS = 2500 / 12; // トラック運転者の平均的な労働時間：年約2,500時間（2024年）
 const SIZES = { k1: { label: '軽・1t', cls: 'futsu' }, t2: { label: '2t', cls: 'junchu' }, t4: { label: '4t', cls: 'chu' },
   zou: { label: '増トン', cls: null }, t10: { label: '10t', cls: 'ogata' }, tr: { label: 'トレーラー', cls: 'kenin' } };
-const BODIES = { van: '箱車（バン）', wing: 'ウイング', flat: '平ボディ', unic: 'ユニック', reefer: '冷凍・冷蔵', dump: 'ダンプ', tank: 'タンクローリー', other: 'その他' };
+// 車体。あとで集める統計（同じ車種の平均）で、ユニックや特殊車両ごとにも分けられるようにしておく
+const BODIES = { van: '箱車（バン）', wing: 'ウイング', flat: '平ボディ', reefer: '冷凍・冷蔵', unic: 'ユニック', dump: 'ダンプ', tank: 'タンクローリー',
+  mixer: 'ミキサー車', carrier: '車両運搬車', heavy: '重機運搬', container: '海上コンテナ', bulk: '粉粒体運搬車', packer: 'パッカー車', armroll: 'アームロール', other: 'その他' };
 function classFor(size, zouLarge){
   if (size === 'zou') return zouLarge === 'no' ? 'chu' : 'ogata';
   return (SIZES[size] && SIZES[size].cls) || 'ogata';
@@ -1041,7 +1054,7 @@ function calc(i){
   function renderAvg(r, inp){
     const c = r.cmp, size = SIZES[inp.vehicleSize] ? SIZES[inp.vehicleSize].label : '', body = BODIES[inp.body] || '';
     const sizeNote = inp.vehicleSize === 'zou' ? '（増トン・' + (inp.zouLarge === 'no' ? '中型免許' : '大型免許') + '）' : '';
-    $('avgLead').textContent = size + sizeNote + 'は「' + c.label + '」の平均と比べています。' + (body && inp.body !== 'other' ? body + '別の統計はないため、車の大きさで比べています。' : '');
+    $('avgLead').textContent = size + sizeNote + 'は「' + c.label + '」の平均と比べています。' + (body && inp.body !== 'other' ? body + 'だけの平均はまだないため、車の大きさで比べています。' : '');
     if (!c.ready){ $('avgBody').innerHTML = '<tr><td colspan="4" class="small">支給額と働いた時間を入れると比べます。</td></tr>'; $('avgNote').textContent = ''; return; }
     const rows = [
       ['月の給料', yen(c.userMonthly) + '円', yen(c.avgWage) + '円', signed(c.diffMonthly) + '円', c.diffMonthly < -0.5],
@@ -1050,7 +1063,7 @@ function calc(i){
     ];
     if (c.age !== null) rows.push(['年齢', Math.round(c.age) + '歳', c.avgAge.toFixed(1) + '歳', '', false]);
     $('avgBody').innerHTML = rows.map(x => '<tr><th scope="row">' + x[0] + '</th><td class="num">' + x[1] + '</td><td class="num">' + x[2] + '</td><td class="num' + (x[4] ? ' up' : '') + '">' + x[3] + '</td></tr>').join('');
-    $('avgNote').textContent = '平均は全ト協の調査の男性運転者（2024年5〜7月の1か月平均）で、賞与は含みません（賞与は月割りで' + yen(c.avgBonusM) + '円）。あなたの月の給料は、家族・通勤手当も含めた支給の合計です。平均の時給は、トラック運転者の平均的な労働時間（月約208時間）で割った目安です。';
+    $('avgNote').textContent = '平均は全ト協の調査の男性運転者（2025年5〜7月の1か月平均）で、賞与は含みません（賞与は月割りで' + yen(c.avgBonusM) + '円）。あなたの月の給料は、家族・通勤手当も含めた支給の合計です。平均の時給は、トラック運転者の平均的な労働時間（月約208時間）で割った目安です。';
   }
 
   function renderMw(r, inp){
