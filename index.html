@@ -1168,9 +1168,33 @@ function calc(i){
   }
 
   $('btnSample').textContent = PRESET_BACK;
-  applyValues(SAMPLE);
-  setMode('sample');
-  render();
+
+  // 勤務の記録（log.html）から来たときは、その月の時間を入れて始める
+  let fromLog = null;
+  try {
+    if (/[?&]from=log(&|$)/.test(location.search)){
+      const raw = localStorage.getItem('dpc_transfer_v1');
+      localStorage.removeItem('dpc_transfer_v1');
+      const t = raw ? JSON.parse(raw) : null;
+      if (t && t.v === 1 && t.values && Date.now() - t.at < 6 * 3600000) fromLog = t.values;
+    }
+  } catch (e) { fromLog = null; }
+  if (fromLog){
+    applyValues(CLEAR);
+    const vals = {};
+    ['ym', 'days', 'holidayDays', 'boundPerDay', 'minRest', 'ovTotalHours', 'ovOtHours', 'ovNightHours', 'ovHolidayHours', 'ovBoundMonth'].forEach(k => { if (fromLog[k] != null) vals[k] = String(fromLog[k]); });
+    if (vals.ym && !Array.from($('ym').options).some(o => o.value === vals.ym)) delete vals.ym;
+    applyValues(vals);
+    resetTimes();
+    setMode('own');
+    const p = String(vals.ym || '').split('-');
+    $('noticeText').innerHTML = '<b>勤務の記録から読み込みました</b>：' + (p.length === 2 ? p[0] + '年' + Number(p[1]) + '月の' : '') + '出勤日数と1か月の時間を入れています。明細の金額（支給の欄）を入れてください。';
+    render();
+  } else {
+    applyValues(SAMPLE);
+    setMode('sample');
+    render();
+  }
 })();
 </script>
 
