@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ドライバー適性・進路診断｜ドライバー給料チェッカー</title>
+<meta name="description" content="はい・いいえで答えると、合いそうなトラックの仕事、必要な免許、取るのにかかる費用と日数、年収の目安がわかる無料の診断です。答えはスマホの中だけで使い、どこにも送りません。">
+<link rel="canonical" href="https://abc12111234-png.github.io/driver-pay-checker/shindan.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ドライバー給料チェッカー">
+<meta property="og:title" content="ドライバー適性・進路診断">
+<meta property="og:description" content="はい・いいえで答えると、合いそうなトラックの仕事、必要な免許、費用と日数、年収の目安がわかります。">
+<meta property="og:url" content="https://abc12111234-png.github.io/driver-pay-checker/shindan.html">
+<meta name="theme-color" content="#0A6847">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Overpass:wght@500;700;800&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#EEF2EF; --surface:#FFFFFF; --surface-2:#F4F7F5; --ink:#17211D; --muted:#56645E; --line:#CBD5CF; --line-strong:#98A9A1;
+  --sign:#0A6847; --sign-ink:#FFFFFF; --band:#0A6847;
+  --ok:#33584A; --ok-bg:#E4EEE9;
+  --warn:#8A4F00; --warn-bg:#FFF1D6; --warn-fill:#E9A23B;
+  --bad:#B3261E; --bad-bg:#FDE7E4; --bad-fill:#D2483D;
+  --focus:#0A6847; --shadow:rgba(23,33,29,.12);
+  --font-body:"BIZ UDPGothic","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,system-ui,sans-serif;
+  --font-num:"Overpass","BIZ UDPGothic","Hiragino Sans","Yu Gothic UI",Meiryo,system-ui,sans-serif;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1412; --surface:#161F1B; --surface-2:#1C2722; --ink:#E5ECE8; --muted:#9AA9A2; --line:#2C3934; --line-strong:#4D5E56;
+    --sign:#0D6E4C; --sign-ink:#F4FFF9; --band:#2E9E73;
+    --ok:#9CC9B5; --ok-bg:#1C2C25;
+    --warn:#F3B54A; --warn-bg:#3A2A0B; --warn-fill:#F3B54A;
+    --bad:#FF8A7E; --bad-bg:#3D1714; --bad-fill:#FF8A7E;
+    --focus:#6FD3A8; --shadow:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1412; --surface:#161F1B; --surface-2:#1C2722; --ink:#E5ECE8; --muted:#9AA9A2; --line:#2C3934; --line-strong:#4D5E56;
+  --sign:#0D6E4C; --sign-ink:#F4FFF9; --band:#2E9E73;
+  --ok:#9CC9B5; --ok-bg:#1C2C25;
+  --warn:#F3B54A; --warn-bg:#3A2A0B; --warn-fill:#F3B54A;
+  --bad:#FF8A7E; --bad-bg:#3D1714; --bad-fill:#FF8A7E;
+  --focus:#6FD3A8; --shadow:rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+a{color:var(--band);text-underline-offset:2px}
+b{font-weight:700}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:16px 64px}
+.sign{background:var(--sign);color:var(--sign-ink);border-radius:14px;padding:6px;text-decoration:none;display:block}
+.sign-plate{border:2px solid var(--sign-ink);border-radius:9px;padding:10px 14px}
+.sign-plate span{font-weight:700;font-size:18px}
+h1{font-size:26px;line-height:1.35;margin:18px 0 4px}
+.lead{font-size:15px;color:var(--muted)}
+h2{font-size:18px;line-height:1.4;margin:0}
+h3{font-size:16px;line-height:1.45;margin:14px 0 6px}
+p{margin:0 0 10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px}
+.btn{font:inherit;font-size:15px;font-weight:700;line-height:1.3;border-radius:999px;padding:9px 16px;border:1.5px solid var(--band);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--sign);border-color:var(--sign);color:var(--sign-ink)}
+.btn.wide{width:100%;margin-top:14px;padding:13px 16px;font-size:17px}
+.link{font:inherit;font-weight:700;background:none;border:0;padding:0;color:var(--band);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.muted{color:var(--muted)}
+.small{font-size:13px;line-height:1.6}
+
+/* intro */
+.facts{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px;font-size:15px}
+.facts li{display:flex;gap:8px}
+.facts li::before{content:"";flex:none;width:8px;height:8px;margin-top:9px;border-radius:2px;background:var(--sign)}
+
+/* quiz */
+.q-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted)}
+.q-sec{font-weight:700;color:var(--band)}
+.bar{height:8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:var(--sign);border-radius:999px;transition:width .2s}
+.q{font-size:21px;line-height:1.5;margin:18px 0 6px;outline:none}
+.q-hint{font-size:14px;color:var(--muted);margin:0 0 4px;min-height:1.6em}
+.answers{display:grid;gap:10px;margin-top:14px}
+.answers.yn{grid-template-columns:1fr 1fr}
+.ans{font:inherit;font-weight:700;font-size:18px;line-height:1.35;min-height:60px;border-radius:14px;border:2px solid var(--band);background:var(--surface-2);color:var(--ink);cursor:pointer;padding:10px 12px;touch-action:manipulation}
+.answers.yn .ans{font-size:20px;min-height:72px}
+.ans.yes{background:var(--sign);border-color:var(--sign);color:var(--sign-ink)}
+.ans.choice{text-align:left}
+.q-foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+
+/* result */
+.res-head{background:var(--sign);color:var(--sign-ink);border-color:var(--sign)}
+.res-head .kicker{font-size:13px;opacity:.9;margin:0}
+.res-head h2{font-size:24px;margin:2px 0 8px}
+.res-head p{margin:0;font-size:15px}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:2px 7px;background:var(--surface-2);border:1px solid var(--line-strong);color:var(--ink)}
+.rows{display:grid;gap:0;margin:8px 0 0;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.row .k{color:var(--muted);font-size:13px;font-weight:700;padding-top:2px}
+.row .v{min-width:0;overflow-wrap:anywhere}
+.big-num{font-family:var(--font-num);font-weight:800;font-size:22px;line-height:1.2;font-variant-numeric:tabular-nums}
+.note{margin:12px 0 0;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.6;background:var(--surface-2);border-left:4px solid var(--band)}
+.note.warn{background:var(--warn-bg);border-left-color:var(--warn-fill)}
+.note.ok{background:var(--ok-bg);border-left-color:var(--sign)}
+.second h2{font-size:17px}
+.bul{margin:6px 0 0;padding-left:1.2em;font-size:15px}
+.bul li{margin-bottom:6px}
+.next{display:grid;gap:10px;margin-top:10px}
+.next a{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border:1.5px solid var(--band);border-radius:12px;color:var(--ink);text-decoration:none;line-height:1.45}
+.next a span{display:grid;gap:2px;min-width:0}
+.next a b{font-size:15px}
+.next a small{font-size:13px;color:var(--muted)}
+.next a i{flex:none;font-style:normal;font-weight:700;font-size:14px;color:var(--band);white-space:nowrap}
+details.how summary{font-weight:700;cursor:pointer}
+details.how ul{margin:10px 0 0;padding-left:1.2em}
+details.how li{margin-bottom:6px;font-size:15px}
+.foot{margin-top:28px;font-size:13px;color:var(--muted)}
+.foot nav{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px}
+@media (max-width:380px){.row{grid-template-columns:minmax(0,1fr)}.row .k{padding-top:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="sign" href="./"><div class="sign-plate"><span>ドライバー給料チェッカー</span></div></a>
+  <h1>ドライバー適性・進路診断</h1>
+  <p class="lead">はい・いいえで答えると、合いそうなトラックの仕事、必要な免許、取るのにかかる費用と日数、年収の目安がわかります。</p>
+
+  <section class="card" id="intro" aria-labelledby="introTitle">
+    <h2 id="introTitle">はじめに</h2>
+    <ul class="facts">
+      <li>質問は15こくらい、2〜3分で終わります</li>
+      <li>働き方の好みと、いま持っている免許（免許証を見ながらだと確か）を聞きます</li>
+      <li>答えはこのスマホの中だけで使い、どこにも送りません。登録も要りません</li>
+      <li>結果は目安です。免許の条件は免許証と警察の案内で、料金と日数は教習所で確かめてください</li>
+    </ul>
+    <button type="button" class="btn primary wide" id="btnStart">診断を始める</button>
+  </section>
+
+  <section class="card" id="quiz" hidden aria-live="polite">
+    <div class="q-top"><span class="q-sec" id="qSec">働き方</span><span id="qNum"></span></div>
+    <div class="bar" aria-hidden="true"><i id="qBar"></i></div>
+    <h2 class="q" id="qText" tabindex="-1"></h2>
+    <p class="q-hint" id="qHint"></p>
+    <div class="answers" id="answers"></div>
+    <div class="q-foot"><button type="button" class="link" id="btnBack">ひとつ戻る</button><button type="button" class="link" id="btnRestart">最初から</button></div>
+  </section>
+
+  <div id="result" hidden></div>
+
+  <details class="card how" id="howBox">
+    <summary>診断の考え方と出典</summary>
+    <ul>
+      <li>働き方の質問の答えから、5つの働き方（宅配・小口の配達、ルート配送・地場、増トン・大型の地場、大型の長距離、トレーラー）に点をつけて、点の高いものを出しています。働き方の説明は、現役の長距離ドライバーの目から見た一般的なもので、会社によって違います。</li>
+      <li>免許の区分（車両総重量・最大積載量）と、取れる年齢・経験は、道路交通法と<a href="https://laws.e-gov.go.jp/law/335M50000002060" target="_blank" rel="noopener">道路交通法施行規則</a>によります。19歳以上で経験1年以上から中型・大型を受けられる特例は、<a href="https://www.npa.go.jp/bureau/traffic/jyuken_tokurei.html" target="_blank" rel="noopener">警察庁の案内（受験資格の見直し）</a>によります。</li>
+      <li>教習の時間は、道路交通法施行規則の別表第四にある最低の時限（1時限50分）です。技能教習は1日3時限までです。</li>
+      <li>合宿の日数と料金は、<a href="https://menkyo-next.com/" target="_blank" rel="noopener">合宿免許ネクスト</a>が掲載校の料金をまとめた範囲（2026年10月9日更新、税込）です。時期や教習所、部屋のタイプで変わります。</li>
+      <li>通学の料金は、いくつかの教習所の料金表（2024〜2026年）にある、規定の時限で卒業したときの総額の範囲です。</li>
+      <li>年収の目安は、全日本トラック協会「<a href="https://jta.or.jp/wp-content/uploads/2026/06/chinginjittai2025bassui.pdf" target="_blank" rel="noopener">2025年度版 トラック運送事業の賃金・労働時間等の実態</a>」の男性運転者の平均（2025年5〜7月の月の賃金と、賞与の月割りを足して12倍したもの）です。会社、地域、働き方で大きく変わります。</li>
+      <li>教育訓練給付は、<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/kyouiku.html" target="_blank" rel="noopener">厚生労働省の教育訓練給付制度</a>によります。</li>
+      <li>この診断は、特定の会社や教習所をすすめるものではありません。</li>
+    </ul>
+  </details>
+
+  <footer class="foot">
+    <p>答えはこのブラウザの中だけで使い、運営者には送られません。結果は目安で、免許の条件や料金は警察・教習所の案内で確かめてください。</p>
+    <nav aria-label="サイトの情報"><a href="./">給料チェッカー</a><a href="log.html">勤務の記録</a><a href="about.html">運営者情報</a><a href="privacy.html">プライバシーポリシー・免責事項</a></nav>
+  </footer>
+</div>
+
+<script>
+// SHINDAN_START
+// 免許の区分（道路交通法施行規則第2条。2026年10月時点）。gvw：車両総重量、load：最大積載量（t、この数字「未満」まで乗れる）
+const LIC = {
+  none:  { label: '免許なし', gvw: 0, load: 0 },
+  futsu: { label: '普通', gvw: 3.5, load: 2 },
+  jun5:  { label: '準中型（5t限定）', gvw: 5, load: 3 },
+  jun:   { label: '準中型', gvw: 7.5, load: 4.5 },
+  chu8:  { label: '中型（8t限定）', gvw: 8, load: 5 },
+  chu:   { label: '中型', gvw: 11, load: 6.5 },
+  ogata: { label: '大型', gvw: Infinity, load: Infinity }
+};
+const RANK = { none: 0, futsu: 1, jun5: 2, jun: 3, chu8: 4, chu: 5, ogata: 6 };
+
+// 取る方法。skill・study：別表第四の最低の技能・学科の時限。camp：合宿の [最短日数, いちばん安い, いちばん高い]（合宿免許ネクスト、2026年10月9日更新）。
+// school：通学の [安い, 高い]（数校の料金表）。数字のないところは、教習所に確かめてもらう
+const COURSES = {
+  'none>jun':      { label: '準中型（免許なしから）', camp: [18, 319000, 566500] },
+  'futsu>jun':     { label: '準中型（普通免許から）', skill: 13, study: 1, camp: [6, 132000, 297990], school: [174460, 215600] },
+  'futsuAT>jun':   { label: '準中型（普通AT限定から）', skill: 17, study: 1, camp: [7, 154000, 319990] },
+  'jun5>jun':      { label: '準中型の5t限定を外す', skill: 4, study: 0, camp: [2, 66550, 143000], school: [88000, 103510] },
+  'jun5AT>jun':    { label: '準中型の5t限定を外す（AT限定つき）', camp: [4, 96800, 187000] },
+  'futsu>chu':     { label: '中型（普通免許から）', skill: 15, study: 1, camp: [7, 165000, 294000], school: [202000, 245450] },
+  'futsuAT>chu':   { label: '中型（普通AT限定から）', skill: 19, study: 1, camp: [9, 198000, 264000] },
+  'jun5>chu':      { label: '中型（準中型5t限定から）', skill: 11, study: 1, camp: [5, 137500, 261000] },
+  'jun5AT>chu':    { label: '中型（準中型5t限定・AT限定つきから）', camp: [7, 171600, 242000] },
+  'jun>chu':       { label: '中型（準中型から）', skill: 9, study: 0, camp: [5, 121000, 242000] },
+  'chu8>chu':      { label: '中型の8t限定を外す', skill: 5, study: 0, camp: [3, 80850, 165000], school: [107910, 128700] },
+  'chu8AT>chu':    { label: '中型の8t限定を外す（AT限定つき）', camp: [4, 110000, 159280] },
+  'futsu>ogata':   { label: '大型（普通免許から）', skill: 30, study: 1, camp: [12, 308000, 521400], school: [371800, 423100] },
+  'futsuAT>ogata': { label: '大型（普通AT限定から）', skill: 34, study: 1 },
+  'jun5>ogata':    { label: '大型（準中型5t限定から）', skill: 26, study: 1, camp: [11, 275000, 473000] },
+  'jun>ogata':     { label: '大型（準中型から）', skill: 23, study: 0, camp: [10, 255200, 426800] },
+  'chu8>ogata':    { label: '大型（中型8t限定から）', skill: 20, study: 0, camp: [8, 214500, 392700], school: [268400, 328130] },
+  'chu>ogata':     { label: '大型（中型から）', skill: 14, study: 0, camp: [6, 195000, 322000] },
+  'kenin':         { label: 'けん引', skill: 12, study: 0, camp: [6, 126500, 246000], school: [158180, 195800] }
+};
+
+// 年収の目安（全日本トラック協会 2025年度版、男性運転者。(月の賃金＋賞与の月割り)×12）
+const PAY = { futsu: 4855200, jun: 4890000, chu: 4560000, ogata: 5293200, kenin: 5778000 };
+const PAY_LABEL = { futsu: '普通', jun: '準中型', chu: '中型', ogata: '大型', kenin: 'けん引' };
+
+// 働き方。順番は点の配列と同じ
+const STYLE_KEYS = ['takuhai', 'route', 'jimoto', 'choukyori', 'trailer'];
+const STYLES = {
+  takuhai:   { title: '宅配・小口の配達', trucks: '軽バン・2tトラック', pay: ['futsu', 'jun'],
+    about: '住宅地や街の中を回って、荷物を1つずつ届ける仕事です。届け先が多く、毎日家に帰れます。荷物の積み下ろしは手で行うことが多いです。',
+    licText: '軽バンは普通免許（AT限定でも）で乗れます。2tトラックは、車両総重量が3.5t以上なので準中型が要ります。多くの2tは準中型の5t限定でも乗れますが、保冷車などは5tを超えることがあります。' },
+  route:     { title: 'ルート配送・地場', trucks: '2t〜4tトラック', pay: ['jun', 'chu'],
+    about: '決まった店や工場、倉庫を、決まった順に回る仕事です。時間と道がだいたい決まっていて、毎日家に帰れます。',
+    licText: '4tトラックは車両総重量が7.5t以上のものが多く、中型が要ります。車両総重量8t未満の4tなら、中型の8t限定でも乗れます。' },
+  jimoto:    { title: '増トン・大型の地場', trucks: '増トン・大型（10t）', pay: ['chu', 'ogata'],
+    about: '増トンや大型で、近場や日帰りの距離を走る仕事です。毎日帰れることが多いですが、朝が早い仕事や夜に出る仕事もあります。',
+    licText: '増トンは中型（8t限定では乗れません）、10tは大型免許が要ります。' },
+  choukyori: { title: '大型の長距離', trucks: '大型（10t）', pay: ['ogata'],
+    about: '大型で、県をまたいで遠くまで運ぶ仕事です。夜に走ったり、車の中で寝たりして、数日かけて回ることもあります。',
+    licText: '大型（10t）は大型免許が要ります。' },
+  trailer:   { title: 'トレーラー', trucks: 'トレーラー（ヘッドと荷台）', pay: ['kenin'],
+    about: '前の車（ヘッド）で後ろの荷台を引いて、コンテナや大きな荷物を運ぶ仕事です。バックや連結の技術が要ります。',
+    licText: '引く車（ヘッド）の免許（多くは大型）と、けん引免許の両方が要ります。' }
+};
+
+// 質問。yes・no は5つの働き方への点
+const QUESTIONS = [
+  { id: 'q_home', sec: '働き方', text: '毎日、家に帰りたい？', yes: [2, 2, 1, -3, -1], no: [-1, -1, 0, 2, 1] },
+  { id: 'q_night', sec: '働き方', text: '夜に走ったり、トラックの中で寝たりする仕事でもいい？', hint: '長距離では、夜に走ったり車中泊したりすることがあります', yes: [0, 0, 1, 3, 1], no: [1, 1, 0, -3, -1] },
+  { id: 'q_solo', sec: '働き方', text: 'ひとりで長い時間、運転し続けるのは苦にならない？', yes: [-1, 0, 1, 2, 1], no: [1, 1, 0, -2, -1] },
+  { id: 'q_talk', sec: '働き方', text: '届け先の人と話したり、やりとりしたりするのは好き？', yes: [2, 2, 0, -1, -1], no: [-1, 0, 1, 1, 1] },
+  { id: 'q_hand', sec: '働き方', text: '荷物を手で積んだり下ろしたりするのは平気？', hint: '体力に自信があるかで答えてください', yes: [2, 1, 1, 1, -1], no: [-2, -1, 0, 0, 2] },
+  { id: 'q_big', sec: '働き方', text: '大きいトラックに乗ってみたい？', yes: [-2, -1, 2, 2, 2], no: [2, 2, -1, -2, -2] },
+  { id: 'q_money', sec: '働き方', text: 'きつくても、とにかく稼ぎたい？', yes: [-1, -1, 1, 2, 2], no: [1, 1, 0, -1, 0] },
+  { id: 'q_route', sec: '働き方', text: '決まった時間に、決まった場所を回る仕事のほうが合う？', yes: [0, 3, 1, -1, 0], no: [1, -1, 0, 1, 1] },
+  { id: 'q_narrow', sec: '働き方', text: '狭い道や住宅街の運転、バックで止めるのは得意？', yes: [2, 1, 0, 0, 1], no: [-2, 0, 0, 1, 0] },
+  { id: 'q_trailer', sec: '働き方', text: 'トレーラー（前の車で後ろの荷台を引く大きな車）に興味がある？', yes: [-1, -1, 0, 0, 4], no: [0, 0, 0, 0, -2] },
+  { id: 'q_invest', sec: '働き方', text: '免許を取るのに、お金と1〜2週間くらいの時間をかけてもいい？', hint: '会社に費用を出してもらう方法もあります（結果で説明します）' },
+  { id: 'l_has', sec: '免許', text: '車の運転免許を持っていますか？' },
+  { id: 'l_big', sec: '免許', text: '持っている免許で、いちばん大きいのはどれ？', hint: '免許証の「種類」の欄を見てください。昔の普通免許で「中型」と書いてある人は「中型」を選んでください',
+    options: [['futsu', '普通'], ['jun', '準中型'], ['chu', '中型'], ['ogata', '大型']], when: a => a.l_has === 'yes' },
+  { id: 'l_when', sec: '免許', text: '普通免許を取ったのはいつ？', hint: '取った日によって、乗れるトラックの大きさが変わります',
+    options: [['old', '2007年6月1日まで'], ['mid', '2007年6月2日〜2017年3月11日'], ['new', '2017年3月12日から']], when: a => a.l_has === 'yes' && a.l_big === 'futsu' },
+  { id: 'l_lim5', sec: '免許', text: '免許証の「条件等」に「準中型車は準中型車（5t）に限る」とありますか？', when: a => a.l_has === 'yes' && a.l_big === 'jun' },
+  { id: 'l_lim8', sec: '免許', text: '免許証の「条件等」に「中型車は中型車（8t）に限る」とありますか？', when: a => a.l_has === 'yes' && a.l_big === 'chu' },
+  { id: 'l_at', sec: '免許', text: '免許証の「条件等」に「AT車に限る」とありますか？', hint: '「準中型車及び普通車はAT車に限る」のような書き方のこともあります',
+    when: a => a.l_has === 'yes' && (a.l_big === 'futsu' || (a.l_big === 'jun' && a.l_lim5 === 'yes') || (a.l_big === 'chu' && a.l_lim8 === 'yes')) },
+  { id: 'l_kenin', sec: '免許', text: 'けん引免許も持っていますか？', when: a => a.l_has === 'yes' && (a.l_big === 'chu' || a.l_big === 'ogata') },
+  { id: 'l_age', sec: '免許', text: '年齢は？', options: [['17', '18歳未満'], ['18', '18歳'], ['19', '19歳'], ['20', '20歳'], ['21', '21歳以上']] },
+  { id: 'l_years', sec: '免許', text: '車の免許を持って何年になりますか？', hint: '免許停止の期間は入れずに数えてください',
+    options: [['0', '1年未満'], ['1', '1年以上2年未満'], ['2', '2年以上3年未満'], ['3', '3年以上']], when: a => a.l_has === 'yes' }
+];
+const visibleQuestions = a => QUESTIONS.filter(q => !q.when || q.when(a));
+
+// 答えから、いま持っている免許。atは「AT車に限る」
+function currentLicense(a){
+  if (a.l_has !== 'yes') return { key: 'none', at: false, kenin: false };
+  let key;
+  if (a.l_big === 'ogata') key = 'ogata';
+  else if (a.l_big === 'chu') key = a.l_lim8 === 'yes' ? 'chu8' : 'chu';
+  else if (a.l_big === 'jun') key = a.l_lim5 === 'yes' ? 'jun5' : 'jun';
+  else key = a.l_when === 'old' ? 'chu8' : a.l_when === 'mid' ? 'jun5' : 'futsu';
+  const atAsked = key === 'futsu' || key === 'jun5' || key === 'chu8';
+  return { key, at: atAsked && a.l_at === 'yes', kenin: (key === 'chu' || key === 'ogata') && a.l_kenin === 'yes' };
+}
+
+// その免許へ進む教習（持っている免許から）。持っていれば null
+function courseKey(lic, target){
+  if (target === 'kenin') return lic.kenin ? null : 'kenin';
+  if (RANK[lic.key] >= RANK[target]) return null;   // AT限定のときは、結果の文で知らせる
+  return (lic.key === 'none' ? 'none' : lic.key + (lic.at ? 'AT' : '')) + '>' + target;
+}
+
+// その免許を受けられるか。age：'17'〜'21'（21は21歳以上）、years：0〜3（3は3年以上）
+// 'ok'：受けられる、'tokurei'：受験資格特例教習を受ければ受けられる、'wait'：まだ受けられない、'age'：18歳から、'first'：先に普通か準中型
+function canTake(target, age, years, lic){
+  const A = Number(age);
+  if (target === 'kenin') return A < 18 ? 'age' : lic.key === 'none' ? 'first' : 'ok';
+  if (target === 'jun') return A < 18 ? 'age' : 'ok';
+  if (lic.key === 'none') return A < 18 ? 'age' : 'first';
+  const need = target === 'chu' ? { age: 20, years: 2 } : { age: 21, years: 3 };
+  if (A >= need.age && years >= need.years) return 'ok';
+  if (A >= 19 && years >= 1) return 'tokurei';
+  return A < 18 ? 'age' : 'wait';
+}
+
+// 働き方ごとに、いまの免許で乗れるか。need：取る免許の順番
+function statusFor(style, lic){
+  const r = RANK[lic.key];
+  if (style === 'takuhai'){
+    if (r >= RANK.jun) return { now: 'ok', need: [] };
+    if (lic.key === 'jun5') return { now: 'mostly', need: ['jun'] };
+    return { now: lic.key === 'futsu' ? 'kei' : 'no', need: ['jun'] };
+  }
+  if (style === 'route'){
+    if (r >= RANK.chu) return { now: 'ok', need: [] };
+    if (lic.key === 'chu8') return { now: 'mostly', need: ['chu'] };
+    return { now: 'no', need: lic.key === 'none' ? ['jun', 'chu'] : ['chu'] };
+  }
+  if (style === 'jimoto'){
+    if (r >= RANK.ogata) return { now: 'ok', need: [] };
+    if (lic.key === 'chu') return { now: 'mostly', need: ['ogata'] };
+    return { now: 'no', need: lic.key === 'none' ? ['jun', 'ogata'] : ['ogata'] };
+  }
+  if (style === 'choukyori'){
+    if (r >= RANK.ogata) return { now: 'ok', need: [] };
+    return { now: 'no', need: lic.key === 'none' ? ['jun', 'ogata'] : ['ogata'] };
+  }
+  // trailer
+  const need = [];
+  if (lic.key === 'none') need.push('jun');
+  if (r < RANK.ogata) need.push('ogata');
+  if (!lic.kenin) need.push('kenin');
+  return { now: need.length ? 'no' : 'ok', need };
+}
+
+// 働き方の点。お金と時間をかけたくない人は、新しい免許が要る働き方を下げる
+function scoreStyles(a, lic){
+  const sc = STYLE_KEYS.map(() => 0);
+  QUESTIONS.forEach(q => { const v = a[q.id] === 'yes' ? q.yes : a[q.id] === 'no' ? q.no : null; if (v) v.forEach((x, i) => { sc[i] += x; }); });
+  if (a.q_invest === 'no') STYLE_KEYS.forEach((k, i) => { const st = statusFor(k, lic); if (st.now === 'no' || st.now === 'kei') sc[i] -= 2; });
+  return STYLE_KEYS.map((k, i) => ({ key: k, score: sc[i] })).sort((x, y) => y.score - x.score || STYLE_KEYS.indexOf(x.key) - STYLE_KEYS.indexOf(y.key));
+}
+// SHINDAN_END
+
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const man = yen => { const v = Math.round(yen / 1000) / 10; return (Number.isInteger(v) ? v.toFixed(0) : v.toFixed(1)) + '万'; };
+  const man0 = yen => Math.round(yen / 10000) + '万';
+  const range = (a, b) => man(a).replace('万', '') + '〜' + man(b);
+  let ans = {}, hist = [];
+
+  // ---------- questions ----------
+  function show(id){
+    const list = visibleQuestions(ans), i = list.findIndex(q => q.id === id), q = list[i];
+    if (!q){ renderResult(); return; }
+    $('intro').hidden = true; $('result').hidden = true; $('quiz').hidden = false;
+    const secList = list.filter(x => x.sec === q.sec), j = secList.indexOf(q), work = q.sec === '働き方';
+    $('qSec').textContent = q.sec;
+    $('qNum').textContent = work ? (j + 1) + ' / ' + secList.length : 'あと少し';
+    $('qBar').style.width = Math.round(work ? j / secList.length * 70 : 70 + j / secList.length * 30) + '%';
+    $('qText').textContent = q.text;
+    $('qHint').textContent = q.hint || '';
+    const opts = q.options || [['yes', 'はい'], ['no', 'いいえ']];
+    $('answers').className = 'answers' + (q.options ? '' : ' yn');
+    $('answers').innerHTML = opts.map(o => '<button type="button" class="ans ' + (q.options ? 'choice' : o[0]) + '" data-v="' + esc(o[0]) + '">' + esc(o[1]) + '</button>').join('');
+    $('answers').dataset.q = q.id;
+    $('btnBack').hidden = !hist.length;
+    $('qText').focus({ preventScroll: true });
+    if (secList[0] === q && q.sec === '免許') $('qHint').textContent = (q.hint ? q.hint + '。' : '') + 'ここからは免許のことを聞きます';
+  }
+  let lastTap = 0;
+  $('answers').addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    const now = Date.now(); if (now - lastTap < 350) return; lastTap = now;   // a double tap must not answer the next question too
+    const id = $('answers').dataset.q;
+    ans[id] = b.dataset.v; hist.push(id);
+    // answers to questions that are no longer asked are dropped
+    const list = visibleQuestions(ans), ids = new Set(list.map(q => q.id));
+    Object.keys(ans).forEach(k => { if (!ids.has(k)) delete ans[k]; });
+    const i = list.findIndex(q => q.id === id), next = list[i + 1];
+    if (next) show(next.id); else renderResult();
+    window.scrollTo({ top: $('quiz').hidden ? 0 : $('quiz').offsetTop - 12 });
+  });
+  $('btnBack').addEventListener('click', () => { const id = hist.pop(); if (id){ delete ans[id]; show(id); } });
+  function start(){ ans = {}; hist = []; show(QUESTIONS[0].id); window.scrollTo({ top: $('quiz').offsetTop - 12 }); }
+  $('btnStart').addEventListener('click', start);
+  $('btnRestart').addEventListener('click', start);
+
+  // ---------- result ----------
+  const NOW_TEXT = {
+    ok: ['ok', 'いまの免許で乗れます'],
+    mostly: ['ok', 'いまの免許で、多くの車に乗れます'],
+    kei: ['warn', '軽バンなら乗れます。2tトラックには、まだ乗れません'],
+    no: ['warn', 'いまの免許では、まだ乗れません']
+  };
+  const CAN_TEXT = {
+    ok: '年齢と経験の条件は満たしています。',
+    tokurei: '本来の条件にはまだ届きませんが、19歳以上で免許を持って1年以上なら、受験資格特例教習を受けて取れます（取ったあと、しばらくは違反に厳しい決まりがあります）。',
+    wait: '',
+    age: '18歳から取れます。',
+    first: '先に普通免許か準中型免許を取ってからになります。'
+  };
+  function waitText(target){
+    return target === 'chu' ? '中型は、20歳以上で普通免許などを持って2年以上から受けられます（受験資格特例教習なら19歳以上・1年以上）。'
+      : '大型は、21歳以上で普通免許などを持って3年以上から受けられます（受験資格特例教習なら19歳以上・1年以上）。';
+  }
+  function courseHtml(key, target, lic){
+    const c = COURSES[key];
+    const can = canTake(target, ans.l_age, Number(ans.l_years || 0), lic);
+    const rows = [];
+    rows.push(['取る免許', '<b>' + esc(c ? c.label : (target === 'kenin' ? 'けん引' : LIC[target].label)) + '</b>']);
+    if (c && c.skill != null) rows.push(['教習の時間', '技能 ' + c.skill + '時限・学科 ' + c.study + '時限から（最低。1時限50分）']);
+    if (c && c.camp) rows.push(['合宿', '最短 <span class="big-num">' + c.camp[0] + '</span>日・<span class="big-num">' + range(c.camp[1], c.camp[2]) + '</span>円']);
+    if (c && c.school) rows.push(['通学', '約' + range(c.school[0], c.school[1]) + '円（数校の料金表）']);
+    if (!c || (!c.camp && !c.school)) rows.push(['費用と日数', '教習所に確かめてください']);
+    rows.push(['受けられるか', esc(can === 'wait' ? waitText(target) : CAN_TEXT[can])]);
+    return '<div class="rows">' + rows.map(r => '<div class="row"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>').join('') + '</div>';
+  }
+  let shownCourses = [];
+  function styleCard(key, rank, lic){
+    const S = STYLES[key], st = statusFor(key, lic), now = NOW_TEXT[st.now];
+    let h = '<section class="card' + (rank ? ' second' : '') + '">';
+    h += '<p class="muted small" style="margin:0">' + (rank ? '次に合いそうな働き方' : 'いちばん合いそうな働き方') + '</p>';
+    h += '<h2>' + esc(S.title) + '</h2>';
+    h += '<p style="margin-top:6px">' + esc(S.about) + '</p>';
+    h += '<div class="rows">';
+    h += '<div class="row"><span class="k">乗る車</span><span class="v">' + esc(S.trucks) + '</span></div>';
+    h += '<div class="row"><span class="k">要る免許</span><span class="v">' + esc(S.licText) + '</span></div>';
+    h += '<div class="row"><span class="k">年収の目安</span><span class="v">' + S.pay.map(p => esc(PAY_LABEL[p]) + ' <span class="big-num">約' + man0(PAY[p]) + '</span>円').join('<br>') +
+      '<br><span class="small muted">全日本トラック協会の調査の男性運転者の平均。会社や地域、働き方で大きく変わります</span></span></div>';
+    h += '</div>';
+    h += '<p class="note ' + now[0] + '">' + esc(now[1]) + (lic.at && st.now !== 'no' ? '（ただしAT限定なので、AT車だけです。トラックはMT車が多いので、AT限定を外すことも考えてください）' : '') + '</p>';
+    st.need.forEach((t, i) => {
+      const key2 = courseKey(lic, t);
+      if (!key2) return;
+      h += '<h3>' + (st.need.length > 1 ? (i + 1) + '. ' : '') + esc(t === 'kenin' ? 'けん引免許を取る' : LIC[t].label + '免許を取る') + '</h3>';
+      if (lic.key === 'none' && t !== 'jun') h += '<p class="small muted" style="margin:0">準中型か普通を取って、経験を積んでからになります。</p>';
+      else if (shownCourses.indexOf(key2) >= 0) h += '<p class="small muted" style="margin:0">取り方と費用は、上と同じです。</p>';
+      else { h += courseHtml(key2, t, lic); shownCourses.push(key2); }
+    });
+    if (st.now === 'mostly' && key === 'takuhai') h += '<p class="note">車両総重量が5tを超える2t（保冷車など）に乗るときは、5t限定を外す教習で乗れるようになります。</p>';
+    if (st.now === 'mostly' && key === 'route') h += '<p class="note">車両総重量が8t以上の4tに乗るときは、8t限定を外す教習で乗れるようになります。</p>';
+    if (st.now === 'mostly' && key === 'jimoto') h += '<p class="note">増トンはいまの中型免許で乗れます。10tに乗るには大型免許が要ります。</p>';
+    return h + '</section>';
+  }
+  function canDriveNow(lic){
+    if (lic.key === 'none') return 'まだトラックには乗れません。準中型免許は、普通免許を持っていなくても18歳から取れます。';
+    if (lic.key === 'ogata') return '大型まで、すべての大きさのトラックに乗れます' + (lic.kenin ? '。けん引免許もあるので、トレーラーにも乗れます。' : '（トレーラーには、けん引免許も要ります）。');
+    const L = LIC[lic.key];
+    const ex = { futsu: '軽バンや小さめのトラックまでで、2tトラックの多くには乗れません', jun5: '多くの2tトラックに乗れます', jun: '2tトラックや3t前後のトラックに乗れます（4tの多くは車両総重量7.5t以上で、中型が要ります）',
+      chu8: '多くの4tトラックに乗れます', chu: '4tトラックや増トンに乗れます' }[lic.key];
+    return L.label + '：車両総重量' + L.gvw + 't未満・最大積載量' + L.load + 't未満の車。' + ex + '。' + (lic.at ? 'AT限定なので、AT車だけです。' : '') + (lic.kenin ? 'けん引免許もあります。' : '');
+  }
+  function renderResult(){
+    const lic = currentLicense(ans), ranked = scoreStyles(ans, lic);
+    const top = ranked[0].key, second = ranked[1].key;
+    let h = '';
+    shownCourses = [];
+    h += '<section class="card res-head"><p class="kicker">診断の結果</p><h2>' + esc(STYLES[top].title) + '</h2><p>乗る車：' + esc(STYLES[top].trucks) + '。次に合いそうなのは「' + esc(STYLES[second].title) + '」です。</p></section>';
+    h += '<section class="card"><h2>いまの免許で乗れる車</h2><p style="margin-top:8px">' + esc(canDriveNow(lic)) + '</p>' +
+      '<p class="small muted" style="margin:0">乗れるかどうかは、最後は車検証の車両総重量・最大積載量で決まります。</p></section>';
+    h += styleCard(top, 0, lic);
+    h += styleCard(second, 1, lic);
+    h += '<section class="card"><h2>免許の費用を抑えるには</h2><ul class="bul">' +
+      '<li><b>会社に出してもらう</b>：運送会社の中には、入社してから免許の費用を出してくれる会社があります。求人に「免許取得支援」「資格取得支援」と書いてあるかを見てください。早く辞めたら費用を返す決まりがある会社もあるので、条件を確かめてください。</li>' +
+      '<li><b>教育訓練給付</b>：雇用保険に入っていた期間が3年以上（初めて使う人は1年以上）なら、厚生労働大臣が指定した講座の費用の一部が戻ります。一般教育訓練は20%（上限10万円）、特定一般教育訓練は40%（上限20万円）で、特定一般は取ったあと1年以内に雇用保険に入って働くと、さらに10%（上限5万円）が足されます（2024年10月から始めた人）。辞めた人は辞めてから1年以内に始めること、特定一般は受講の前にキャリアコンサルティングを受けて、受講の2週間前までにハローワークで手続きをすることなど、条件があります。同じ大型の講座でも、教習所ごとに対象かどうかが違います。</li>' +
+      '</ul><p class="small" style="margin:8px 0 0"><a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/kyouiku.html" target="_blank" rel="noopener">厚生労働省：教育訓練給付制度</a></p></section>';
+    h += '<section class="card"><h2>確かめてほしいこと</h2><ul class="bul">' +
+      '<li>準中型・中型・大型・けん引の試験には、視力（両目で0.8以上、片目でそれぞれ0.5以上。メガネ可）と、深視力（奥行きの見え方）の検査があります。</li>' +
+      '<li>合宿の料金と日数は、時期（春休みや夏休みのころは高め）、教習所、部屋のタイプで変わります。上の数字は2026年10月時点の範囲です。</li>' +
+      '<li>年収は平均です。同じ車でも、会社、地域、歩合の有無、長距離か地場かで大きく変わります。</li>' +
+      '</ul></section>';
+    h += '<section class="card"><h2>次にできること</h2><div class="next">' +
+      '<a href="./"><span><b>いまの給料を確かめる</b><small>明細とその月の働き方から、残業代の不足や、同じ車種の平均との差を見られます</small></span><i>開く →</i></a>' +
+      '<a href="log.html"><span><b>勤務の記録をつける</b><small>始業・休憩・荷待ち・終業をボタンで残して、拘束時間をチェックできます</small></span><i>開く →</i></a>' +
+      '</div><button type="button" class="btn wide" id="btnAgain">もう一度診断する</button></section>';
+    $('result').innerHTML = h;
+    $('quiz').hidden = true; $('intro').hidden = true; $('result').hidden = false;
+    $('btnAgain').addEventListener('click', start);
+    window.scrollTo({ top: $('result').offsetTop - 12 });
+  }
+})();
+</script>
+<script>
+// home screen: keeps this page usable where there is no signal (only the site's files are stored)
+if ('serviceWorker' in navigator) window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+</script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d11dfb7286ee4d17b914c859494ac4c6"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
