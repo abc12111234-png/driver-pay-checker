@@ -15,7 +15,7 @@ const base = process.argv[2], out = process.argv[3];
     page.on('console', m => { if (m.type() === 'error' && !/cloudflareinsights|fonts\.g|ERR_|net::/.test(m.text())) errors.push(tag + ': ' + m.text()); });
     page.on('pageerror', e => errors.push(tag + ' pageerror: ' + e.message));
   };
-  const noHScroll = async (page, name) => { const w = await page.evaluate(() => document.documentElement.scrollWidth); check(name + ' no horizontal scroll', w <= 390, 'scrollWidth=' + w); };
+  const noHScroll = async (page, name) => { const [w, vw] = await page.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]); check(name + ' no horizontal scroll', w <= vw, 'scrollWidth=' + w + ' viewport=' + vw); };
 
   // answers: 1 = はい, 0 = いいえ for the ten questions on how to work, then the money/time question
   const LONG_HAUL = [0, 1, 1, 0, 1, 1, 1, 0, 0, 0];
@@ -126,6 +126,178 @@ const base = process.argv[2], out = process.argv[3];
       await page.waitForTimeout(400);
       check('double tap answers once', /夜に走ったり/.test(await qText(page)), await qText(page));
     }
+    await ctx.close();
+  }
+
+  // F. ads (PR). The real list has no A8 tags yet, so nothing shows; ?ad=preview shows the samples in the two places
+  async function finishLongHaul(page, age) {
+    await page.click('#btnStart');
+    await answerWork(page, LONG_HAUL, 1);
+    await yn(page, true);
+    await pick(page, '普通');
+    await pick(page, '2017年3月12日から');
+    await yn(page, false);
+    await pick(page, age || '21歳以上');
+    await pick(page, '3年以上');
+  }
+  const adsLoaded = page => page.waitForFunction(() => !!window.DPC_ADS);
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'Asia/Tokyo', locale: 'ja-JP' });
+    const page = await ctx.newPage(); watch(page, 'F');
+    await page.goto(base + 'shindan.html');
+    await adsLoaded(page);
+    check('F no ads yet: no PR line, nothing under the start button', await page.locator('#prTop').isHidden() && (await page.locator('#adIntro').innerHTML()) === '');
+    await finishLongHaul(page);
+    check('F no ads yet: nothing in the result', await page.locator('#adResult').isHidden() && (await page.locator('#result .pr').count()) === 0);
+
+    // the preview
+    await page.goto(base + 'shindan.html?ad=preview');
+    await adsLoaded(page);
+    check('F preview: PR line at the top', await page.locator('#prTop').isVisible() && /当サイトはアフィリエイト広告を利用しています/.test(await page.locator('#prTop').innerText()));
+    const introAd = page.locator('#adIntro .adbox');
+    check('F preview: ad under the start button, PR on the block and on the referral', await introAd.isVisible() && (await introAd.locator('.ad-head .pr').count()) === 1 &&
+      (await introAd.locator('[data-ad="sample-school"] .ad-name .pr').count()) === 1 &&
+      /当サイトはアフィリエイト広告を利用しています/.test(await introAd.innerText()));
+    const btnBox = await page.locator('#btnStart').boundingBox(), adBox = await introAd.boundingBox();
+    check('F preview: start button above the ad, both in the first screen', btnBox.y < adBox.y && adBox.y < 844, JSON.stringify([btnBox.y, adBox.y]));
+    await finishLongHaul(page);
+    check('F preview: the intro ad is gone during the result', await introAd.isHidden());
+    const order = await page.evaluate(() => [...document.querySelectorAll('#result > section')].slice(0, 3).map(s => s.id || s.className));
+    check('F preview: result ad right under the headline', order[0] === 'card res-head' && order[1] === 'adResult' && await page.locator('#adResult').isVisible(), JSON.stringify(order));
+    check('F preview: licence needed, so the school sample shows', (await page.locator('#adResult [data-ad="sample-school"]').count()) === 1);
+    check('F preview: 21 or older asks prefecture and age (age empty)', await page.locator('#adPref').isVisible() && (await page.locator('#adAge').inputValue()) === '' &&
+      (await page.locator('#adAskList').innerHTML()) === '');
+    await page.selectOption('#adPref', '東京都');
+    check('F preview: prefecture only, 21 or older could be over 59, still nothing', (await page.locator('#adAskList [data-ad]').count()) === 0 && (await page.locator('#adAskList .ad-empty').count()) === 0);
+    await page.fill('#adAge', '45');
+    check('F preview: Tokyo 45 shows the job sample with PR and the phone note', (await page.locator('#adAskList [data-ad="sample-job"] .ad-name .pr').count()) === 1 && /電話/.test(await page.locator('#adAskList').innerText()));
+    await page.evaluate(() => { document.querySelector('#adAskList [data-ad]').dataset.mark = '1'; });
+    await page.selectOption('#adPref', '千葉県');
+    check('F preview: same referral, not drawn again (no second count)', (await page.locator('#adAskList [data-mark="1"]').count()) === 1);
+    await page.selectOption('#adPref', '北海道');
+    check('F preview: Hokkaido has none', (await page.locator('#adAskList [data-ad]').count()) === 0 && /いまはありません/.test(await page.locator('#adAskList').innerText()));
+    await page.selectOption('#adPref', '大阪府');
+    check('F preview: back to Osaka, the same element comes back', (await page.locator('#adAskList [data-mark="1"]').count()) === 1 && (await page.locator('#adAskList .ad-empty').count()) === 0);
+    await page.fill('#adAge', '60');
+    check('F preview: 60 is outside 18-59', /いまはありません/.test(await page.locator('#adAskList').innerText()));
+    await page.fill('#adAge', '');
+    check('F preview: age cleared goes back to waiting', (await page.locator('#adAskList').innerText()).trim() === '');
+    await noHScroll(page, 'F preview result');
+    const withAds = (await page.locator('#result').innerText()).replace(/\s/g, '');
+    check('F preview: the result itself is unchanged', withAds.includes('大型（普通免許から）') && withAds.includes('大型約529万円'));
+
+    // 18, no licence: the age is filled in from the answer; under 18: no job referral at all
+    await page.click('#btnAgain');
+    await answerWork(page, ROUTE, 0);
+    await yn(page, false);
+    await pick(page, '18歳');
+    check('F preview: 18 is filled in', (await page.locator('#adAge').inputValue()) === '18');
+    await page.click('#btnAgain');
+    await answerWork(page, ROUTE, 0);
+    await yn(page, false);
+    await pick(page, '18歳未満');
+    check('F preview: under 18 gets no job box', (await page.locator('#adPref').count()) === 0 && (await page.locator('#adResult [data-ad="sample-school"]').count()) === 1);
+    await ctx.close();
+  }
+  {
+    // 320 px, dark
+    const ctx = await browser.newContext({ viewport: { width: 320, height: 640 }, timezoneId: 'Asia/Tokyo', locale: 'ja-JP', colorScheme: 'dark' });
+    const page = await ctx.newPage(); watch(page, 'F3');
+    await page.goto(base + 'shindan.html?ad=preview');
+    await adsLoaded(page);
+    await finishLongHaul(page, '20歳');
+    check('F3 20 is filled in', (await page.locator('#adAge').inputValue()) === '20');
+    await page.selectOption('#adPref', '神奈川県');
+    check('F3 Kanagawa 20 shows the job sample', (await page.locator('#adAskList [data-ad="sample-job"]').count()) === 1);
+    await noHScroll(page, 'F3 320px dark');
+    await page.locator('#adResult').screenshot({ path: out + '/s-ad-result-dark-320.png' });
+    await ctx.close();
+  }
+
+  // G. what the live referrals will do, with tags shaped like A8's (a link and a 1 px counting image)
+  {
+    const real = require('fs').readFileSync(require('path').join(__dirname, '..', 'ads.js'), 'utf8');
+    const live = real + `;(function(){ window.DPC_ADS.ADS.forEach(function(ad, i){ ad.text = ad.name + 'の紹介文';
+      ad.tag = '<a href="https://px.a8.net/svt/ejp?a8mat=T' + i + '" rel="nofollow">' + ad.name + 'を見る</a>\\n<img border="0" width="1" height="1" src="https://www10.a8.net/0.gif?a8mat=T' + i + '" alt="">'; }); })();`;
+    const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'Asia/Tokyo', locale: 'ja-JP' });
+    const page = await ctx.newPage(); watch(page, 'G');
+    const pixels = {}, urls = [];
+    page.on('request', r => urls.push(r.url()));
+    await page.route('**/ads.js', r => r.fulfill({ status: 200, contentType: 'application/javascript', body: live }));
+    await page.route('https://www10.a8.net/**', r => { const m = /a8mat=(T\d)/.exec(r.request().url()); pixels[m[1]] = (pixels[m[1]] || 0) + 1; r.fulfill({ status: 200, contentType: 'image/gif', headers: { 'Cache-Control': 'no-store' }, body: GIF }); });
+    await page.goto(base + 'shindan.html');
+    await adsLoaded(page);
+    check('G live: PR line at the top, nothing before the questions (all three have area limits)', await page.locator('#prTop').isVisible() && (await page.locator('#adIntro').innerHTML()) === '');
+    await finishLongHaul(page);
+    check('G live: the box asks first, nothing shown yet', await page.locator('#adPref').isVisible() && (await page.locator('#adAskList [data-ad]').count()) === 0 && Object.keys(pixels).length === 0, JSON.stringify(pixels));
+    await page.selectOption('#adPref', '東京都');
+    const ids = async () => (await page.locator('#adAskList [data-ad]').evaluateAll(els => els.map(e => e.dataset.ad))).join(',');
+    check('G live: Tokyo, 21 or older: only 日本ドライバー人材センター (no upper age)', (await ids()) === 'nihon-driver', await ids());
+    await page.locator('#adAge').pressSequentially('4');
+    check('G live: a half-typed age keeps the answer from the quiz', (await ids()) === 'nihon-driver', await ids());
+    await page.locator('#adAge').pressSequentially('5');
+    check('G live: Tokyo 45: all three', (await ids()) === 'nihon-driver,levajob,colorful-driver', await ids());
+    await page.selectOption('#adPref', '愛知県');
+    check('G live: Aichi 45: only カラフル', (await ids()) === 'colorful-driver', await ids());
+    await page.selectOption('#adPref', '北海道');
+    await page.selectOption('#adPref', '東京都');
+    check('G live: back to Tokyo: all three again', (await ids()) === 'nihon-driver,levajob,colorful-driver', await ids());
+    await page.waitForTimeout(200);
+    check('G live: each counting image was loaded once', JSON.stringify(pixels) === JSON.stringify({ T0: 1, T1: 1, T2: 1 }), JSON.stringify(pixels));
+    check('G live: every referral has its own PR', (await page.locator('#adAskList .ad').count()) === 3 && (await page.locator('#adAskList .ad .ad-name .pr').count()) === 3);
+    const gap = await page.locator('#adAskList .ad-link').first().evaluate(el => el.getBoundingClientRect().height - el.querySelector('a').getBoundingClientRect().height);
+    check('G live: no blank line under the link', gap < 2, String(gap));
+    check('G live: the tag is put in as issued', await page.locator('#adAskList [data-ad="levajob"] .ad-link').evaluate(el => el.innerHTML.trim() ===
+      '<a href="https://px.a8.net/svt/ejp?a8mat=T1" rel="nofollow">レバジョブを見る</a>\n<img border="0" width="1" height="1" src="https://www10.a8.net/0.gif?a8mat=T1" alt="">'));
+    await page.fill('#adAge', '19');
+    check('G live: 19 in Tokyo: レバジョブ and カラフル (日本ドライバー人材センター is 21+)', (await ids()) === 'levajob,colorful-driver', await ids());
+    const leaks = urls.filter(u => /%E6%9D%B1%E4%BA%AC|%E6%84%9B%E7%9F%A5|東京|愛知|age=|pref=/i.test(u));
+    check('G live: the prefecture and age are not in any request', leaks.length === 0, leaks.join(' '));
+    await noHScroll(page, 'G live');
+    await page.locator('#adResult').screenshot({ path: out + '/s-ad-live.png' });
+    await ctx.close();
+  }
+
+  // H. ads.js slow, broken or throwing: the diagnosis never waits for it
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'Asia/Tokyo', locale: 'ja-JP' });
+    const page = await ctx.newPage();
+    const real = require('fs').readFileSync(require('path').join(__dirname, '..', 'ads.js'), 'utf8');
+    await page.route('**/ads.js', async r => { await new Promise(res => setTimeout(res, 9000)); try { await r.fulfill({ status: 200, contentType: 'application/javascript', body: real }); } catch (e) {} });
+    await page.goto(base + 'shindan.html?ad=preview', { waitUntil: 'domcontentloaded' });
+    const t0 = Date.now();
+    await page.click('#btnStart');
+    await page.waitForFunction(() => document.getElementById('qText').textContent === '毎日、家に帰りたい？', null, { timeout: 2000 });
+    check('H slow ads.js: the first question comes at once', Date.now() - t0 < 2000, String(Date.now() - t0));
+    await answerWork(page, LONG_HAUL, 1);
+    await yn(page, true); await pick(page, '普通'); await pick(page, '2017年3月12日から'); await yn(page, false); await pick(page, '21歳以上'); await pick(page, '3年以上');
+    const early = await page.evaluate(() => !!window.DPC_ADS);
+    check('H slow ads.js: the result shows before the ads arrive', (await page.locator('.res-head h2').innerText()) === '大型の長距離' && (early || await page.locator('#adResult').isHidden()), String(early));
+    await adsLoaded(page);
+    await page.waitForTimeout(100);
+    check('H slow ads.js: when it arrives, the ads fill in under the result, not in the hidden intro',
+      await page.locator('#adResult').isVisible() && (await page.locator('#adResult [data-ad="sample-school"]').count()) === 1 && (await page.locator('#adIntro').innerHTML()) === '');
+    await ctx.close();
+  }
+  for (const [name, body] of [
+    ['aborted', null],
+    ['throws', 'throw new Error("broken ads.js");'],
+    ['bad functions', 'window.DPC_ADS = { PREFS: [], check(){ throw new Error("x"); }, active(){ throw new Error("x"); }, list(){ throw new Error("x"); }, maybeList(){ throw new Error("x"); } };'],
+    ['list fine, result throws', 'window.DPC_ADS = { PREFS: null, check(){ return "maybe"; }, active(){ return true; }, list(p){ return []; }, maybeList(p){ return p === "shindan-result" ? [{ id: "x", kind: "job" }] : []; } };']
+  ]) {
+    const ctx = await browser.newContext({ viewport: { width: 320, height: 640 }, timezoneId: 'Asia/Tokyo', locale: 'ja-JP' });
+    const page = await ctx.newPage();
+    const pageErrors = [];
+    page.on('pageerror', e => pageErrors.push(e.message));
+    await page.route('**/ads.js', r => body === null ? r.abort() : r.fulfill({ status: 200, contentType: 'application/javascript', body }));
+    await page.goto(base + 'shindan.html?ad=preview');
+    await page.waitForTimeout(150);
+    await finishLongHaul(page, '20歳');
+    check('H ads.js ' + name + ': the result still shows, with no ad block',
+      (await page.locator('.res-head h2').innerText()) === '大型の長距離' && await page.locator('#adResult').isHidden() && (await page.locator('#result .pr').count()) === 0,
+      pageErrors.join(' | '));
+    check('H ads.js ' + name + ': only the error from ads.js itself', pageErrors.every(m => /broken ads\.js/.test(m)), pageErrors.join(' | '));
     await ctx.close();
   }
 

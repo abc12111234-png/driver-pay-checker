@@ -2,7 +2,8 @@
 // (those stay in the browser's localStorage). Pages: network first so updates show at once; the stored copy
 // is used when offline or when the network takes more than 4 seconds. Icons and the manifest: stored copy first.
 // Change CACHE when the icons or the manifest change.
-const CACHE = 'dpc-2026-10-12c';
+// ads.js (the referrals) is not stored on purpose: a change to it shows without a new CACHE name, and no ad is shown without a signal.
+const CACHE = 'dpc-2026-10-12d';
 const CORE = ['./', 'index.html', 'log.html', 'shindan.html', 'about.html', 'privacy.html', 'log.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 const BASE = new URL('./', self.location).pathname;

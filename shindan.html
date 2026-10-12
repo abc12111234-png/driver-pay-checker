@@ -121,6 +121,30 @@ details.how ul{margin:10px 0 0;padding-left:1.2em}
 details.how li{margin-bottom:6px;font-size:15px}
 .foot{margin-top:28px;font-size:13px;color:var(--muted)}
 .foot nav{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px}
+
+/* 広告（PR）。中身とまちがえないように、枠と「PR」で分ける */
+.pr-top{font-size:12px;color:var(--muted);margin:6px 0 0}
+.pr{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;line-height:1.45;border:1.5px solid currentColor;border-radius:4px;padding:0 5px;margin-right:6px;color:var(--muted);vertical-align:1px}
+.adbox{background:var(--surface);border:1.5px dashed var(--line-strong);border-radius:14px;padding:12px 14px;margin-top:16px}
+#adIntro .adbox{margin-top:14px;background:var(--surface-2)}
+.ad-head{font-size:12px;color:var(--muted);margin:0 0 2px;line-height:1.6}
+.ad-head span{display:inline-block}
+.ad{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.ad-head + .ad{border-top:0;padding-top:0;margin-top:6px}
+.ad-name{font-size:16px;font-weight:700;margin:0}
+.ad-text{font-size:14px;line-height:1.6;margin:4px 0 8px}
+.ad-note{font-size:13px;color:var(--muted);line-height:1.6;margin:6px 0 0}
+.ad-link{overflow:hidden;position:relative}
+.ad-link > img[width="1"]{position:absolute;left:0;bottom:0}   /* A8の表示を数える1pxの画像で、リンクの下に空きができないように */
+.ad-link a:not(:has(img)){display:block;text-align:center;font-weight:700;line-height:1.45;padding:11px 14px;border-radius:12px;border:1.5px solid var(--band);background:var(--surface-2);color:var(--ink);text-decoration:none}
+.ad-link img{max-width:100%;height:auto}
+.ad-sample{display:block;text-align:center;font-weight:700;line-height:1.45;padding:11px 14px;border-radius:12px;border:1.5px dashed var(--line-strong);color:var(--muted)}
+.ad-form{display:flex;flex-wrap:wrap;gap:8px 14px;margin:2px 0 4px}
+.ad-form label{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700}
+.ad-form select,.ad-form input{font:inherit;font-size:16px;color:var(--ink);background:var(--surface-2);border:1.5px solid var(--line-strong);border-radius:10px;padding:6px 10px;max-width:100%}
+.ad-form input{width:4.6em;text-align:right;font-family:var(--font-num);font-weight:700;-moz-appearance:textfield;appearance:textfield}
+.ad-form input::-webkit-outer-spin-button,.ad-form input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.ad-empty{font-size:14px;color:var(--muted);margin:10px 0 0}
 @media (max-width:380px){.row{grid-template-columns:minmax(0,1fr)}.row .k{padding-top:0}}
 </style>
 </head>
@@ -129,6 +153,7 @@ details.how li{margin-bottom:6px;font-size:15px}
   <a class="sign" href="./"><div class="sign-plate"><span>ドライバー給料チェッカー</span></div></a>
   <h1>ドライバー適性・進路診断</h1>
   <p class="lead">はい・いいえで答えると、合いそうなトラックの仕事、必要な免許、取るのにかかる費用と日数、年収の目安がわかります。</p>
+  <p class="pr-top" id="prTop" hidden><span class="pr">PR</span>このページには広告があります。当サイトはアフィリエイト広告を利用しています。</p>
 
   <section class="card" id="intro" aria-labelledby="introTitle">
     <h2 id="introTitle">はじめに</h2>
@@ -139,6 +164,7 @@ details.how li{margin-bottom:6px;font-size:15px}
       <li>結果は目安です。免許の条件は免許証と警察の案内で、料金と日数は教習所で確かめてください</li>
     </ul>
     <button type="button" class="btn primary wide" id="btnStart">診断を始める</button>
+    <div id="adIntro"></div>
   </section>
 
   <section class="card" id="quiz" hidden aria-live="polite">
@@ -162,7 +188,7 @@ details.how li{margin-bottom:6px;font-size:15px}
       <li>通学の料金は、いくつかの教習所の料金表（2024〜2026年）にある、規定の時限で卒業したときの総額の範囲です。</li>
       <li>年収の目安は、全日本トラック協会「<a href="https://jta.or.jp/wp-content/uploads/2026/06/chinginjittai2025bassui.pdf" target="_blank" rel="noopener">2025年度版 トラック運送事業の賃金・労働時間等の実態</a>」の男性運転者の平均（2025年5〜7月の月の賃金と、賞与の月割りを足して12倍したもの）です。会社、地域、働き方で大きく変わります。</li>
       <li>教育訓練給付は、<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/kyouiku.html" target="_blank" rel="noopener">厚生労働省の教育訓練給付制度</a>によります。</li>
-      <li>この診断は、特定の会社や教習所をすすめるものではありません。</li>
+      <li>この診断は、特定の会社や教習所をすすめるものではありません。広告（PR）を出すときも、診断の結果は広告に合わせて変えません。</li>
     </ul>
   </details>
 
@@ -340,7 +366,7 @@ function scoreStyles(a, lic){
   const man = yen => { const v = Math.round(yen / 1000) / 10; return (Number.isInteger(v) ? v.toFixed(0) : v.toFixed(1)) + '万'; };
   const man0 = yen => Math.round(yen / 10000) + '万';
   const range = (a, b) => man(a).replace('万', '') + '〜' + man(b);
-  let ans = {}, hist = [];
+  let ans = {}, hist = [], resultWho = null;
 
   // ---------- questions ----------
   function show(id){
@@ -450,6 +476,8 @@ function scoreStyles(a, lic){
     let h = '';
     shownCourses = [];
     h += '<section class="card res-head"><p class="kicker">診断の結果</p><h2>' + esc(STYLES[top].title) + '</h2><p>乗る車：' + esc(STYLES[top].trucks) + '。次に合いそうなのは「' + esc(STYLES[second].title) + '」です。</p></section>';
+    resultWho = adWho(statusFor(top, lic).need.length > 0 || statusFor(second, lic).need.length > 0);
+    h += '<section class="card adbox" id="adResult" aria-label="広告" hidden></section>';
     h += '<section class="card"><h2>いまの免許で乗れる車</h2><p style="margin-top:8px">' + esc(canDriveNow(lic)) + '</p>' +
       '<p class="small muted" style="margin:0">乗れるかどうかは、最後は車検証の車両総重量・最大積載量で決まります。</p></section>';
     h += styleCard(top, 0, lic);
@@ -470,8 +498,98 @@ function scoreStyles(a, lic){
     $('result').innerHTML = h;
     $('quiz').hidden = true; $('intro').hidden = true; $('result').hidden = false;
     $('btnAgain').addEventListener('click', start);
+    fillResultAds();
     window.scrollTo({ top: $('result').offsetTop - 12 });
   }
+
+  // ---------- 広告（PR） ----------
+  // 出すのは、質問の前（「診断を始める」の下）と、結果のすぐ下の2か所だけ。待たせて見せる形にはしない。
+  // 都道府県や年齢に条件がある紹介は、結果のところで都道府県と年齢を入れてもらい、対象の人にだけ出す（入れた答えは送らない）。
+  // ads.js はページを止めずにあとから読む。遅くても、読めなくても、中でエラーが起きても、診断と結果はそのまま動く
+  let AD = null;
+  const adPreview = /(?:^|[?&])ad=preview(?:&|$)/.test(location.search);
+  const AD_HEAD = '<p class="ad-head"><span class="pr">PR</span>広告　<span>当サイトはアフィリエイト広告を利用しています</span></p>';
+  // tag はA8で発行したタグをそのまま入れる（ads.jsの決まり）。ほかは文字として入れる。紹介の1つずつに「PR」を付ける
+  const adCard = ad => '<div class="ad" data-ad="' + esc(ad.id) + '"><p class="ad-name"><span class="pr">PR</span>' + esc(ad.name) + '</p>' +
+    '<p class="ad-text">' + esc(ad.text) + '</p><div class="ad-link">' + ad.tag + '</div>' +
+    (ad.note ? '<p class="ad-note">' + esc(ad.note) + '</p>' : '') + '</div>';
+  const cardEl = ad => { const t = document.createElement('div'); t.innerHTML = adCard(ad); return t.firstElementChild; };
+
+  function adsArrived(){
+    try {
+      const A = window.DPC_ADS;
+      if (!A || typeof A.check !== 'function') return;
+      AD = A;
+      $('prTop').hidden = !AD.active('shindan', adPreview);
+      // 質問の前の広告は、まだ「はじめに」が出ているときだけ描く（見えないところで表示を数えないため）
+      if (!$('intro').hidden){
+        const first = AD.list('shindan-intro', {}, adPreview);
+        if (first.length) $('adIntro').innerHTML = '<div class="adbox" aria-label="広告">' + AD_HEAD + first.map(adCard).join('') + '</div>';
+      }
+    } catch (e) { AD = null; $('prTop').hidden = true; $('adIntro').innerHTML = ''; return; }
+    fillResultAds();   // 結果がもう出ていたら、そこにも出す
+  }
+  // 結果のときに分かっていること。年齢の答えは幅（'17'は18歳未満、'21'は21歳以上）
+  function adWho(needLicense){
+    const r = { '17': [0, 17], '18': [18, 18], '19': [19, 19], '20': [20, 20], '21': [21, 130] }[ans.l_age];
+    const who = { licensed: ans.l_has === 'yes', needLicense };
+    if (r){ who.ageLo = r[0]; who.ageHi = r[1]; }
+    return who;
+  }
+  function fillResultAds(){
+    const box = $('adResult');
+    if (!AD || !box || !resultWho || box.dataset.done || $('result').hidden) return;   // 見えていない結果には描かない
+    box.dataset.done = '1';
+    try {
+      const now = AD.list('shindan-result', resultWho, adPreview), ask = AD.maybeList('shindan-result', resultWho, adPreview);
+      if (!now.length && !ask.length) return;
+      let h = AD_HEAD + now.map(adCard).join('');
+      if (ask.length){
+        const job = ask.every(ad => ad.kind === 'job');
+        const age = resultWho.ageLo === resultWho.ageHi && typeof resultWho.ageLo === 'number' ? String(resultWho.ageLo) : '';
+        h += '<div class="ad"><p class="ad-name">' + (job ? 'ドライバーの転職サービス' : '地域の紹介') + '</p>' +
+          '<p class="ad-text">住んでいる都道府県と年齢を入れると、' + (job ? '申し込めるサービス' : '対象の紹介') + 'だけを出します。入れた答えは、どこにも送りません。</p>' +
+          '<div class="ad-form"><label>都道府県<select id="adPref"><option value="">選ぶ</option>' + AD.PREFS.map(p => '<option>' + esc(p) + '</option>').join('') + '</select></label>' +
+          '<label>年齢<input id="adAge" type="number" inputmode="numeric" min="15" max="99" step="1" value="' + age + '" aria-label="年齢（歳）">歳</label></div>' +
+          '<div id="adAskList" aria-live="polite"></div></div>';
+      }
+      box.innerHTML = h;
+      box.hidden = false;
+      if (ask.length) hookAskAds(resultWho, ask);
+    } catch (e) { box.innerHTML = ''; box.hidden = true; }
+  }
+  // 都道府県と年齢が入ったら、対象の紹介だけを出す。一度作った紹介は作りなおさず、出し入れだけする（A8の表示の数を二重に数えないため）
+  function hookAskAds(baseWho, cands){
+    const sel = $('adPref'), inp = $('adAge'), list = $('adAskList'), cards = {};
+    const job = cands.every(ad => ad.kind === 'job');
+    let empty = null;
+    const update = () => {
+      try {
+        const who = Object.assign({}, baseWho), raw = inp.value.trim();
+        if (sel.value) who.pref = sel.value;
+        // 2けたの年齢が入ったらそれを使う。書きかけのあいだは、診断で答えた年齢のまま
+        if (/^\d{2}$/.test(raw) && +raw >= 15){ who.ageLo = +raw; who.ageHi = +raw; }
+        const st = cands.map(ad => AD.check(ad, 'shindan-result', who));
+        const ok = cands.filter((ad, i) => st[i] === 'yes');
+        [...list.children].forEach(el => { if (!ok.some(ad => ad.id === el.dataset.ad)) el.remove(); });
+        ok.forEach(ad => { list.appendChild(cards[ad.id] || (cards[ad.id] = cardEl(ad))); });
+        if (!ok.length && st.indexOf('maybe') < 0){
+          if (!empty){ empty = document.createElement('p'); empty.className = 'ad-empty'; empty.textContent = 'この都道府県と年齢で' + (job ? '申し込めるサービス' : '対象の紹介') + 'は、いまはありません。'; }
+          list.appendChild(empty);
+        }
+      } catch (e) { list.textContent = ''; }
+    };
+    sel.addEventListener('change', update);
+    inp.addEventListener('input', update);
+    update();
+  }
+  try {
+    const s = document.createElement('script');
+    s.src = 'ads.js';
+    s.async = true;
+    s.addEventListener('load', adsArrived);
+    document.head.appendChild(s);
+  } catch (e) {}
 })();
 </script>
 <script>
