@@ -54,6 +54,10 @@ const J = s => new Date(s + '+09:00');
     await at('2026-10-12T09:00:00');
     await page.click('[data-act="wait"]');
     check('wait prompt', /荷待ち・待機の場所/.test(await page.locator('#placeLabel').innerText()));
+    check('the wait opens as a screen over a darkened page, place only', await page.locator('#placePrompt').evaluate(d => d.open && d.matches(':modal')) &&
+      /9:00 から荷待ち・待機を記録しました/.test(await page.locator('#ppTitle').innerText()) && await page.locator('#ppVeh').isHidden() && await page.locator('#ppOdo').isHidden() &&
+      await page.locator('#ppUndoRow').isVisible());
+    await page.screenshot({ path: out + '/v5-wait-screen.png' });
     await page.fill('#placeInput', '〇〇センター 3番');
     await page.press('#placeInput', 'Enter');
     check('enter saves place', await page.locator('#placePrompt').isHidden());
@@ -330,6 +334,7 @@ const J = s => new Date(s + '+09:00');
     await p1.waitForFunction(() => document.getElementById('state').textContent === '勤務中', null, { timeout: 5000 }).catch(() => {});
     check('other tab sees the start', (await p1.locator('#state').innerText()) === '勤務中');
     await p1.click('[data-act="break"]');
+    await p1.click('#placeSkip');
     await p2.waitForFunction(() => document.getElementById('state').textContent === '休憩中', null, { timeout: 5000 }).catch(() => {});
     let st = await p1.evaluate(() => JSON.parse(localStorage.getItem('dpc_log_v1')));
     check('two tabs keep one shift', st.shifts.length === 1 && st.shifts[0].breaks.length === 1, JSON.stringify(st.shifts.map(x => x.breaks.length)));
@@ -386,13 +391,12 @@ const J = s => new Date(s + '+09:00');
     const after = await p1.evaluate(() => JSON.parse(localStorage.getItem('dpc_log_v1')).shifts.length);
     check('broken backup refused', /読めませんでした/.test(alertText) && after === 2, alertText + ' / ' + after);
 
-    // the place prompt goes away when a record is saved in the editor
+    // the screen after a wait: 押したのを取り消す undoes the press itself
     await p1.waitForTimeout(1600);
     await p1.click('[data-act="wait"]');
     check('place prompt shown', await p1.locator('#placePrompt').isVisible());
-    await p1.click('.shift.open [data-edit]');
-    await p1.click('#eSave');
-    check('place prompt hidden after editor save', await p1.locator('#placePrompt').isHidden());
+    await p1.click('#ppUndo');
+    check('the wait is undone from the screen', await p1.locator('#placePrompt').isHidden() && (await p1.locator('#state').innerText()) === '勤務中');
     await ctx.close();
   }
 

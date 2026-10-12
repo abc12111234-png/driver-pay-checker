@@ -204,8 +204,8 @@ textarea{resize:vertical;line-height:1.5}
 #placePrompt{color:var(--ink)}
 #placePrompt:not([open]){display:none}
 #placePrompt:not(:modal){position:static;inset:auto;width:auto;height:auto;max-width:none;margin:12px 0 0}
-#placePrompt:modal{position:fixed;inset:0;margin:auto;width:min(560px,calc(100vw - 24px));height:fit-content;max-height:calc(100dvh - 24px);overflow:auto;padding:16px;border:0;border-radius:16px;background:var(--surface);box-shadow:0 20px 50px -20px var(--shadow);gap:12px}
-#placePrompt::backdrop{background:rgba(0,0,0,.45)}
+#placePrompt:modal{position:fixed;inset:0;margin:auto;width:min(560px,calc(100vw - 24px));height:fit-content;max-height:calc(100dvh - 24px);overflow:auto;padding:16px;border:0;border-top:6px solid var(--sign);border-radius:16px;background:var(--surface);box-shadow:0 24px 60px -16px rgba(0,0,0,.55);gap:12px}
+#placePrompt::backdrop{background:rgba(0,0,0,.6)}
 .pp-title{font-weight:700;font-size:17px;line-height:1.45;margin:0;outline:none}
 .pchip[aria-pressed="true"]{background:var(--sign);border-color:var(--sign);color:var(--sign-ink)}
 .pp-undo{font-size:14px;margin:0;color:var(--muted)}
@@ -855,21 +855,23 @@ function transferValues(s){
   const promptOpen = () => $('placePrompt').hasAttribute('open');
   function closePromptBox(){ const d = $('placePrompt'); if (!promptOpen()) return; if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
   function hidePlacePrompt(){ closePromptBox(); placeTarget = null; vehAsk = null; odoAsk = null; promptTool = false; $('ppErr').textContent = ''; $('savedVehs').hidden = true; }
-  // the box after a press. 始業 and 終業 open it as a screen of its own with the place, the vehicle and the meter;
-  // a break or a wait shows it in the page with the place only
+  // the box after a press opens as a screen of its own over a darkened page, so it stands out (ダイキの意見).
+  // 始業 and 終業 ask the place, the vehicle and the meter; a break or a wait asks the place only
   function showPrompt(target, placed){
     const sh = target ? store.shifts.find(x => x.id === target.id) : null;
     if (!sh || !PLACE[target.kind]){ hidePlacePrompt(); return; }
-    if (target.kind === 'start' || target.kind === 'end') openShiftBox(sh, target.kind, placed ? 'picked' : 'press');
-    else if (!placed) openPrompt({ pt: target, mode: 'inline' });
-    else hidePlacePrompt();
+    if (target.kind === 'start' || target.kind === 'end'){ openShiftBox(sh, target.kind, placed ? 'picked' : 'press'); return; }
+    if (placed){ hidePlacePrompt(); return; }
+    const p = (target.kind === 'break' ? sh.breaks : sh.waits).find(x => x.id === target.pid);
+    openPrompt({ pt: target, mode: 'modal', sh, title: (p ? clock(p.s) + ' から' : '') + (target.kind === 'break' ? '休憩' : '荷待ち・待機') + 'を記録しました' });
   }
   // how: 'press' (just pressed), 'picked' (pressed with a place chosen above the buttons), 'tool' (put in later)
   function openShiftBox(sh, kind, how){
     const k = kind === 'start' ? 's' : 'e', m = kind === 'start' ? sh.startMeta : sh.endMeta;
     const askPlace = how === 'press' || (how === 'tool' && !(m && m.place));
+    const word = kind === 'start' ? '始業' : '終業', t = kind === 'start' ? sh.start : sh.end;
     openPrompt({ pt: askPlace ? { id: sh.id, kind } : null, veh: sh.vehicle ? null : sh.id, odo: sh.odo && sh.odo[k] != null ? null : { id: sh.id, which: k },
-      mode: 'modal', tool: how === 'tool', kind, sh });
+      mode: 'modal', tool: how === 'tool', sh, title: how === 'tool' ? mdw(sh.start) + 'の' + word + '（' + clock(t) + '）の記録に足す' : clock(t) + ' に' + word + 'を記録しました' });
   }
   function openPrompt(opt){
     const pt = opt.pt || null, vid = opt.veh || null, odo = opt.odo || null, modal = opt.mode === 'modal';
@@ -877,10 +879,7 @@ function transferValues(s){
     closePromptBox();
     placeTarget = pt; vehAsk = vid; odoAsk = odo; promptTool = !!opt.tool; promptAt = Date.now();
     $('ppTitle').hidden = !modal;
-    if (modal){
-      const word = opt.kind === 'start' ? '始業' : '終業', t = opt.kind === 'start' ? opt.sh.start : opt.sh.end;
-      $('ppTitle').textContent = opt.tool ? mdw(opt.sh.start) + 'の' + word + '（' + clock(t) + '）の記録に足す' : clock(t) + ' に' + word + 'を記録しました';
-    }
+    if (modal) $('ppTitle').textContent = opt.title || '';
     $('ppPlace').hidden = !pt;
     if (pt){
       $('placeLabel').textContent = PLACE[pt.kind][0];
