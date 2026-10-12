@@ -183,6 +183,18 @@ textarea{resize:vertical;line-height:1.5}
 .sh-places .none{color:var(--muted);font-size:12px}
 .act{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .sh-places li,.toast,.hist li,.audit li,.notes li,.remind span,.alerts li{overflow-wrap:anywhere}
+.pick{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-top:12px}
+.pick label{font-weight:700;font-size:15px}
+.pick select{flex:1 1 170px;min-width:0}
+.pick-hint{flex:1 1 170px;font-size:13px;color:var(--muted);line-height:1.5}
+.pick .link{font-size:14px}
+.saved-places{list-style:none;margin:0;padding:0;display:grid}
+.saved-places li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px;overflow-wrap:anywhere}
+.saved-places li.none{color:var(--muted);font-size:14px;border:0;padding:0}
+.pchips{display:flex;flex-wrap:wrap;gap:6px}
+.pchips:empty{display:none}
+.pchip{font:inherit;font-size:14px;font-weight:700;line-height:1.3;border-radius:999px;padding:7px 12px;border:1.5px solid var(--band);background:var(--surface);color:var(--ink);cursor:pointer;overflow-wrap:anywhere;text-align:left}
+.chk.small{font-size:14px}
 .install{margin-top:12px;padding:10px 12px;border:1.5px solid var(--band);border-radius:12px;display:grid;gap:6px}
 .install p{margin:0;font-size:14px;line-height:1.6}
 .install .btn{justify-self:start;margin-top:4px}
@@ -199,11 +211,26 @@ textarea{resize:vertical;line-height:1.5}
     <h2 id="nowTitle" class="sr-only">いまの状態</h2>
     <p class="state" id="state">勤務していません</p>
     <p class="state-sub" id="stateSub"></p>
+    <div class="pick" id="pick">
+      <label for="placeSel">場所</label>
+      <select id="placeSel" hidden></select>
+      <span class="pick-hint" id="pickHint">車庫や会社などを登録すると、押す前に選べます</span>
+      <button type="button" class="link" id="btnPlaces">場所を登録する</button>
+    </div>
+    <div class="prompt" id="placesPanel" hidden>
+      <p class="pp-title"><b>よく使う場所</b></p>
+      <p class="hint">登録した場所は、ボタンの上で選んでから押すと、そのまま記録に入ります。登録から消しても、今までの記録に残した場所は消えません。</p>
+      <div class="pp-row"><input type="text" id="newPlace" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="例：〇〇運輸 本社車庫"><button type="button" class="btn small primary" id="btnAddPlace">登録</button></div>
+      <ul class="saved-places" id="savedPlaces"></ul>
+      <div class="pp-row"><button type="button" class="btn small" id="btnPlacesClose">閉じる</button></div>
+    </div>
     <div class="actions" id="actions"></div>
     <p class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastText"></span> <button type="button" class="link" id="btnUndo">取り消す</button> <button type="button" class="link" id="btnShareNow" hidden>この日の記録を送る</button></p>
     <div class="prompt" id="placePrompt" hidden>
       <label for="placeInput" id="placeLabel">場所（任意）</label>
+      <div class="pchips" id="placeChips"></div>
       <input type="text" id="placeInput" list="placeList" autocomplete="off" enterkeyhint="done" maxlength="60">
+      <label class="chk small"><input type="checkbox" id="placeRemember"> この場所を登録して、次から選べるようにする</label>
       <div class="pp-row"><button type="button" class="btn small primary" id="placeSave">残す</button><button type="button" class="btn small" id="placeSkip">書かない</button></div>
     </div>
     <div class="prompt" id="notePrompt" hidden>
@@ -460,7 +487,7 @@ function transferValues(s){
   const KEY = 'dpc_log_v1', TRANSFER_KEY = 'dpc_transfer_v1', UNDO_MIN = 10;
   const WD = ['日', '月', '火', '水', '木', '金', '土'];
   const CHIP = { ok: 'OK', warn: '注意', bad: '要確認', na: '―' };
-  const REC = { button: 'その場でボタン', manual: 'あとで手入力', edited: 'あとで直した', legacy: '前の版で記録' };
+  const REC = { button: 'その場で押した', manual: 'あとで手入力', edited: 'あとで直した', legacy: '前の版で記録' };
   const PLACE = {
     start: ['始業の場所（任意）', '例：〇〇営業所、〇〇センター'],
     break: ['休憩の場所（任意）', '例：〇〇PA、コンビニの駐車場'],
@@ -468,17 +495,18 @@ function transferValues(s){
     end: ['終業・休息の場所（任意）', '例：〇〇PAで車中泊、営業所']
   };
 
-  const blank = () => ({ v: 1, shifts: [], settings: { geo: false }, audit: [] });
+  const blank = () => ({ v: 1, shifts: [], settings: { geo: false, places: [], startPlace: '' }, audit: [] });
   const clone = o => JSON.parse(JSON.stringify(o));
   const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   let store = blank(), canSave = true, lastSaved = null, undo = null, viewYm = null;
-  let placeTarget = null, lastTarget = null, geoReq = 0, geoPending = false, lastPress = 0, lastActions = '';
+  let placeTarget = null, lastTarget = null, geoReq = 0, geoPending = false, lastPress = 0, lastActions = '', lastPick = '', pickState = null;
 
   // ---------- storage ----------
   const arr = v => Array.isArray(v) ? v : [];
   const str = (v, n) => typeof v === 'string' ? v.slice(0, n) : '';
   const fin = v => typeof v === 'number' && Number.isFinite(v);
   const own = o => { const r = {}; Object.keys(o).forEach(k => { if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') r[k] = o[k]; }); return r; };
+  const cleanPlaces = v => { const out = []; arr(v).forEach(x => { const t = str(x, 60).trim(); if (t && out.indexOf(t) < 0 && out.length < 30) out.push(t); }); return out; };
   const cleanMeta = m => m && typeof m === 'object' && !Array.isArray(m) ? Object.assign(own(m), { place: str(m.place, 60) }) : null;
   function cleanPeriod(p){
     if (!p || typeof p !== 'object' || !fin(p.s) || !(p.e == null || fin(p.e))) return null;
@@ -507,7 +535,8 @@ function transferValues(s){
     }
     if (strict && shifts.filter(x => x.end == null).length > 1) return null;
     const audit = arr(o.audit).filter(a => a && fin(a.at) && typeof a.what === 'string').map(a => Object.assign(own(a), { aid: typeof a.aid === 'string' && a.aid ? a.aid : newId() }));
-    return { v: 1, shifts, settings: { geo: !!(o.settings && o.settings.geo) }, audit };
+    const st = o.settings && typeof o.settings === 'object' ? o.settings : {};
+    return { v: 1, shifts, settings: { geo: !!st.geo, places: cleanPlaces(st.places), startPlace: str(st.startPlace, 60) }, audit };
   }
   function load(){
     try {
@@ -627,6 +656,7 @@ function transferValues(s){
     if (allowed(sh).indexOf(kind) < 0){ notice('画面が古くなっていたので、新しくしました。もう一度押してください。'); renderAll(); return; }
     const t = nowMs();
     if (kind === 'end' && t <= sh.start){ notice('始業と同じ時刻です。少し待ってから押すか、あとで時刻を直してください。'); return; }
+    const chosen = store.settings.places.indexOf($('placeSel').value) >= 0 ? $('placeSel').value : '';
     const u = { id: sh ? sh.id : null, before: sh ? clone(sh) : null };
     let msg = '', target = null;
     if (kind === 'start'){
@@ -647,11 +677,17 @@ function transferValues(s){
       sh.end = t; sh.endMeta = meta('button');
       msg = clock(t) + ' に終業を記録しました（拘束 ' + fmtHM((t - sh.start) / HOUR) + '）。'; target = { id: sh.id, kind: 'end', ends };
     }
+    const placed = !!(chosen && target && PLACE[target.kind]);
+    if (placed){
+      const f = findTarget(target);
+      if (f) (f.holder || f.meta).place = chosen;
+      if (kind === 'start') store.settings.startPlace = chosen;
+    }
     save();
     lastTarget = target;
     if (target) captureLoc(target);
     toast(msg, u, kind === 'end' ? sh.id : null);
-    showPlacePrompt(target);
+    if (placed){ toastAdd('場所：' + chosen); hidePlacePrompt(); } else showPlacePrompt(target);
     viewYm = monthKey(sh.start); renderAll();
   }
 
@@ -690,7 +726,7 @@ function transferValues(s){
 
   // ---------- places ----------
   function allPlaces(){
-    const items = [];
+    const items = store.settings.places.map((p, i) => [9e15 - i, p]);   // registered places first, in their order
     store.shifts.forEach(sh => {
       if (sh.startMeta && sh.startMeta.place) items.push([sh.start, sh.startMeta.place]);
       if (sh.endMeta && sh.endMeta.place) items.push([sh.end || sh.start, sh.endMeta.place]);
@@ -709,18 +745,64 @@ function transferValues(s){
     $('placeLabel').textContent = PLACE[target.kind][0];
     $('placeInput').placeholder = PLACE[target.kind][1];
     $('placeInput').value = '';
+    $('placeRemember').checked = false;
+    $('placeChips').innerHTML = store.settings.places.map(p => '<button type="button" class="pchip" data-place="' + esc(p) + '">' + esc(p) + '</button>').join('');
     if (!$('noteInput').value.trim()) $('notePrompt').hidden = true;
     refreshPlaceList();
     $('placePrompt').hidden = false;
   }
-  $('placeSave').addEventListener('click', () => {
-    const v = $('placeInput').value.trim().slice(0, 60);
+  function savePlace(v){
+    v = (v || '').trim().slice(0, 60);
     if (placeTarget && v){
       sync();
       const f = findTarget(placeTarget);
-      if (f){ (f.holder || f.meta).place = v; save(); toastAdd('場所：' + v); }
+      if (f){
+        (f.holder || f.meta).place = v;
+        if ($('placeRemember').checked && store.settings.places.indexOf(v) < 0 && store.settings.places.length < 30) store.settings.places.push(v);
+        if (placeTarget.kind === 'start') store.settings.startPlace = v;
+        save(); toastAdd('場所：' + v);
+      }
     }
-    hidePlacePrompt(); renderMonth();
+    hidePlacePrompt(); renderAll();
+  }
+  $('placeSave').addEventListener('click', () => savePlace($('placeInput').value));
+  $('placeChips').addEventListener('click', e => { const b = e.target.closest('[data-place]'); if (b) savePlace(b.dataset.place); });
+
+  // saved places: registered by the driver, picked above the buttons
+  function renderPick(){
+    const places = store.settings.places, sel = $('placeSel');
+    const sh = openShift(), key = sh ? (openOf(sh.breaks) ? 'break' : openOf(sh.waits) ? 'wait' : 'work') : 'off';
+    const html = '<option value="">選ばない（押したあとに書ける）</option>' + places.map(p => '<option value="' + esc(p) + '">' + esc(p) + '</option>').join('');
+    if (html !== lastPick){ const cur = sel.value; sel.innerHTML = html; lastPick = html; sel.value = places.indexOf(cur) >= 0 ? cur : ''; }
+    if (key !== pickState){ pickState = key; sel.value = key === 'off' && places.indexOf(store.settings.startPlace) >= 0 ? store.settings.startPlace : ''; }
+    sel.hidden = !places.length; $('pickHint').hidden = places.length > 0;
+    $('btnPlaces').textContent = places.length ? '登録・消す' : '場所を登録する';
+  }
+  function renderPlacesPanel(){
+    const places = store.settings.places;
+    $('savedPlaces').innerHTML = places.length ? places.map(p => '<li><span>' + esc(p) + '</span><button type="button" class="link" data-delplace="' + esc(p) + '">消す</button></li>').join('') : '<li class="none">まだ登録していません。</li>';
+  }
+  $('btnPlaces').addEventListener('click', () => { sync(); renderPlacesPanel(); $('placesPanel').hidden = !$('placesPanel').hidden; if (!$('placesPanel').hidden) $('newPlace').focus(); });
+  $('btnPlacesClose').addEventListener('click', () => { $('placesPanel').hidden = true; });
+  $('btnAddPlace').addEventListener('click', () => {
+    const v = $('newPlace').value.trim().slice(0, 60); if (!v) return;
+    sync();
+    const places = store.settings.places;
+    if (places.indexOf(v) < 0){
+      if (places.length >= 30){ notice('登録できる場所は30までです。使わない場所を消してから登録してください。'); return; }
+      places.push(v); save();
+    }
+    $('newPlace').value = ''; renderPlacesPanel(); renderNow(); $('placeSel').value = v;
+  });
+  $('newPlace').addEventListener('keydown', e => { if (e.key === 'Enter' && !isIme(e)){ e.preventDefault(); $('btnAddPlace').click(); } });
+  $('savedPlaces').addEventListener('click', e => {
+    const b = e.target.closest('[data-delplace]'); if (!b) return;
+    const p = b.dataset.delplace;
+    if (!confirm('「' + p + '」を登録から消しますか？今までの記録に残した場所は消えません。')) return;
+    sync();
+    store.settings.places = store.settings.places.filter(x => x !== p);
+    if (store.settings.startPlace === p) store.settings.startPlace = '';
+    save(); renderPlacesPanel(); renderNow();
   });
   $('placeInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !isIme(e)){ e.preventDefault(); $('placeSave').click(); } });
   $('placeSkip').addEventListener('click', hidePlacePrompt);
@@ -776,6 +858,7 @@ function transferValues(s){
     const btn = (kind, label, cls, sub) => '<button type="button" class="act ' + (cls || '') + '" data-act="' + kind + '">' + label + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
     if (!geoPending) $('geoToggle').checked = !!store.settings.geo;
     $('nowTools').hidden = !store.shifts.length;
+    renderPick();
     renderRemind();
     let html;
     if (!sh){
@@ -919,9 +1002,10 @@ function transferValues(s){
   function shareText(sh){
     const info = analyze(store.shifts).info, i = info.findIndex(y => y.sh.id === sh.id), x = info[i], prev = i > 0 ? info[i - 1] : null;
     const L = ['【勤務の記録】' + mdw(sh.start)];
-    const at = (k, ms, m) => k + ' ' + mdhm(ms) + (m && m.place ? ' ' + m.place : '') + '（' + recOf(m) + '）';
+    const mark = r => r === REC.button ? '' : '（' + r + '）';
+    const at = (k, ms, m) => k + ' ' + mdhm(ms) + (m && m.place ? ' ' + m.place : '') + mark(recOf(m));
     L.push(at('始業', sh.start, sh.startMeta));
-    periods(sh).forEach(([k, p]) => L.push(k + ' ' + pspan(p, sh.start) + (p.place ? ' ' + p.place : '') + '（' + recP(p) + '）'));
+    periods(sh).forEach(([k, p]) => L.push(k + ' ' + pspan(p, sh.start) + (p.place ? ' ' + p.place : '') + mark(recP(p))));
     L.push(at('終業', sh.end, sh.endMeta));
     if (x){
       L.push('拘束 ' + fmtHM(x.bound) + '／休憩 ' + fmtHM(x.brk) + (x.wait > 0 ? '／荷待ち・待機 ' + fmtHM(x.wait) : '') + '／労働 ' + fmtHM(x.work) + (x.night > 0 ? '／深夜 ' + fmtHM(x.night) : ''));
@@ -938,6 +1022,7 @@ function transferValues(s){
     periods(sh).forEach(([k, p]) => { mp(k + ' ' + pspan(p, sh.start), p.sMeta); if (p.e != null) mp(k + 'おわり ' + tm(p.e, sh.start), p.eMeta); });
     mp('終業', sh.endMeta);
     if (maps.length) L.push('押したときの場所', ...maps);
+    L.push('※「あとで手入力」「あとで直した」の印がない時刻は、その場でボタンを押して記録したものです。');
     L.push('作成 ' + stamp(Date.now()) + '（ドライバー給料チェッカー「勤務の記録」）');
     return L.join('\n');
   }
@@ -1196,7 +1281,7 @@ function transferValues(s){
       const before = JSON.stringify(store);
       const audit = mergeAudit(store.audit, fresh.audit);
       audit.push({ aid: newId(), at: Date.now(), what: 'バックアップ（' + when + '、' + fresh.shifts.length + '件）から戻した。戻す前の記録' + cur.length + '件の写しを残した', shifts: clone(cur) });
-      store = { v: 1, shifts: fresh.shifts, settings: store.settings, audit };
+      store = { v: 1, shifts: fresh.shifts, settings: Object.assign({}, store.settings, { places: cleanPlaces(store.settings.places.concat(fresh.settings.places)) }), audit };
       save(); hidePlacePrompt(); toast('バックアップから戻しました。', { store: before });
       const open = openShift(); viewYm = monthKey(open ? open.start : Date.now()); renderAll();
     };

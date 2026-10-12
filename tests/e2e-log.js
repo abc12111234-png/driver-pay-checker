@@ -88,10 +88,10 @@ const J = s => new Date(s + '+09:00');
 
     await page.click('#btnShareNow');
     await page.waitForTimeout(300);
-    const clip = await page.evaluate(() => navigator.clipboard.readText());
-    check('share text', clip.includes('【勤務の記録】10月12日（月）') && clip.includes('始業 10/12 6:00 東京営業所（その場でボタン）') &&
-      clip.includes('荷待ち・待機 9:00〜11:00 〇〇センター 3番（その場でボタン）') && clip.includes('荷待ち・待機おわり 11:00（誤差 約20m） https://') && clip.includes('メモ（10/12 9:05 に記入）受付は8時の予約') &&
-      clip.includes('終業 10/12 18:00 〇〇PAで車中泊（その場でボタン）') && clip.includes('始業（誤差 約20m） https://www.google.com/maps/search/?api=1&query=35.68124,139.76713') &&
+    const clip = (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, '\n');
+    check('share text', clip.includes('【勤務の記録】10月12日（月）') && clip.includes('始業 10/12 6:00 東京営業所\n') &&
+      clip.includes('荷待ち・待機 9:00〜11:00 〇〇センター 3番\n') && clip.includes('荷待ち・待機おわり 11:00（誤差 約20m） https://') && clip.includes('メモ（10/12 9:05 に記入）受付は8時の予約') &&
+      clip.includes('終業 10/12 18:00 〇〇PAで車中泊\n') && !clip.includes('（その場で') && clip.includes('※「あとで手入力」「あとで直した」の印がない時刻は') && clip.includes('始業（誤差 約20m） https://www.google.com/maps/search/?api=1&query=35.68124,139.76713') &&
       clip.includes('作成 2026年10月12日 18:00'), clip);
     fs.writeFileSync(out + '/share-text.txt', clip);
     check('tag copied', /コピーした/.test(await page.locator('#shifts').innerText()));
@@ -111,7 +111,7 @@ const J = s => new Date(s + '+09:00');
     // fixing a record leaves a trail
     await at('2026-10-13T08:00:00');
     await page.click('#shifts [data-edit]');
-    check('editor shows how it was recorded', /始業 その場でボタン／終業 その場でボタン/.test(await page.locator('#eRec').innerText()), await page.locator('#eRec').innerText());
+    check('editor shows how it was recorded', /始業 その場で押した／終業 その場で押した/.test(await page.locator('#eRec').innerText()), await page.locator('#eRec').innerText());
     check('editor shows places', (await page.inputValue('#eStartPlace')) === '東京営業所' && (await page.inputValue('#eEndPlace')) === '〇〇PAで車中泊');
     await page.fill('#eStart', '2026-10-12T05:30');
     await page.locator('#eWaits .pl').first().fill('〇〇センター 5番');
@@ -412,6 +412,53 @@ const J = s => new Date(s + '+09:00');
     await ctx.setOffline(false);
     await page.goto(base + 'log.html');
     await page.screenshot({ path: out + '/v2-install-box.png', fullPage: true });
+    await ctx.close();
+  }
+
+
+  // ---------- G. places registered by the driver, picked above the buttons ----------
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, timezoneId: 'Asia/Tokyo', locale: 'ja-JP' });
+    const page = await ctx.newPage(); watch(page, 'G');
+    await page.clock.install({ time: J('2026-10-14T05:50:00') });
+    await page.goto(base + 'log.html');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    const at = s => page.clock.setSystemTime(J(s));
+    check('no places yet: hint shown', await page.locator('#pickHint').isVisible() && await page.locator('#placeSel').isHidden());
+    await page.click('#btnPlaces');
+    await page.fill('#newPlace', '〇〇運輸 本社車庫'); await page.click('#btnAddPlace');
+    await page.fill('#newPlace', '〇〇センター'); await page.press('#newPlace', 'Enter');
+    check('places registered', (await page.locator('#savedPlaces li').count()) === 2 && (await page.locator('#placeSel option').count()) === 3);
+    await page.click('#btnPlacesClose');
+    await page.selectOption('#placeSel', '〇〇運輸 本社車庫');
+    await page.screenshot({ path: out + '/v2-pick.png' });
+    await at('2026-10-14T06:00:00');
+    await page.click('[data-act="start"]');
+    let st = await page.evaluate(() => JSON.parse(localStorage.getItem('dpc_log_v1')));
+    check('start with the picked place, no prompt', st.shifts[0].startMeta.place === '〇〇運輸 本社車庫' && await page.locator('#placePrompt').isHidden() && /場所：〇〇運輸 本社車庫/.test(await page.locator('#toastText').innerText()));
+    check('picker resets while working', (await page.inputValue('#placeSel')) === '');
+    await at('2026-10-14T09:00:00');
+    await page.click('[data-act="wait"]');
+    check('prompt shows the registered places', (await page.locator('#placeChips .pchip').count()) === 2);
+    await page.click('#placeChips .pchip[data-place="〇〇センター"]');
+    await at('2026-10-14T10:00:00');
+    await page.click('[data-act="waitEnd"]');
+    await at('2026-10-14T18:00:00');
+    await page.click('[data-act="end"]');
+    await page.fill('#placeInput', '〇〇PA');
+    await page.check('#placeRemember');
+    await page.click('#placeSave');
+    st = await page.evaluate(() => JSON.parse(localStorage.getItem('dpc_log_v1')));
+    check('chip and typed places saved', st.shifts[0].waits[0].place === '〇〇センター' && st.shifts[0].endMeta.place === '〇〇PA' && st.settings.places.indexOf('〇〇PA') >= 0, JSON.stringify(st.settings));
+    check('next start picks the last start place', (await page.inputValue('#placeSel')) === '〇〇運輸 本社車庫');
+    await page.click('#btnPlaces');
+    page.once('dialog', d => d.accept());
+    await page.click('#savedPlaces [data-delplace="〇〇センター"]');
+    st = await page.evaluate(() => JSON.parse(localStorage.getItem('dpc_log_v1')));
+    check('deleting a place keeps the records', st.settings.places.indexOf('〇〇センター') < 0 && st.shifts[0].waits[0].place === '〇〇センター');
+    await page.click('#btnPlacesClose');
+    await noHScroll(page, 'G');
     await ctx.close();
   }
 
