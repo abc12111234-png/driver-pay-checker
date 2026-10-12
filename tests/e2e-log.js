@@ -51,7 +51,7 @@ const J = s => new Date(s + '+09:00');
 
     await at('2026-10-12T09:00:00');
     await page.click('[data-act="wait"]');
-    check('wait prompt', /荷待ちの場所/.test(await page.locator('#placeLabel').innerText()));
+    check('wait prompt', /荷待ち・待機の場所/.test(await page.locator('#placeLabel').innerText()));
     await page.fill('#placeInput', '〇〇センター 3番');
     await page.press('#placeInput', 'Enter');
     check('enter saves place', await page.locator('#placePrompt').isHidden());
@@ -79,7 +79,9 @@ const J = s => new Date(s + '+09:00');
     check('remind shown', await page.locator('#remind').isVisible());
     const list2 = await page.locator('#shifts').innerText();
     check('list has places and note', /〇〇センター 3番/.test(list2) && /〇〇PAで車中泊/.test(list2) && /受付は8時の予約/.test(list2), list2.replace(/\n/g, ' | '));
-    check('list numbers', /拘束 12時間00分/.test(list2) && /荷待ち 2時間00分/.test(list2) && /労働 11時間00分/.test(list2), list2.replace(/\n/g, ' | '));
+    check('list numbers', /拘束 12時間00分/.test(list2) && /荷待ち・待機 2時間00分/.test(list2) && /労働 11時間00分/.test(list2), list2.replace(/\n/g, ' | '));
+    const ends = await page.evaluate(() => { const sh = JSON.parse(localStorage.getItem('dpc_log_v1')).shifts[0]; return [sh.waits[0].eMeta, sh.breaks[0].eMeta].map(m => m && m.loc && m.loc.lat); });
+    check('GPS at the end of a wait and a break', ends[0] === 35.68124 && ends[1] === 35.68124, JSON.stringify(ends));
     check('map links for start/wait/break/end', (await page.locator('#shifts a[href*="maps"]').count()) === 4, String(await page.locator('#shifts a[href*="maps"]').count()));
     await page.screenshot({ path: out + '/v2-after-day.png', fullPage: true });
     await noHScroll(page, 'A after day');
@@ -88,7 +90,7 @@ const J = s => new Date(s + '+09:00');
     await page.waitForTimeout(300);
     const clip = await page.evaluate(() => navigator.clipboard.readText());
     check('share text', clip.includes('【勤務の記録】10月12日（月）') && clip.includes('始業 10/12 6:00 東京営業所（その場でボタン）') &&
-      clip.includes('荷待ち 9:00〜11:00 〇〇センター 3番（その場でボタン）') && clip.includes('メモ（10/12 9:05 に記入）受付は8時の予約') &&
+      clip.includes('荷待ち・待機 9:00〜11:00 〇〇センター 3番（その場でボタン）') && clip.includes('荷待ち・待機おわり 11:00（誤差 約20m） https://') && clip.includes('メモ（10/12 9:05 に記入）受付は8時の予約') &&
       clip.includes('終業 10/12 18:00 〇〇PAで車中泊（その場でボタン）') && clip.includes('始業（誤差 約20m） https://www.google.com/maps/search/?api=1&query=35.68124,139.76713') &&
       clip.includes('作成 2026年10月12日 18:00'), clip);
     fs.writeFileSync(out + '/share-text.txt', clip);
@@ -138,7 +140,7 @@ const J = s => new Date(s + '+09:00');
     const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#btnCsv')]);
     const csv = fs.readFileSync(await dl.path(), 'utf8');
     fs.writeFileSync(out + '/log.csv', csv);
-    check('csv head', /始業の場所,始業の位置,終業の場所,終業の位置,休憩,荷待ち,メモ,記録の仕方,変更,送った日時/.test(csv));
+    check('csv head', /始業の場所,始業の位置,終業の場所,終業の位置,休憩,荷待ち・待機,メモ,記録の仕方,変更,送った日時/.test(csv));
     check('csv rows', csv.includes('東京営業所') && csv.includes('35.68124 139.76713 ±20m') && csv.includes('始業：あとで手入力') && csv.includes('始業：あとで直した') && csv.includes('（コピー）'), csv.slice(0, 600));
 
     const [bk] = await Promise.all([page.waitForEvent('download'), page.click('#btnBackup')]);
