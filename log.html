@@ -7,6 +7,13 @@
 <meta name="description" content="始業・休憩・荷待ち・終業をその場でボタンで記録し、トラック運転者の拘束時間と休息期間を2024年4月からの改善基準告示でチェックします。場所や時刻つきのメモも残せて、記録はスマホの中だけに保存します。">
 <link rel="canonical" href="https://abc12111234-png.github.io/driver-pay-checker/log.html">
 <meta name="theme-color" content="#0A6847">
+<link rel="manifest" href="log.webmanifest">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="勤務の記録">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Overpass:wght@500;700;800&display=swap">
@@ -176,6 +183,9 @@ textarea{resize:vertical;line-height:1.5}
 .sh-places .none{color:var(--muted);font-size:12px}
 .act{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .sh-places li,.toast,.hist li,.audit li,.notes li,.remind span,.alerts li{overflow-wrap:anywhere}
+.install{margin-top:12px;padding:10px 12px;border:1.5px solid var(--band);border-radius:12px;display:grid;gap:6px}
+.install p{margin:0;font-size:14px;line-height:1.6}
+.install .btn{justify-self:start;margin-top:4px}
 </style>
 </head>
 <body>
@@ -236,6 +246,11 @@ textarea{resize:vertical;line-height:1.5}
   <section class="card" aria-labelledby="dataTitle">
     <h2 id="dataTitle">記録の保存</h2>
     <p style="margin-top:8px">記録はこのスマホのブラウザの中だけに保存し、どこにも送りません。機種変更やブラウザのデータ消去で消えるので、ときどきバックアップを保存してください。iPhoneのSafariでは、しばらく開かないと消えることがあるので、ホーム画面に追加して、そこから開いて使うのがおすすめです。ただし、Safariとホーム画面から開いたものとでは、記録が別々に保存されます。Safariでつけた記録があるときは、先にSafariでバックアップを保存して、ホーム画面から開いたほうで「バックアップから戻す」をしてください。</p>
+    <div class="install" id="installBox" hidden>
+      <p class="install-title"><b>ホーム画面に入れる</b></p>
+      <p id="installText"></p>
+      <button type="button" class="btn primary" id="btnInstall" hidden>ホーム画面に入れる</button>
+    </div>
     <div class="row">
       <button type="button" class="btn" id="btnBackup">バックアップを保存</button>
       <button type="button" class="btn" id="btnRestore">バックアップから戻す</button>
@@ -1186,6 +1201,36 @@ function transferValues(s){
   window.addEventListener('storage', e => { if (e.key === KEY && sync()){ hidePlacePrompt(); renderAll(); } });
   document.addEventListener('visibilitychange', () => { if (!document.hidden){ if (sync()) hidePlacePrompt(); renderAll(); } });
   window.addEventListener('pageshow', e => { if (e.persisted){ if (sync()) hidePlacePrompt(); renderAll(); } });
+})();
+</script>
+<script>
+// home screen: offline copy of the pages, and how to put this page on the home screen
+(function(){
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  const box = document.getElementById('installBox'), text = document.getElementById('installText'), btn = document.getElementById('btnInstall');
+  const standalone = () => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const ua = navigator.userAgent || '';
+  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const inApp = /\bLine\/|Instagram|FBAN|FBAV/i.test(ua);
+  let deferred = null;
+  function show(){
+    if (standalone()){ box.hidden = true; return; }
+    btn.hidden = !deferred;
+    if (deferred) text.textContent = 'ホーム画面に入れると、アプリのようにすぐ開けて、電波のないところでも使えます。';
+    else if (inApp) text.textContent = 'LINEなどのアプリの中で開いているときは、ホーム画面に入れられません。メニューから「ブラウザで開く」（iPhoneはSafari、AndroidはChrome）を選んでから入れてください。';
+    else if (ios) text.textContent = 'Safariの共有ボタン（四角から上に矢印が出ているマーク。下の「…」の中にあることもあります）を押して、「ホーム画面に追加」を選んでください。ホーム画面のアイコンから開くと、アプリのように使えて、電波のないところでも開けます。';
+    else text.textContent = 'ブラウザのメニュー（右上の︙など）から、「アプリをインストール」または「ホーム画面に追加」を選んでください。ホーム画面のアイコンから開くと、アプリのように使えて、電波のないところでも開けます。';
+    box.hidden = false;
+  }
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; show(); });
+  btn.addEventListener('click', () => {
+    if (!deferred) return;
+    const d = deferred; deferred = null;
+    d.prompt();
+    Promise.resolve(d.userChoice).then(show, show);
+  });
+  window.addEventListener('appinstalled', () => { box.hidden = true; });
+  show();
 })();
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d11dfb7286ee4d17b914c859494ac4c6"}'></script><!-- End Cloudflare Web Analytics -->

@@ -1,0 +1,17 @@
+{
+  "name": "勤務の記録｜ドライバー給料チェッカー",
+  "short_name": "勤務の記録",
+  "description": "始業・休憩・荷待ち・終業をボタンで記録して、拘束時間と休息期間をチェックします。記録はスマホの中だけに保存します。",
+  "id": "./log.html",
+  "start_url": "./log.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EEF2EF",
+  "theme_color": "#0A6847",
+  "lang": "ja",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

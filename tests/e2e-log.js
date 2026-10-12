@@ -269,7 +269,7 @@ const J = s => new Date(s + '+09:00');
     await page.goto(base + 'log.html');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await page.check('#geoToggle');
+    await page.click('#geoToggle');   // a refusal can uncheck it at once, so only click
     await page.waitForFunction(() => /許可/.test(document.getElementById('geoNote').textContent), null, { timeout: 20000 }).catch(() => {});
     check('geo refused handled', !(await page.isChecked('#geoToggle')) && /許可/.test(await page.locator('#geoNote').innerText()), await page.locator('#geoNote').innerText());
     await ctx.close();
@@ -380,6 +380,36 @@ const J = s => new Date(s + '+09:00');
     await p1.click('.shift.open [data-edit]');
     await p1.click('#eSave');
     check('place prompt hidden after editor save', await p1.locator('#placePrompt').isHidden());
+    await ctx.close();
+  }
+
+
+  // ---------- F. home screen: manifest, icons, and opening without a signal ----------
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'Asia/Tokyo', locale: 'ja-JP' });
+    const page = await ctx.newPage(); watch(page, 'F');
+    await page.goto(base + 'log.html');
+    const man = await page.evaluate(async () => {
+      const href = document.querySelector('link[rel="manifest"]').href;
+      const m = await (await fetch(href)).json();
+      const icons = await Promise.all(m.icons.map(async i => (await fetch(new URL(i.src, href))).status));
+      const touch = (await fetch(document.querySelector('link[rel="apple-touch-icon"]').href)).status;
+      return { name: m.short_name, start: new URL(m.start_url, href).pathname, display: m.display, icons, touch };
+    });
+    check('manifest and icons', man.name === '勤務の記録' && /\/log\.html$/.test(man.start) && man.display === 'standalone' && man.icons.every(x => x === 200) && man.touch === 200, JSON.stringify(man));
+    check('install help shown', await page.locator('#installBox').isVisible() && (await page.locator('#installText').innerText()).length > 20);
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.reload();
+    await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 10000 }).catch(() => {});
+    check('service worker controls the page', await page.evaluate(() => !!navigator.serviceWorker.controller));
+    await ctx.setOffline(true);
+    await page.reload();
+    check('log opens without a signal', (await page.locator('h1').innerText()) === '勤務の記録' && (await page.locator('[data-act="start"]').count()) === 1);
+    await page.goto(base + '?from=log');
+    check('checker opens without a signal', /ドライバー給料チェッカー/.test(await page.locator('h1').innerText()));
+    await ctx.setOffline(false);
+    await page.goto(base + 'log.html');
+    await page.screenshot({ path: out + '/v2-install-box.png', fullPage: true });
     await ctx.close();
   }
 

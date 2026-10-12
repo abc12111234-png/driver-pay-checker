@@ -22,6 +22,8 @@
 - `log.html` 勤務の記録
 - `about.html` 運営者情報
 - `privacy.html` プライバシーポリシー・免責事項
+- `log.webmanifest`、`icons/` 勤務の記録をホーム画面に入れるための設定とアイコン
+- `sw.js` 電波のないところでもページを開けるようにする（ページのファイルだけを保存し、記録は含まない）
 - `tests/test-log.js` 勤務の記録の計算のテスト（`TZ=Asia/Tokyo node tests/test-log.js log.html`）
 - `tests/e2e-log.js` 勤務の記録のブラウザでの確認（Playwright。使い方はファイルの先頭）
 
