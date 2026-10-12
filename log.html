@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>勤務の記録｜ドライバー給料チェッカー</title>
-<meta name="description" content="始業・休憩・荷待ち・終業をボタンで記録すると、トラック運転者の拘束時間と休息期間を、2024年4月からの改善基準告示で自動でチェックします。記録はスマホの中だけに保存します。">
+<meta name="description" content="始業・休憩・荷待ち・終業をその場でボタンで記録し、トラック運転者の拘束時間と休息期間を2024年4月からの改善基準告示でチェックします。場所や時刻つきのメモも残せて、記録はスマホの中だけに保存します。">
 <link rel="canonical" href="https://abc12111234-png.github.io/driver-pay-checker/log.html">
 <meta name="theme-color" content="#0A6847">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -86,7 +86,7 @@ p{margin:0 0 10px}
 
 /* month */
 .month-head,.list-head{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap}
-select,input[type="datetime-local"]{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line-strong);border-radius:10px;padding:6px 10px;max-width:100%}
+select,input[type="datetime-local"],input[type="text"],textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line-strong);border-radius:10px;padding:6px 10px;max-width:100%}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
 .tile{background:var(--surface-2);border-radius:10px;padding:8px 10px 10px;min-width:0;display:grid;gap:4px;align-content:start}
 .tile-label{font-size:12px;color:var(--muted);letter-spacing:.04em;line-height:1.3}
@@ -118,11 +118,10 @@ select,input[type="datetime-local"]{font:inherit;font-size:16px;color:var(--ink)
 .sh-nums{font-size:14px;color:var(--muted)}
 .sh-checks{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .sh-checks .sep{margin-left:6px}
-.sh-checks .edit{margin-left:auto}
 .empty{color:var(--muted);font-size:14px;margin:12px 0 0}
 
 /* dialog */
-dialog{border:0;border-radius:16px;padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 32px);background:var(--surface);color:var(--ink);box-shadow:0 20px 50px -20px var(--shadow)}
+dialog{overflow:auto;border:0;border-radius:16px;padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 32px);background:var(--surface);color:var(--ink);box-shadow:0 20px 50px -20px var(--shadow)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 .dlg-body{padding:16px;display:grid;gap:12px}
 .f{display:grid;gap:4px;font-weight:700;font-size:15px}
@@ -139,13 +138,51 @@ details.how ul{margin:10px 0 0;padding-left:1.2em}
 details.how li{margin-bottom:6px;font-size:15px}
 .foot{margin-top:28px;font-size:13px;color:var(--muted)}
 .foot nav{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px}
+/* evidence: places, notes, sharing, history */
+input[type="text"],textarea{width:100%}
+textarea{resize:vertical;line-height:1.5}
+.prompt{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);display:grid;gap:8px}
+.prompt label{font-size:14px;font-weight:700}
+.prompt .hint{margin:0}
+.pp-row{display:flex;flex-wrap:wrap;gap:8px}
+.now-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.geo{display:flex;align-items:center;gap:8px;font-size:15px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.geo input{width:20px;height:20px;accent-color:var(--sign)}
+.geo-note{font-size:13px;color:var(--muted);margin:4px 0 0}
+.geo-note:empty{display:none}
+.remind{margin-top:12px;padding:8px 12px;border-radius:10px;border:1.5px solid var(--band);display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px}
+.remind span{flex:1 1 180px}
+.sh-places,.sh-notes{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:14px;line-height:1.55}
+.sh-places .k,.sh-notes .k{color:var(--muted);font-size:12px;margin-right:6px}
+.sh-notes li{white-space:pre-wrap;overflow-wrap:anywhere}
+.tag.soft{border-style:dashed}
+.tag.sent{color:var(--ok);background:var(--ok-bg);border-color:transparent}
+.sh-btns{margin-left:auto;display:flex;gap:6px}
+.audit{margin-top:14px}
+.audit summary,.hist-box summary{font-weight:700;font-size:14px;cursor:pointer}
+.audit ul,.hist{margin:8px 0 0;padding-left:1.2em;font-size:13px;line-height:1.55}
+.f.sub{font-weight:400;font-size:13px;color:var(--muted);margin-top:-6px}
+.per .pl-wrap{grid-column:1 / -1}
+.notes{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:14px}
+.notes:empty{display:none}
+.notes .k{color:var(--muted);font-size:12px;margin-right:6px}
+.notes .nt{white-space:pre-wrap;overflow-wrap:anywhere}
+.notes li.del .nt{text-decoration:line-through;opacity:.6}
+#eRec:empty{display:none}
+#eRec{margin:-6px 0 0}
+.per label{grid-template-columns:minmax(0,1fr)}
+.per input{min-width:0}
+.err:empty{display:none}
+.sh-places .none{color:var(--muted);font-size:12px}
+.act{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.sh-places li,.toast,.hist li,.audit li,.notes li,.remind span,.alerts li{overflow-wrap:anywhere}
 </style>
 </head>
 <body>
 <div class="wrap">
   <a class="sign" href="./"><div class="sign-plate"><span>ドライバー給料チェッカー</span></div></a>
   <h1>勤務の記録</h1>
-  <p class="lead">押すだけで、拘束時間と休息期間を改善基準告示（2024年4月から）でチェックします。1か月の時間は、そのまま給料チェッカーに渡せます。</p>
+  <p class="lead">その場で押して、会社の記録とは別に、自分の勤務の記録を残します。拘束時間と休息期間は改善基準告示（2024年4月から）でチェックし、1か月の時間は給料チェッカーに渡せます。</p>
   <p class="storage-warn" id="storageWarn" hidden>このブラウザでは記録を保存できません。プライベートブラウズを止めるか、ほかのブラウザで開いてください。</p>
 
   <section class="card" aria-labelledby="nowTitle">
@@ -153,11 +190,26 @@ details.how li{margin-bottom:6px;font-size:15px}
     <p class="state" id="state">勤務していません</p>
     <p class="state-sub" id="stateSub"></p>
     <div class="actions" id="actions"></div>
+    <p class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastText"></span> <button type="button" class="link" id="btnUndo">取り消す</button> <button type="button" class="link" id="btnShareNow" hidden>この日の記録を送る</button></p>
+    <div class="prompt" id="placePrompt" hidden>
+      <label for="placeInput" id="placeLabel">場所（任意）</label>
+      <input type="text" id="placeInput" list="placeList" autocomplete="off" enterkeyhint="done" maxlength="60">
+      <div class="pp-row"><button type="button" class="btn small primary" id="placeSave">残す</button><button type="button" class="btn small" id="placeSkip">書かない</button></div>
+    </div>
+    <div class="prompt" id="notePrompt" hidden>
+      <label for="noteInput" id="noteLabel">メモ</label>
+      <textarea id="noteInput" rows="3" maxlength="400" placeholder="例：荷主で2時間待ち。会社に電話して、待つように言われた"></textarea>
+      <p class="hint">書いた日時と一緒に残ります。中身をあとから書き換える機能はありません。</p>
+      <div class="pp-row"><button type="button" class="btn small primary" id="noteSave">残す</button><button type="button" class="btn small" id="noteCancel">やめる</button></div>
+    </div>
+    <div class="now-tools" id="nowTools" hidden><button type="button" class="btn small" id="btnNote">メモを書く</button></div>
     <div class="flags" id="flags" hidden>
       <label><input type="checkbox" id="fHoliday"> この勤務は法定休日の出勤</label>
       <label><input type="checkbox" id="fLodging"> 宿泊を伴う長距離の運行</label>
     </div>
-    <p class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastText"></span> <button type="button" class="link" id="btnUndo">取り消す</button></p>
+    <label class="geo"><input type="checkbox" id="geoToggle"> 押したときの場所（GPS）も残す</label>
+    <p class="geo-note" id="geoNote"></p>
+    <div class="remind" id="remind" hidden><span id="remindText"></span><button type="button" class="btn small primary" id="btnRemind">送る</button></div>
     <p class="safety"><b>運転中は操作しないでください。</b>止まってから押してください。押し忘れても、あとで時刻を直せます。</p>
   </section>
 
@@ -183,12 +235,29 @@ details.how li{margin-bottom:6px;font-size:15px}
 
   <section class="card" aria-labelledby="dataTitle">
     <h2 id="dataTitle">記録の保存</h2>
-    <p style="margin-top:8px">記録はこのスマホのブラウザの中だけに保存し、どこにも送りません。機種変更やブラウザのデータ消去で消えるので、月に1回はCSVで保存しておくと安心です。iPhoneのSafariでは、しばらく開かないと消えることがあるので、ホーム画面に追加して使ってください。</p>
+    <p style="margin-top:8px">記録はこのスマホのブラウザの中だけに保存し、どこにも送りません。機種変更やブラウザのデータ消去で消えるので、ときどきバックアップを保存してください。iPhoneのSafariでは、しばらく開かないと消えることがあるので、ホーム画面に追加して、そこから開いて使うのがおすすめです。ただし、Safariとホーム画面から開いたものとでは、記録が別々に保存されます。Safariでつけた記録があるときは、先にSafariでバックアップを保存して、ホーム画面から開いたほうで「バックアップから戻す」をしてください。</p>
     <div class="row">
-      <button type="button" class="btn" id="btnCsv">CSVで保存</button>
+      <button type="button" class="btn" id="btnBackup">バックアップを保存</button>
+      <button type="button" class="btn" id="btnRestore">バックアップから戻す</button>
+      <button type="button" class="btn" id="btnCsv">CSVで保存（Excel用）</button>
       <button type="button" class="btn danger" id="btnWipe">記録を全部消す</button>
     </div>
+    <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+    <details class="audit" id="auditBox" hidden><summary id="auditSum">記録を消した・戻した履歴</summary><ul id="auditList"></ul></details>
   </section>
+
+  <details class="card how">
+    <summary>記録を証拠として残すために</summary>
+    <ul>
+      <li>会社のデジタコや日報の時刻が、実際と違っていることがあります。会社の記録とは別に、自分でその場で押した記録を毎日つけておくと、あとで比べられます。</li>
+      <li>押し忘れや押しまちがいは、あとで直せます。直すと、直す前の時刻と直した日時が記録に残り、一覧に「あとで直した」と出ます。場所や印を直したときや、メモや記録を消したときも、その中身ごと履歴に残ります。</li>
+      <li>押してから10分以内なら「取り消す」で取り消せます（押しまちがい用）。取り消した分は履歴に残りません。それを過ぎたら「直す」から直してください。</li>
+      <li>メモは書いた日時と一緒に残ります。中身をあとから書き換える機能はありません。荷待ちの理由、会社からの指示、日報との違いなどを、その場で書いておけます。</li>
+      <li>この記録はスマホの中のデータなので、それだけでは、その日に作ったものだと示しきれません。終業のあとに「送る」で、その日の記録を自分あてのLINEやメールに送っておくと、送った日時がスマホの外に残り、その日のうちに作った記録だという裏づけになります。</li>
+      <li>時刻のわかるものも取っておくと、記録の裏づけになります。たとえば、高速道路の利用明細、給油のレシート、伝票や受領書、荷主の受付の時刻、その場で撮った写真などです。</li>
+      <li>争いになったときに、この記録がどこまで認められるかは、ほかの資料とあわせて判断されます。困ったときは、労働基準監督署などの相談窓口や弁護士に、この記録を見せて相談してください。</li>
+    </ul>
+  </details>
 
   <details class="card how">
     <summary>数え方と注意</summary>
@@ -198,26 +267,37 @@ details.how li{margin-bottom:6px;font-size:15px}
       <li>労働時間は、拘束時間から休憩を引いた時間です。荷待ちは労働時間に入ります。</li>
       <li>時間外は、1日8時間を超えた分と、週40時間を超えた分（週は日曜から土曜）の合計です。日をまたぐ勤務は、始業した日の労働として数えます。法定休日の出勤は時間外に入れず、法定休日の労働として別に数えます。</li>
       <li>深夜は、22時から翌朝5時までの労働時間（休憩を除く）です。</li>
+      <li>場所（GPS）は、始業・休憩・荷待ち・終業のボタンを押したときの位置だけを残します（休憩おわり・荷待ちおわりでは取りません）。ずっと追いかけることはしません。位置はこのスマホの中に保存し、外に出るのは、「地図」を押したとき（その地点がGoogleマップに送られます）と、「送る」で送る文章に入れたとき（自分で選んだ送り先に届きます）だけです。</li>
       <li>変形労働時間制、分割休息、2人乗務、フェリーの特例、連続運転（430）は数えていません。結果は目安で、法律上の判断の代わりにはなりません。</li>
-      <li>会社のデジタコや日報とあわせて、自分の記録として残しておくと、あとで給料を確かめるときに役に立ちます。</li>
     </ul>
   </details>
 
   <footer class="foot">
-    <p>記録はこのブラウザの中だけに保存し、運営者には送られません。</p>
+    <p>記録・場所・メモはこのブラウザの中だけに保存し、運営者には送られません。</p>
     <nav aria-label="サイトの情報"><a href="./">給料チェッカーに戻る</a><a href="about.html">運営者情報</a><a href="privacy.html">プライバシーポリシー・免責事項</a></nav>
   </footer>
 </div>
 
+<datalist id="placeList"></datalist>
+
 <dialog id="dlg" aria-labelledby="dlgTitle">
   <form class="dlg-body" id="dlgForm" method="dialog">
     <h2 id="dlgTitle">記録を直す</h2>
+    <p class="hint" id="eRec"></p>
     <label class="f">始業<input type="datetime-local" id="eStart" required></label>
+    <label class="f sub">始業の場所（任意）<input type="text" id="eStartPlace" list="placeList" autocomplete="off" maxlength="60"></label>
     <label class="f">終業（勤務中なら空のまま）<input type="datetime-local" id="eEnd"></label>
+    <label class="f sub">終業・休息の場所（任意）<input type="text" id="eEndPlace" list="placeList" autocomplete="off" maxlength="60"></label>
     <fieldset><legend>休憩</legend><div id="eBreaks" class="pers"></div><button type="button" class="btn small" id="eAddBreak">休憩を足す</button></fieldset>
     <fieldset><legend>荷待ち</legend><div id="eWaits" class="pers"></div><button type="button" class="btn small" id="eAddWait">荷待ちを足す</button></fieldset>
     <label class="chk"><input type="checkbox" id="eHoliday"> この勤務は法定休日の出勤</label>
     <label class="chk"><input type="checkbox" id="eLodging"> 宿泊を伴う長距離の運行</label>
+    <fieldset><legend>メモ</legend>
+      <ul class="notes" id="eNotes"></ul>
+      <label class="f sub">メモを足す（保存した日時と一緒に残ります）<textarea id="eNote" rows="2" maxlength="400"></textarea></label>
+    </fieldset>
+    <p class="hint">時刻を直すと、「あとで直した」ことと、直す前の時刻が記録に残ります。</p>
+    <details class="hist-box" id="eHistBox" hidden><summary id="eHistSum">この記録の変更</summary><ul class="hist" id="eHist"></ul></details>
     <p class="err" id="eErr" role="alert"></p>
     <div class="row">
       <button type="button" class="btn primary" id="eSave">保存</button>
@@ -361,110 +441,350 @@ function transferValues(s){
 
 (function(){
   const $ = id => document.getElementById(id);
-  const KEY = 'dpc_log_v1', TRANSFER_KEY = 'dpc_transfer_v1';
+  const KEY = 'dpc_log_v1', TRANSFER_KEY = 'dpc_transfer_v1', UNDO_MIN = 10;
   const WD = ['日', '月', '火', '水', '木', '金', '土'];
   const CHIP = { ok: 'OK', warn: '注意', bad: '要確認', na: '―' };
+  const REC = { button: 'その場でボタン', manual: 'あとで手入力', edited: 'あとで直した', legacy: '前の版で記録' };
+  const PLACE = {
+    start: ['始業の場所（任意）', '例：〇〇営業所、〇〇センター'],
+    break: ['休憩の場所（任意）', '例：〇〇PA、コンビニの駐車場'],
+    wait: ['荷待ちの場所（任意）', '例：〇〇センター 3番バースの前'],
+    end: ['終業・休息の場所（任意）', '例：〇〇PAで車中泊、営業所']
+  };
 
-  let store = { v: 1, shifts: [] }, canSave = true, undoSnap = null, viewYm = null;
+  const blank = () => ({ v: 1, shifts: [], settings: { geo: false }, audit: [] });
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  let store = blank(), canSave = true, lastSaved = null, undo = null, viewYm = null;
+  let placeTarget = null, lastTarget = null, geoReq = 0, geoPending = false, lastPress = 0, lastActions = '';
 
   // ---------- storage ----------
+  const arr = v => Array.isArray(v) ? v : [];
+  const str = (v, n) => typeof v === 'string' ? v.slice(0, n) : '';
+  const fin = v => typeof v === 'number' && Number.isFinite(v);
+  const own = o => { const r = {}; Object.keys(o).forEach(k => { if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') r[k] = o[k]; }); return r; };
+  const cleanMeta = m => m && typeof m === 'object' && !Array.isArray(m) ? Object.assign(own(m), { place: str(m.place, 60) }) : null;
+  function cleanPeriod(p){
+    if (!p || typeof p !== 'object' || !fin(p.s) || !(p.e == null || fin(p.e))) return null;
+    return Object.assign(own(p), { id: typeof p.id === 'string' && p.id ? p.id : newId(), e: p.e == null ? null : p.e, place: str(p.place, 60), sMeta: cleanMeta(p.sMeta), eMeta: cleanMeta(p.eMeta) });
+  }
+  // strict: a broken part makes the whole shift invalid (for files); otherwise broken parts are dropped
+  function cleanShift(x, strict){
+    if (!x || typeof x !== 'object' || !fin(x.start) || !(x.end == null || fin(x.end))) return null;
+    const ps = list => { if (list != null && !Array.isArray(list) && strict) return null; const out = arr(list).map(cleanPeriod); return strict && out.indexOf(null) >= 0 ? null : out.filter(Boolean); };
+    const breaks = ps(x.breaks), waits = ps(x.waits);
+    if (!breaks || !waits) return null;
+    return Object.assign(own(x), {
+      id: typeof x.id === 'string' && x.id ? x.id : newId(), end: x.end == null ? null : x.end, breaks, waits,
+      holiday: !!x.holiday, lodging: !!x.lodging, startMeta: cleanMeta(x.startMeta), endMeta: cleanMeta(x.endMeta),
+      history: arr(x.history).filter(h => h && fin(h.at) && typeof h.what === 'string'),
+      notes: arr(x.notes).filter(n => n && fin(n.at) && typeof n.text === 'string')
+    });
+  }
+  function normalize(o, strict){
+    const seen = new Set(), shifts = [];
+    for (const x of arr(o.shifts)){
+      const c = cleanShift(x, strict);
+      if (!c){ if (strict) return null; continue; }
+      if (seen.has(c.id)) c.id = newId();
+      seen.add(c.id); shifts.push(c);
+    }
+    if (strict && shifts.filter(x => x.end == null).length > 1) return null;
+    const audit = arr(o.audit).filter(a => a && fin(a.at) && typeof a.what === 'string').map(a => Object.assign(own(a), { aid: typeof a.aid === 'string' && a.aid ? a.aid : newId() }));
+    return { v: 1, shifts, settings: { geo: !!(o.settings && o.settings.geo) }, audit };
+  }
   function load(){
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw){ const o = JSON.parse(raw); if (o && Array.isArray(o.shifts)) store = o; }
+      if (raw){ const o = JSON.parse(raw); if (o && Array.isArray(o.shifts)){ store = normalize(o, false); lastSaved = raw; } }
       localStorage.setItem(KEY + '_probe', '1'); localStorage.removeItem(KEY + '_probe');
     } catch (e){ canSave = false; }
     $('storageWarn').hidden = canSave;
     try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e){}
   }
   function save(){
-    try { localStorage.setItem(KEY, JSON.stringify(store)); }
+    if (!canSave) return;
+    try { const raw = JSON.stringify(store); localStorage.setItem(KEY, raw); lastSaved = raw; }
     catch (e){ canSave = false; $('storageWarn').hidden = false; }
   }
-  const snap = () => JSON.stringify(store);
+  // another tab (or the home-screen app sharing this storage) may have written newer records
+  function sync(){
+    if (!canSave) return false;
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw || raw === lastSaved) return false;
+      const o = JSON.parse(raw);
+      if (!o || !Array.isArray(o.shifts)) return false;
+      store = normalize(o, false); lastSaved = raw; undo = null; $('btnUndo').hidden = true;
+      return true;
+    } catch (e){ return false; }
+  }
 
   // ---------- formatting ----------
   const fmtHM = h => { if (h == null) return '―'; const t = Math.round(h * 60); return Math.floor(t / 60) + '時間' + pad2(t % 60) + '分'; };
   const clock = ms => { const d = new Date(ms); return d.getHours() + ':' + pad2(d.getMinutes()); };
   const mdw = ms => { const d = new Date(ms); return (d.getMonth() + 1) + '月' + d.getDate() + '日（' + WD[d.getDay()] + '）'; };
-  const span = (s, e) => { if (e == null) return clock(s) + '〜'; const same = dayKey(s) === dayKey(e); return clock(s) + '〜' + (same ? '' : '翌' + (new Date(e).getDate() !== new Date(s + 86400000).getDate() ? new Date(e).getDate() + '日 ' : '')) + clock(e); };
+  const mdhm = ms => { const d = new Date(ms); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + clock(ms); };
+  const stamp = ms => { const d = new Date(ms); return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + clock(ms); };
+  const span = (s, e) => {
+    if (e == null) return clock(s) + '〜';
+    const de = dayKey(e), pre = de === dayKey(s) ? '' : de === dayKey(s + 24 * HOUR) ? '翌' : new Date(e).getDate() + '日 ';
+    return clock(s) + '〜' + pre + clock(e);
+  };
+  const tm = (ms, base) => dayKey(ms) === dayKey(base) ? clock(ms) : mdhm(ms);
+  const pspan = (p, base) => tm(p.s, base) + '〜' + (p.e == null ? '' : tm(p.e, base));
   const toInput = ms => { if (ms == null) return ''; const d = new Date(ms); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
   const fromInput = v => { const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(v || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime() : null; };
   const ymLabel = ym => { const p = ym.split('-'); return p[0] + '年' + Number(p[1]) + '月'; };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const hasLoc = m => !!(m && m.loc && Number.isFinite(+m.loc.lat) && Number.isFinite(+m.loc.lng));
+  const mapUrl = loc => 'https://www.google.com/maps/search/?api=1&query=' + (+loc.lat) + ',' + (+loc.lng);
+  const accTxt = loc => fin(loc.acc) ? '（誤差 約' + loc.acc + 'm）' : '';
+  const recOf = m => m && REC[m.rec] ? REC[m.rec] : REC.legacy;
+  const recP = p => { const a = recOf(p.sMeta); if (p.e == null) return a; const b = recOf(p.eMeta); return a === b ? a : '始め ' + a + '・終わり ' + b; };
+  const ymd = () => { const d = new Date(); return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()); };
+  const isIme = e => e.isComposing || e.keyCode === 229;
+  const r5 = v => Math.round(v * 1e5) / 1e5;
 
-  // ---------- the current shift ----------
+  // ---------- when, how and where each entry was made ----------
+  const meta = rec => ({ rec, at: Date.now(), loc: null, place: '' });
+  const legacyMeta = () => ({ rec: 'legacy', at: null, loc: null, place: '' });
   const openShift = () => store.shifts.find(x => x.end == null) || null;
   const openOf = list => (list || []).find(p => p.e == null) || null;
+  const latestShift = () => store.shifts.slice().sort((a, b) => b.start - a.start)[0] || null;
+  const periods = sh => (sh.breaks || []).map(p => ['休憩', p]).concat((sh.waits || []).map(p => ['荷待ち', p])).sort((a, b) => a[1].s - b[1].s);
   function nowMs(){ const d = new Date(); d.setSeconds(0, 0); return d.getTime(); }
-
-  function act(kind){
-    const before = snap(), t = nowMs();
-    let sh = openShift(), msg = '';
-    if (kind === 'start'){
-      if (sh) return;
-      store.shifts.push({ id: newId(), start: t, end: null, breaks: [], waits: [], holiday: false, lodging: false });
-      msg = clock(t) + ' に始業を記録しました。';
-    } else if (!sh){ return; }
-    else if (kind === 'break'){
-      const w = openOf(sh.waits); if (w) w.e = t;
-      sh.breaks.push({ s: t, e: null }); msg = clock(t) + ' から休憩。';
-    } else if (kind === 'breakEnd'){
-      const b = openOf(sh.breaks); if (b) b.e = t; msg = clock(t) + ' に休憩を終えました。';
-    } else if (kind === 'wait'){
-      const b = openOf(sh.breaks); if (b) b.e = t;
-      sh.waits.push({ s: t, e: null }); msg = clock(t) + ' から荷待ち。';
-    } else if (kind === 'waitEnd'){
-      const w = openOf(sh.waits); if (w) w.e = t; msg = clock(t) + ' に荷待ちを終えました。';
-    } else if (kind === 'end'){
-      const b = openOf(sh.breaks); if (b) b.e = t;
-      const w = openOf(sh.waits); if (w) w.e = t;
-      if (t <= sh.start){ toast('始業と同じ時刻です。少し待ってから押すか、あとで時刻を直してください。', null); return; }
-      sh.end = t; msg = clock(t) + ' に終業を記録しました（拘束 ' + fmtHM((t - sh.start) / HOUR) + '）。';
-    }
-    save(); toast(msg, before); viewYm = monthKey((openShift() || sh || { start: t }).start); renderAll();
+  // ends the open period; one that would be 0 minutes long is dropped
+  function closeOpen(list, t){
+    const p = openOf(list); if (!p) return null;
+    if (t <= p.s){ list.splice(list.indexOf(p), 1); return 'dropped'; }
+    p.e = t; p.eMeta = meta('button'); return 'closed';
+  }
+  // a press is found again by ids, so later edits or another tab cannot send it to the wrong entry
+  function findTarget(tg){
+    const sh = store.shifts.find(x => x.id === tg.id); if (!sh) return null;
+    if (tg.kind === 'start') return { meta: sh.startMeta || (sh.startMeta = legacyMeta()), holder: null };
+    if (tg.kind === 'end') return sh.end == null ? null : { meta: sh.endMeta || (sh.endMeta = legacyMeta()), holder: null };
+    const p = (tg.kind === 'break' ? sh.breaks : sh.waits).find(q => q.id === tg.pid);
+    return p ? { meta: p.sMeta || (p.sMeta = legacyMeta()), holder: p } : null;
+  }
+  function captureLoc(tg){
+    if (!store.settings.geo || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(p => {
+      sync();
+      const f = findTarget(tg); if (!f) return;
+      f.meta.loc = { lat: r5(p.coords.latitude), lng: r5(p.coords.longitude), acc: Math.round(p.coords.accuracy), t: Math.round(p.timestamp) };
+      save(); renderMonth();
+      if (tg === lastTarget) toastAdd('GPSの位置も残しました');
+    }, err => {
+      $('geoNote').textContent = err.code === 1
+        ? '位置の使用が許可されていません。スマホの設定で、このサイト（ブラウザ）に位置の使用を許可してください。'
+        : '位置が取れませんでした（電波の弱い場所など）。時刻は記録してあります。';
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
   }
 
-  function toast(msg, before){
-    undoSnap = before;
-    $('toastText').textContent = msg;
-    $('btnUndo').hidden = !before;
+  function allowed(sh){
+    if (!sh) return ['start'];
+    if (openOf(sh.breaks)) return ['breakEnd', 'end'];
+    if (openOf(sh.waits)) return ['waitEnd', 'break', 'end'];
+    return ['break', 'wait', 'end'];
+  }
+  function act(kind){
+    const pressed = Date.now();
+    if (Math.abs(pressed - lastPress) < 800) return;   // a double tap must not press the button that appears next
+    lastPress = pressed;
+    sync();
+    let sh = openShift();
+    if (allowed(sh).indexOf(kind) < 0){ notice('画面が古くなっていたので、新しくしました。もう一度押してください。'); renderAll(); return; }
+    const t = nowMs();
+    if (kind === 'end' && t <= sh.start){ notice('始業と同じ時刻です。少し待ってから押すか、あとで時刻を直してください。'); return; }
+    const u = { id: sh ? sh.id : null, before: sh ? clone(sh) : null };
+    let msg = '', target = null;
+    if (kind === 'start'){
+      sh = { id: newId(), start: t, end: null, breaks: [], waits: [], holiday: false, lodging: false, src: 'button', created: Date.now(), startMeta: meta('button'), endMeta: null, history: [], notes: [] };
+      store.shifts.push(sh); u.id = sh.id;
+      msg = clock(t) + ' に始業を記録しました。'; target = { id: sh.id, kind: 'start' };
+    } else if (kind === 'break' || kind === 'wait'){
+      closeOpen(sh.waits, t); closeOpen(sh.breaks, t);
+      const p = { id: newId(), s: t, e: null, sMeta: meta('button'), eMeta: null, place: '' };
+      (kind === 'break' ? sh.breaks : sh.waits).push(p);
+      msg = clock(t) + (kind === 'break' ? ' から休憩。' : ' から荷待ち。'); target = { id: sh.id, kind, pid: p.id };
+    } else if (kind === 'breakEnd' || kind === 'waitEnd'){
+      const label = kind === 'breakEnd' ? '休憩' : '荷待ち';
+      msg = closeOpen(kind === 'breakEnd' ? sh.breaks : sh.waits, t) === 'dropped' ? label + 'が0分だったので、記録しませんでした。' : clock(t) + ' に' + label + 'を終えました。';
+    } else if (kind === 'end'){
+      closeOpen(sh.breaks, t); closeOpen(sh.waits, t);
+      sh.end = t; sh.endMeta = meta('button');
+      msg = clock(t) + ' に終業を記録しました（拘束 ' + fmtHM((t - sh.start) / HOUR) + '）。'; target = { id: sh.id, kind: 'end' };
+    }
+    save();
+    lastTarget = target;
+    if (target) captureLoc(target);
+    toast(msg, u, kind === 'end' ? sh.id : null);
+    showPlacePrompt(target);
+    viewYm = monthKey(sh.start); renderAll();
+  }
+
+  // ---------- the message under the buttons, and undo ----------
+  let toastBase = '', toastExtra = [];
+  const paintToast = () => { $('toastText').textContent = toastBase + toastExtra.map(x => x + '。').join(''); };
+  function showToast(msg, shareId){
+    toastBase = msg; toastExtra = []; paintToast();
+    $('btnShareNow').hidden = !shareId; $('btnShareNow').dataset.id = shareId || '';
     $('toast').hidden = false;
   }
+  // u: { id, before } puts one record back; { id, before, aid } also removes that history entry; { store } puts everything back
+  function toast(msg, u, shareId){
+    undo = u ? Object.assign({ until: Date.now() + UNDO_MIN * 60000 }, u) : null;
+    showToast(msg, shareId); $('btnUndo').hidden = !undo;
+  }
+  function notice(msg){ showToast(msg, null); refreshUndo(); }
+  function toastAdd(x){ if (!$('toast').hidden && toastExtra.indexOf(x) < 0){ toastExtra.push(x); paintToast(); } }
+  function refreshUndo(){ if (undo && Date.now() > undo.until) undo = null; $('btnUndo').hidden = !undo; }
   $('btnUndo').addEventListener('click', () => {
-    if (!undoSnap) return;
-    store = JSON.parse(undoSnap); undoSnap = null; save();
-    $('toastText').textContent = '取り消しました。'; $('btnUndo').hidden = true;
-    renderAll();
+    if (!undo) return;
+    if (Date.now() > undo.until){ toast('取り消せるのは' + UNDO_MIN + '分以内です。「直す」から直してください（直したことも記録に残ります）。', null); return; }
+    const u = undo;
+    if (sync()){ notice('ほかの画面で記録が変わったので、取り消せませんでした。'); renderAll(); return; }
+    if (u.store){ const s = normalize(JSON.parse(u.store), false); s.settings = store.settings; store = s; }
+    else {
+      const i = store.shifts.findIndex(x => x.id === u.id);
+      if (u.before){ if (i >= 0) store.shifts[i] = u.before; else store.shifts.push(u.before); }
+      else if (i >= 0) store.shifts.splice(i, 1);
+      if (u.aid) store.audit = store.audit.filter(a => a.aid !== u.aid);
+    }
+    save(); toast('取り消しました。', null); hidePlacePrompt(); renderAll();
+  });
+  $('btnShareNow').addEventListener('click', () => shareShift($('btnShareNow').dataset.id));
+  $('btnRemind').addEventListener('click', () => shareShift($('btnRemind').dataset.id));
+
+  // ---------- places ----------
+  function allPlaces(){
+    const items = [];
+    store.shifts.forEach(sh => {
+      if (sh.startMeta && sh.startMeta.place) items.push([sh.start, sh.startMeta.place]);
+      if (sh.endMeta && sh.endMeta.place) items.push([sh.end || sh.start, sh.endMeta.place]);
+      sh.breaks.concat(sh.waits).forEach(p => { if (p.place) items.push([p.s, p.place]); });
+    });
+    items.sort((a, b) => b[0] - a[0]);
+    const seen = new Set(), out = [];
+    items.forEach(it => { if (!seen.has(it[1])){ seen.add(it[1]); out.push(it[1]); } });
+    return out.slice(0, 50);
+  }
+  function refreshPlaceList(){ $('placeList').innerHTML = allPlaces().map(p => '<option value="' + esc(p) + '"></option>').join(''); }
+  function hidePlacePrompt(){ $('placePrompt').hidden = true; placeTarget = null; }
+  function showPlacePrompt(target){
+    if (!target){ hidePlacePrompt(); return; }
+    placeTarget = Object.assign({ shownAt: Date.now() }, target);
+    $('placeLabel').textContent = PLACE[target.kind][0];
+    $('placeInput').placeholder = PLACE[target.kind][1];
+    $('placeInput').value = '';
+    if (!$('noteInput').value.trim()) $('notePrompt').hidden = true;
+    refreshPlaceList();
+    $('placePrompt').hidden = false;
+  }
+  $('placeSave').addEventListener('click', () => {
+    const v = $('placeInput').value.trim().slice(0, 60);
+    if (placeTarget && v){
+      sync();
+      const f = findTarget(placeTarget);
+      if (f){ (f.holder || f.meta).place = v; save(); toastAdd('場所：' + v); }
+    }
+    hidePlacePrompt(); renderMonth();
+  });
+  $('placeInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !isIme(e)){ e.preventDefault(); $('placeSave').click(); } });
+  $('placeSkip').addEventListener('click', hidePlacePrompt);
+
+  // ---------- notes with the time they were written ----------
+  $('btnNote').addEventListener('click', () => {
+    sync();
+    const sh = openShift() || latestShift(); if (!sh) return;
+    $('noteLabel').textContent = 'メモ（' + mdw(sh.start) + 'の勤務に残します）';
+    $('notePrompt').dataset.id = sh.id;
+    $('placePrompt').hidden = true;
+    $('notePrompt').hidden = false; $('noteInput').focus();
+  });
+  $('noteSave').addEventListener('click', () => {
+    const v = $('noteInput').value.trim().slice(0, 400);
+    if (!v){ $('notePrompt').hidden = true; return; }
+    sync();
+    const sh = store.shifts.find(x => x.id === $('notePrompt').dataset.id);
+    if (!sh){ notice('メモを残す記録が見つかりませんでした。書いた文章はそのままなので、もう一度「メモを書く」を押してから「残す」を押してください。'); $('notePrompt').hidden = true; return; }
+    const u = { id: sh.id, before: clone(sh) }, now = Date.now();
+    sh.notes.push({ at: now, text: v });
+    save(); toast(clock(now) + ' のメモを残しました。', u); renderMonth();
+    $('noteInput').value = ''; $('notePrompt').hidden = true;
+  });
+  $('noteCancel').addEventListener('click', () => { $('noteInput').value = ''; $('notePrompt').hidden = true; });
+
+  // ---------- location setting ----------
+  $('geoToggle').addEventListener('change', () => {
+    const req = ++geoReq;
+    sync();
+    if (!$('geoToggle').checked){ geoPending = false; store.settings.geo = false; save(); $('geoNote').textContent = ''; return; }
+    if (!navigator.geolocation){ geoPending = false; $('geoToggle').checked = false; $('geoNote').textContent = 'このブラウザでは位置を使えません。'; return; }
+    geoPending = true;
+    $('geoNote').textContent = '位置が使えるか確かめています…';
+    navigator.geolocation.getCurrentPosition(() => {
+      if (req !== geoReq) return;
+      geoPending = false; sync(); store.settings.geo = true; save();
+      $('geoNote').textContent = '次から、押したときの場所も残します。位置はこのスマホの中だけに保存します。';
+    }, err => {
+      if (req !== geoReq) return;
+      geoPending = false; sync(); store.settings.geo = false; save(); $('geoToggle').checked = false;
+      $('geoNote').textContent = err.code === 1
+        ? '位置の使用が許可されませんでした。スマホの設定で、このサイト（ブラウザ）に位置の使用を許可してから、もう一度チェックしてください。'
+        : '位置が取れませんでした。電波のよい場所で、もう一度チェックしてください。';
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
   });
 
+  // ---------- the card at the top ----------
   function renderNow(){
+    refreshUndo();
+    if (placeTarget && Date.now() - placeTarget.shownAt > UNDO_MIN * 60000) hidePlacePrompt();
     const sh = openShift(), A = $('actions');
     const btn = (kind, label, cls, sub) => '<button type="button" class="act ' + (cls || '') + '" data-act="' + kind + '">' + label + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
+    if (!geoPending) $('geoToggle').checked = !!store.settings.geo;
+    $('nowTools').hidden = !store.shifts.length;
+    renderRemind();
+    let html;
     if (!sh){
       $('state').textContent = '勤務していません';
       const last = store.shifts.filter(x => x.end != null).sort((a, b) => b.end - a.end)[0];
       $('stateSub').textContent = last ? '前の終業から ' + fmtHM((Date.now() - last.end) / HOUR) + '（休息期間）' : '仕事を始めるときに押してください。';
-      A.innerHTML = btn('start', '始業', 'main full', '出庫・点呼など、仕事を始めたとき');
+      html = btn('start', '始業', 'main full', '出庫・点呼など、仕事を始めたとき');
       $('flags').hidden = true;
-      return;
+    } else {
+      const b = openOf(sh.breaks), w = openOf(sh.waits);
+      const since = '始業 ' + mdw(sh.start) + ' ' + clock(sh.start) + '（拘束 ' + fmtHM((Date.now() - sh.start) / HOUR) + '）';
+      if (b){ $('state').textContent = '休憩中'; $('stateSub').textContent = clock(b.s) + ' から ・ ' + since; }
+      else if (w){ $('state').textContent = '荷待ち中'; $('stateSub').textContent = clock(w.s) + ' から ・ ' + since; }
+      else { $('state').textContent = '勤務中'; $('stateSub').textContent = since; }
+      if (b) html = btn('breakEnd', '休憩おわり', 'main') + btn('end', '終業', 'end', '仕事を終えたとき');
+      else if (w) html = btn('waitEnd', '荷待ちおわり', 'main') + btn('break', '休憩') + btn('end', '終業', 'end full', '仕事を終えたとき');
+      else html = btn('break', '休憩') + btn('wait', '荷待ち') + btn('end', '終業', 'end full', '仕事を終えたとき・休息に入るとき');
+      $('flags').hidden = false;
+      $('fHoliday').checked = !!sh.holiday; $('fLodging').checked = !!sh.lodging;
     }
-    const b = openOf(sh.breaks), w = openOf(sh.waits);
-    const bound = fmtHM((Date.now() - sh.start) / HOUR);
-    if (b){ $('state').textContent = '休憩中'; $('stateSub').textContent = clock(b.s) + ' から ・ 始業 ' + mdw(sh.start) + ' ' + clock(sh.start) + '（拘束 ' + bound + '）'; }
-    else if (w){ $('state').textContent = '荷待ち中'; $('stateSub').textContent = clock(w.s) + ' から ・ 始業 ' + mdw(sh.start) + ' ' + clock(sh.start) + '（拘束 ' + bound + '）'; }
-    else { $('state').textContent = '勤務中'; $('stateSub').textContent = '始業 ' + mdw(sh.start) + ' ' + clock(sh.start) + '（拘束 ' + bound + '）'; }
-    if (b) A.innerHTML = btn('breakEnd', '休憩おわり', 'main') + btn('end', '終業', 'end', '仕事を終えたとき');
-    else if (w) A.innerHTML = btn('waitEnd', '荷待ちおわり', 'main') + btn('break', '休憩') + btn('end', '終業', 'end full', '仕事を終えたとき');
-    else A.innerHTML = btn('break', '休憩') + btn('wait', '荷待ち') + btn('end', '終業', 'end full', '仕事を終えたとき・休息に入るとき');
-    $('flags').hidden = false;
-    $('fHoliday').checked = !!sh.holiday; $('fLodging').checked = !!sh.lodging;
+    if (html !== lastActions){ A.innerHTML = html; lastActions = html; }   // rebuilding only on a change keeps a press from being lost
+  }
+  function renderRemind(){
+    const last = store.shifts.filter(x => x.end != null).sort((a, b) => b.end - a.end)[0];
+    if (!last || last.sharedAt || openShift()){ $('remind').hidden = true; return; }
+    $('remindText').textContent = mdw(last.start) + 'の記録を、まだスマホの外に残していません。';
+    $('btnRemind').dataset.id = last.id; $('remind').hidden = false;
   }
   $('actions').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) act(b.dataset.act); });
   ['fHoliday', 'fLodging'].forEach(id => $(id).addEventListener('change', () => {
-    const sh = openShift(); if (!sh) return;
-    sh.holiday = $('fHoliday').checked; sh.lodging = $('fLodging').checked; save(); renderMonth();
+    sync();
+    const sh = openShift(); if (!sh){ renderAll(); return; }
+    const h = $('fHoliday').checked, l = $('fLodging').checked, what = [];
+    if (!!sh.holiday !== h) what.push(h ? '法定休日の印をつけた' : '法定休日の印を外した');
+    if (!!sh.lodging !== l) what.push(l ? '宿泊を伴う長距離の印をつけた' : '宿泊を伴う長距離の印を外した');
+    sh.holiday = h; sh.lodging = l;
+    if (what.length) sh.history.push({ at: Date.now(), kind: 'info', what: what.join('、') });
+    undo = null; refreshUndo();
+    save(); renderMonth();
   }));
 
   // ---------- month ----------
@@ -473,14 +793,33 @@ function transferValues(s){
     set.add(monthKey(Date.now()));
     return Array.from(set).sort().reverse();
   }
+  const chip = st => '<span class="chip ' + st + '">' + CHIP[st] + '</span>';
+  const mapA = m => hasLoc(m) ? ' <a href="' + esc(mapUrl(m.loc)) + '" target="_blank" rel="noopener">地図</a>' : '';
+  function placesHtml(sh){
+    const rows = [], row = (k, m, place) => '<li><span class="k">' + k + '</span>' + (place ? esc(place) : '<span class="none">場所の記入なし</span>') + mapA(m) + '</li>';
+    if (sh.startMeta && (sh.startMeta.place || hasLoc(sh.startMeta))) rows.push(row('始業', sh.startMeta, sh.startMeta.place));
+    periods(sh).forEach(([k, p]) => { if (p.place || hasLoc(p.sMeta)) rows.push(row(k + ' ' + pspan(p, sh.start), p.sMeta, p.place)); });
+    if (sh.endMeta && (sh.endMeta.place || hasLoc(sh.endMeta))) rows.push(row('終業・休息', sh.endMeta, sh.endMeta.place));
+    return rows.length ? '<ul class="sh-places">' + rows.join('') + '</ul>' : '';
+  }
+  function notesHtml(sh){
+    const n = sh.notes || [];
+    return n.length ? '<ul class="sh-notes">' + n.map(x => '<li><span class="k">メモ ' + (dayKey(x.at) === dayKey(sh.start) ? clock(x.at) : mdhm(x.at)) + '</span>' + esc(x.text) + '</li>').join('') + '</ul>' : '';
+  }
+  const isEdited = sh => (sh.history || []).some(h => h.kind === 'edit');
+  function tagsHtml(sh){
+    return (sh.holiday ? '<span class="tag">法定休日</span>' : '') + (sh.lodging ? '<span class="tag">宿泊を伴う長距離</span>' : '') +
+      (sh.src === 'manual' ? '<span class="tag soft">手入力</span>' : '') + (isEdited(sh) ? '<span class="tag soft">あとで直した</span>' : '') +
+      (sh.sharedAt ? '<span class="tag sent">' + (sh.sharedVia === 'copy' ? 'コピーした' : '送った') + '</span>' : '');
+  }
   function renderMonth(){
     const months = monthsAvailable();
     if (!viewYm || months.indexOf(viewYm) < 0) viewYm = months[0];
     $('ym').innerHTML = months.map(m => '<option value="' + m + '"' + (m === viewYm ? ' selected' : '') + '>' + ymLabel(m) + '</option>').join('');
     const s = summarize(store.shifts, viewYm);
-    const chip = st => '<span class="chip ' + st + '">' + CHIP[st] + '</span>';
+    const rank = { na: 0, ok: 0, warn: 1, bad: 2 };
     const minRestState = s.minRest == null ? 'na' : s.minRest >= 11 - EPS ? 'ok' : s.minRest >= 9 - EPS ? 'warn' : s.shifts.some(x => x.rest === s.minRest && x.rState === 'warn') ? 'warn' : 'bad';
-    const maxB24State = s.maxB24 == null ? 'na' : s.shifts.reduce((w, x) => ({ ok: 0, na: 0, warn: 1, bad: 2 }[x.bState] > { ok: 0, na: 0, warn: 1, bad: 2 }[w] ? x.bState : w), 'ok');
+    const maxB24State = s.maxB24 == null ? 'na' : s.shifts.reduce((w, x) => rank[x.bState] > rank[w] ? x.bState : w, 'ok');
     const tile = (label, val, sub, st) => '<div class="tile"><span class="tile-label">' + label + '</span><span class="tile-val">' + val + '</span>' + (sub ? '<span class="tile-sub">' + sub + '</span>' : '') + (st && st !== 'na' ? chip(st) : '') + '</div>';
     $('tiles').innerHTML =
       tile('出勤した日数', s.days + '<small>日</small>', s.holidayDays ? 'うち法定休日 ' + s.holidayDays + '日' : '') +
@@ -491,7 +830,8 @@ function transferValues(s){
       tile('法定休日の労働', fmtHM(s.holidayWork), '') +
       tile('荷待ち', fmtHM(s.wait), '労働時間に入っています') +
       tile('いちばん短い休息期間', s.minRest == null ? '―' : fmtHM(s.minRest), '基本11時間・下限9時間', minRestState) +
-      tile('1日の拘束（いちばん長い日）', s.maxB24 == null ? '―' : fmtHM(s.maxB24), '始業から24時間で数える', s.maxB24 == null ? 'na' : maxB24State);
+      tile('1日の拘束（いちばん長い日）', s.maxB24 == null ? '―' : fmtHM(s.maxB24), '始業から24時間で数える', maxB24State);
+
     const alerts = [], g = { bBad: [], bWarn: [], rBad: [], rWarn: [] };
     const dd = ms => new Date(ms).getDate() + '日';
     s.shifts.forEach(x => {
@@ -510,28 +850,30 @@ function transferValues(s){
     $('alerts').innerHTML = alerts.map(a => '<li class="' + a[0] + '">' + esc(a[1]) + '</li>').join('');
     $('btnToChecker').disabled = !s.days;
 
-    // list, newest first; the shift in progress on top
-    const open = openShift();
-    const items = [];
+    const open = openShift(), items = [];
     if (open && monthKey(open.start) === viewYm){
-      items.push('<li class="shift open"><div class="sh-top"><span class="sh-date">' + mdw(open.start) + '</span><span class="sh-time">' + clock(open.start) + '〜</span><span class="tag">勤務中</span></div>' +
-        '<div class="sh-checks"><span class="tile-sub">終業を押すと、時間とチェックが出ます</span><button type="button" class="btn small edit" data-edit="' + open.id + '">直す</button></div></li>');
+      items.push('<li class="shift open"><div class="sh-top"><span class="sh-date">' + mdw(open.start) + '</span><span class="sh-time">' + clock(open.start) + '〜</span><span class="tag">勤務中</span>' + tagsHtml(open) + '</div>' + placesHtml(open) + notesHtml(open) +
+        '<div class="sh-checks"><span class="tile-sub">終業を押すと、時間とチェックが出ます</span><span class="sh-btns"><button type="button" class="btn small" data-edit="' + esc(open.id) + '">直す</button></span></div></li>');
     }
     s.shifts.slice().reverse().forEach(x => {
-      const tags = (x.sh.holiday ? '<span class="tag">法定休日</span>' : '') + (x.sh.lodging ? '<span class="tag">宿泊を伴う長距離</span>' : '');
-      items.push('<li class="shift"><div class="sh-top"><span class="sh-date">' + mdw(x.sh.start) + '</span><span class="sh-time">' + span(x.sh.start, x.sh.end) + '</span>' + tags + '</div>' +
+      items.push('<li class="shift"><div class="sh-top"><span class="sh-date">' + mdw(x.sh.start) + '</span><span class="sh-time">' + span(x.sh.start, x.sh.end) + '</span>' + tagsHtml(x.sh) + '</div>' + placesHtml(x.sh) + notesHtml(x.sh) +
         '<div class="sh-nums">拘束 ' + fmtHM(x.bound) + ' ・ 休憩 ' + fmtHM(x.brk) + (x.wait > 0 ? ' ・ 荷待ち ' + fmtHM(x.wait) : '') + ' ・ 労働 ' + fmtHM(x.work) + (x.night > 0 ? ' ・ 深夜 ' + fmtHM(x.night) : '') + '</div>' +
         '<div class="sh-checks"><span class="tile-sub">1日の拘束</span>' + chip(x.bState) + '<span class="tile-sub">' + fmtHM(x.b24) + '</span>' +
         (x.rest != null ? '<span class="tile-sub sep">休息</span>' + chip(x.rState) + '<span class="tile-sub">' + fmtHM(x.rest) + '</span>' : '') +
-        '<button type="button" class="btn small edit" data-edit="' + x.sh.id + '">直す</button></div></li>');
+        '<span class="sh-btns"><button type="button" class="btn small" data-share="' + esc(x.sh.id) + '">送る</button><button type="button" class="btn small" data-edit="' + esc(x.sh.id) + '">直す</button></span></div></li>');
     });
     $('shifts').innerHTML = items.join('');
     $('empty').hidden = items.length > 0;
+    renderAudit();
   }
   $('ym').addEventListener('change', () => { viewYm = $('ym').value; renderMonth(); });
-  $('shifts').addEventListener('click', e => { const b = e.target.closest('[data-edit]'); if (b) openEditor(b.dataset.edit); });
+  $('shifts').addEventListener('click', e => {
+    const b = e.target.closest('[data-edit]'); if (b) return openEditor(b.dataset.edit);
+    const s = e.target.closest('[data-share]'); if (s) shareShift(s.dataset.share);
+  });
 
   $('btnToChecker').addEventListener('click', () => {
+    sync();
     const s = summarize(store.shifts, viewYm);
     if (!s.days) return;
     try { localStorage.setItem(TRANSFER_KEY, JSON.stringify({ v: 1, at: Date.now(), values: transferValues(s) })); }
@@ -539,35 +881,104 @@ function transferValues(s){
     location.href = './?from=log';
   });
 
-  // ---------- editor ----------
-  let editId = null;
-  function perRow(p){
-    return '<div class="per"><label>から<input type="datetime-local" class="ps" value="' + toInput(p ? p.s : null) + '"></label>' +
-      '<label>まで<input type="datetime-local" class="pe" value="' + toInput(p ? p.e : null) + '"></label>' +
-      '<button type="button" class="btn small danger" data-del aria-label="この行を消す">消す</button></div>';
+  // ---------- sending a day out of the phone ----------
+  function shareText(sh){
+    const info = analyze(store.shifts).info, i = info.findIndex(y => y.sh.id === sh.id), x = info[i], prev = i > 0 ? info[i - 1] : null;
+    const L = ['【勤務の記録】' + mdw(sh.start)];
+    const at = (k, ms, m) => k + ' ' + mdhm(ms) + (m && m.place ? ' ' + m.place : '') + '（' + recOf(m) + '）';
+    L.push(at('始業', sh.start, sh.startMeta));
+    periods(sh).forEach(([k, p]) => L.push(k + ' ' + pspan(p, sh.start) + (p.place ? ' ' + p.place : '') + '（' + recP(p) + '）'));
+    L.push(at('終業', sh.end, sh.endMeta));
+    if (x){
+      L.push('拘束 ' + fmtHM(x.bound) + '／休憩 ' + fmtHM(x.brk) + (x.wait > 0 ? '／荷待ち ' + fmtHM(x.wait) : '') + '／労働 ' + fmtHM(x.work) + (x.night > 0 ? '／深夜 ' + fmtHM(x.night) : ''));
+      L.push('1日の拘束（始業から24時間）' + fmtHM(x.b24) + '：' + CHIP[x.bState]);
+      if (prev && prev.rest != null) L.push('前の終業からの休息期間 ' + fmtHM(prev.rest) + '：' + CHIP[prev.rState]);
+    }
+    if (sh.holiday) L.push('法定休日の出勤');
+    if (sh.lodging) L.push('宿泊を伴う長距離の運行');
+    sh.notes.forEach(n => L.push('メモ（' + mdhm(n.at) + ' に記入）' + n.text));
+    sh.history.forEach(h => L.push('変更（' + stamp(h.at) + '）' + h.what));
+    const maps = [];
+    const mp = (k, m) => { if (hasLoc(m)) maps.push(k + accTxt(m.loc) + ' ' + mapUrl(m.loc)); };
+    mp('始業', sh.startMeta);
+    periods(sh).forEach(([k, p]) => mp(k + ' ' + pspan(p, sh.start), p.sMeta));
+    mp('終業', sh.endMeta);
+    if (maps.length) L.push('押したときの場所', ...maps);
+    L.push('作成 ' + stamp(Date.now()) + '（ドライバー給料チェッカー「勤務の記録」）');
+    return L.join('\n');
   }
-  function fillPers(el, list){ el.innerHTML = (list || []).map(perRow).join(''); }
+  async function shareShift(id){
+    sync();
+    const sh = store.shifts.find(x => x.id === id); if (!sh || sh.end == null) return;
+    const text = shareText(sh);
+    const done = (via, msg) => {
+      sync();
+      const cur = store.shifts.find(x => x.id === id);
+      if (cur){ cur.sharedAt = Date.now(); cur.sharedVia = via; save(); }
+      renderAll(); toast(msg, null);
+    };
+    if (navigator.share){
+      try { await navigator.share({ title: '勤務の記録 ' + mdw(sh.start), text }); done('share', '送りました。'); return; }
+      catch (e){ if (e && e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(text); done('copy', '記録の文章をコピーしました。LINEやメールに貼って、自分あてに送ってください。'); }
+    catch (e){
+      const r = window.prompt('この文章をコピーして、自分あてに送ってください。', text);
+      if (r !== null) done('copy', '自分あてに送っておいてください。');
+    }
+  }
+
+  // ---------- editor ----------
+  let editId = null, editSkel = null;
+  // what the editor shows; if this changes while the editor is open, saving would mix two versions
+  const skel = sh => JSON.stringify([sh.start, sh.end, sh.holiday, sh.lodging, sh.breaks.map(p => [p.id, p.s, p.e, p.place]), sh.waits.map(p => [p.id, p.s, p.e, p.place]),
+    sh.notes.map(n => [n.at, n.text]), sh.startMeta && sh.startMeta.place, sh.endMeta && sh.endMeta.place]);
+  function perRow(p, idx){
+    return '<div class="per" data-orig="' + (idx == null ? '' : idx) + '"><label>から<input type="datetime-local" class="ps" value="' + toInput(p ? p.s : null) + '"></label>' +
+      '<label>まで<input type="datetime-local" class="pe" value="' + toInput(p ? p.e : null) + '"></label>' +
+      '<button type="button" class="btn small danger" data-del aria-label="この行を消す">消す</button>' +
+      '<label class="pl-wrap">場所（任意）<input type="text" class="pl" list="placeList" autocomplete="off" maxlength="60" value="' + esc(p && p.place ? p.place : '') + '"></label></div>';
+  }
+  function fillPers(el, list){ el.innerHTML = (list || []).map((p, i) => perRow(p, i)).join(''); }
   ['eBreaks', 'eWaits'].forEach(id => $(id).addEventListener('click', e => { if (e.target.closest('[data-del]')) e.target.closest('.per').remove(); }));
   function addPer(id){
     const el = $(id), last = el.querySelector('.per:last-child .pe');
     const base = fromInput(last && last.value) || fromInput($('eStart').value);
-    el.insertAdjacentHTML('beforeend', perRow(base ? { s: base, e: null } : null));
+    el.insertAdjacentHTML('beforeend', perRow(base ? { s: base, e: null } : null, null));
   }
   $('eAddBreak').addEventListener('click', () => addPer('eBreaks'));
   $('eAddWait').addEventListener('click', () => addPer('eWaits'));
+  $('eNotes').addEventListener('click', e => {
+    const b = e.target.closest('[data-delnote]'); if (!b) return;
+    const li = b.closest('li'); li.classList.toggle('del');
+    b.textContent = li.classList.contains('del') ? '消すのをやめる' : '消す';
+  });
 
   function openEditor(id){
-    editId = id || null;
+    sync();
     const sh = id ? store.shifts.find(x => x.id === id) : null;
+    if (id && !sh){ renderAll(); return; }
+    editId = sh ? sh.id : null; editSkel = sh ? skel(sh) : null;
     $('dlgTitle').textContent = sh ? '記録を直す' : '記録を手で足す';
+    $('eRec').textContent = sh ? '記録の仕方：始業 ' + recOf(sh.startMeta) + (sh.end != null ? '／終業 ' + recOf(sh.endMeta) : '') : 'あとで手で入れた記録として残ります。';
     const def = (() => { const d = new Date(); d.setHours(6, 0, 0, 0); return d.getTime(); })();
     $('eStart').value = toInput(sh ? sh.start : def);
     $('eEnd').value = toInput(sh ? sh.end : null);
+    $('eStartPlace').value = sh && sh.startMeta ? sh.startMeta.place || '' : '';
+    $('eEndPlace').value = sh && sh.endMeta ? sh.endMeta.place || '' : '';
     fillPers($('eBreaks'), sh ? sh.breaks : []);
     fillPers($('eWaits'), sh ? sh.waits : []);
     $('eHoliday').checked = !!(sh && sh.holiday); $('eLodging').checked = !!(sh && sh.lodging);
+    const notes = sh ? sh.notes : [];
+    $('eNotes').innerHTML = notes.map((n, i) => '<li data-i="' + i + '"><span class="k">' + mdhm(n.at) + '</span><span class="nt">' + esc(n.text) + '</span> <button type="button" class="link" data-delnote>消す</button></li>').join('');
+    $('eNote').value = '';
+    const hist = sh ? sh.history : [];
+    $('eHistBox').hidden = !hist.length; $('eHistBox').open = false;
+    $('eHistSum').textContent = 'この記録の変更（' + hist.length + '件）';
+    $('eHist').innerHTML = hist.map(h => '<li>' + esc(stamp(h.at)) + '：' + esc(h.what) + '</li>').join('');
     $('eDelete').hidden = !sh;
     $('eErr').textContent = '';
+    refreshPlaceList();
     const dlg = $('dlg');
     if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
   }
@@ -576,66 +987,193 @@ function transferValues(s){
   $('dlgForm').addEventListener('input', () => { $('eErr').textContent = ''; });
   $('btnAdd').addEventListener('click', () => openEditor(null));
 
-  function readPers(id, s, e, label){
-    const out = [];
+  const placeChange = (list, label, a, b) => { if ((a || '') !== b) list.push(label + 'の場所 ' + (a ? '「' + a + '」' : '（なし）') + ' → ' + (b ? '「' + b + '」' : '（なし）')); };
+  function readPers(id, s, e, label, oldList, oldBase, changed, info, now){
+    const out = [], used = new Set();
     for (const row of $(id).querySelectorAll('.per')){
       const ps = fromInput(row.querySelector('.ps').value), pe = fromInput(row.querySelector('.pe').value);
+      const pl = row.querySelector('.pl').value.trim().slice(0, 60);
       if (ps == null && pe == null) continue;
       if (ps == null) throw label + 'の始まりの時刻を入れてください。';
       if (pe == null && e != null) throw label + 'の終わりの時刻を入れてください。';
-      if (pe != null && pe <= ps) throw label + 'の終わりが始まりより前になっています。';
+      if (pe != null && pe <= ps) throw label + (pe === ps ? 'の始まりと終わりが同じ時刻です。この行を消すか、時刻を直してください。' : 'の終わりが始まりより前になっています。');
       if (ps < s || (e != null && (pe == null ? ps : pe) > e)) throw label + 'が始業から終業のあいだに入っていません。';
-      out.push({ s: ps, e: pe });
+      const oi = row.dataset.orig === '' ? -1 : Number(row.dataset.orig), op = oi >= 0 && oldList ? oldList[oi] : null;
+      if (op){
+        used.add(oi);
+        const p = Object.assign({}, op, { s: ps, e: pe, place: pl }), oe = op.e == null ? null : op.e;
+        if (op.s !== ps) p.sMeta = Object.assign({}, op.sMeta || legacyMeta(), { rec: 'edited', editedAt: now });
+        if (oe !== pe) p.eMeta = pe == null ? null : Object.assign({}, op.eMeta || legacyMeta(), { rec: 'edited', editedAt: now });
+        if (op.s !== ps || oe !== pe) changed.push(label + ' ' + pspan(op, oldBase) + ' → ' + pspan(p, s));
+        placeChange(info, label + ' ' + pspan(p, s), op.place, pl);
+        out.push(p);
+      } else {
+        const p = { id: newId(), s: ps, e: pe, sMeta: meta('manual'), eMeta: pe == null ? null : meta('manual'), place: pl };
+        out.push(p);
+        changed.push(label + ' ' + pspan(p, s) + ' を手で足した');
+      }
     }
-    return out.sort((a, b) => a.s - b.s);
+    (oldList || []).forEach((op, i) => { if (!used.has(i)) changed.push(label + ' ' + pspan(op, oldBase) + ' を消した'); });
+    return out;
   }
   $('eSave').addEventListener('click', () => {
     try {
-      const s = fromInput($('eStart').value), e = fromInput($('eEnd').value);
+      sync();
+      const old = editId ? store.shifts.find(x => x.id === editId) : null;
+      if (editId && (!old || skel(old) !== editSkel)) throw 'この記録が、ほかの画面で変わりました。「閉じる」を押して、開き直してください。';
+      const s = fromInput($('eStart').value), e = fromInput($('eEnd').value), now = Date.now();
       if (s == null) throw '始業の時刻を入れてください。';
       if (e != null && e <= s) throw '終業が始業より前になっています。';
       if (e != null && e - s > 48 * HOUR) throw '48時間を超える記録は入れられません。休息に入ったところで終業にして、記録を分けてください。';
       if (e == null && store.shifts.some(x => x.end == null && x.id !== editId)) throw 'ほかに勤務中の記録があります。どちらかに終業を入れてください。';
-      const breaks = readPers('eBreaks', s, e, '休憩'), waits = readPers('eWaits', s, e, '荷待ち');
+      const head = [], changed = [], info = [];
+      const oldBase = old ? old.start : s;
+      const breaks = readPers('eBreaks', s, e, '休憩', old ? old.breaks : [], oldBase, changed, info, now);
+      const waits = readPers('eWaits', s, e, '荷待ち', old ? old.waits : [], oldBase, changed, info, now);
+      const all = breaks.map(p => ['休憩', p]).concat(waits.map(p => ['荷待ち', p])).sort((a, b) => a[1].s - b[1].s);
+      const opens = all.filter(x => x[1].e == null);
+      if (opens.length > 1) throw '終わりの時刻がない休憩・荷待ちは、1つだけにしてください。';
+      if (opens.length && all[all.length - 1] !== opens[0]) throw '終わりの時刻がない' + opens[0][0] + 'は、いちばんあとのものだけにできます。ほかの行には終わりの時刻を入れてください。';
+      for (let k = 1; k < all.length; k++){
+        const a = all[k - 1], b = all[k];
+        if (b[1].s < a[1].e) throw a[0] + '（' + pspan(a[1], s) + '）と' + b[0] + '（' + pspan(b[1], s) + '）の時間が重なっています。';
+      }
       const clash = store.shifts.find(x => x.id !== editId && s < (x.end == null ? Infinity : x.end) && (e == null ? Infinity : e) > x.start);
       if (clash) throw 'ほかの記録（' + mdw(clash.start) + ' ' + span(clash.start, clash.end) + '）と時間が重なっています。';
-      const before = snap();
-      const rec = { id: editId || newId(), start: s, end: e, breaks, waits, holiday: $('eHoliday').checked, lodging: $('eLodging').checked };
-      const i = store.shifts.findIndex(x => x.id === editId);
+
+      const sp = $('eStartPlace').value.trim().slice(0, 60), ep = $('eEndPlace').value.trim().slice(0, 60);
+      let startMeta, endMeta = null;
+      if (old){
+        startMeta = Object.assign({}, old.startMeta || legacyMeta());
+        if (old.start !== s){ startMeta.rec = 'edited'; startMeta.editedAt = now; head.push('始業 ' + mdhm(old.start) + ' → ' + mdhm(s)); }
+        placeChange(info, '始業', startMeta.place, sp);
+        if (e != null){
+          if (old.end == null){ endMeta = meta('manual'); head.push('終業 ' + mdhm(e) + ' を手で入れた'); }
+          else {
+            endMeta = Object.assign({}, old.endMeta || legacyMeta());
+            if (old.end !== e){ endMeta.rec = 'edited'; endMeta.editedAt = now; head.push('終業 ' + mdhm(old.end) + ' → ' + mdhm(e)); }
+            placeChange(info, '終業', endMeta.place, ep);
+          }
+        } else if (old.end != null) head.push('終業 ' + mdhm(old.end) + ' を消した');
+        if (!!old.holiday !== $('eHoliday').checked) info.push($('eHoliday').checked ? '法定休日の印をつけた' : '法定休日の印を外した');
+        if (!!old.lodging !== $('eLodging').checked) info.push($('eLodging').checked ? '宿泊を伴う長距離の印をつけた' : '宿泊を伴う長距離の印を外した');
+      } else {
+        startMeta = meta('manual'); if (e != null) endMeta = meta('manual');
+      }
+      startMeta.place = sp;
+      if (endMeta) endMeta.place = ep;
+
+      const oldNotes = old ? old.notes : [];
+      const removed = new Set(Array.from($('eNotes').querySelectorAll('li.del')).map(li => Number(li.dataset.i)));
+      const notes = oldNotes.filter((n, i) => !removed.has(i));
+      oldNotes.forEach((n, i) => { if (removed.has(i)) info.push('メモを消した（' + mdhm(n.at) + ' に書いた「' + n.text + '」）'); });
+      const nv = $('eNote').value.trim().slice(0, 400);
+      if (nv) notes.push({ at: now, text: nv });
+
+      const history = old ? old.history.slice() : [];
+      const edits = head.concat(changed);
+      if (!old) history.push({ at: now, kind: 'add', what: '記録を手で足した（' + mdhm(s) + '〜' + (e == null ? '' : mdhm(e)) + '）' });
+      else {
+        if (edits.length) history.push({ at: now, kind: 'edit', what: edits.join('、') });
+        if (info.length) history.push({ at: now, kind: 'info', what: info.join('、') });
+      }
+
+      const u = { id: old ? old.id : null, before: old ? clone(old) : null };
+      const rec = Object.assign({}, old || {}, {
+        id: old ? old.id : newId(), start: s, end: e, breaks: breaks.sort((a, b) => a.s - b.s), waits: waits.sort((a, b) => a.s - b.s), holiday: $('eHoliday').checked, lodging: $('eLodging').checked,
+        src: old ? (old.src || 'legacy') : 'manual', created: old ? (old.created || null) : now, startMeta, endMeta, history, notes
+      });
+      u.id = rec.id;
+      const i = store.shifts.findIndex(x => x.id === rec.id);
       if (i >= 0) store.shifts[i] = rec; else store.shifts.push(rec);
-      save(); closeEditor();
-      toast(editId ? '記録を直しました。' : '記録を足しました。', before);
+      save(); closeEditor(); hidePlacePrompt();
+      toast(old ? (edits.length || info.length ? '直しました。直したことも記録に残しています。' : '保存しました。') : '記録を足しました。', u);
       viewYm = monthKey(s); renderAll();
     } catch (err){ $('eErr').textContent = typeof err === 'string' ? err : '保存できませんでした。'; }
   });
   $('eDelete').addEventListener('click', () => {
     if (!editId) return;
-    if (!confirm('この記録を消しますか？')) return;
-    const before = snap();
-    store.shifts = store.shifts.filter(x => x.id !== editId);
-    save(); closeEditor(); toast('記録を消しました。', before); renderAll();
+    sync();
+    const sh = store.shifts.find(x => x.id === editId);
+    if (!sh){ closeEditor(); renderAll(); return; }
+    if (!confirm('この記録を消しますか？消したことと消した中身は、「記録を消した・戻した履歴」に残ります。')) return;
+    const aid = newId();
+    store.audit.push({ aid, at: Date.now(), what: mdw(sh.start) + ' ' + span(sh.start, sh.end) + ' の記録を消した（始業は' + recOf(sh.startMeta) + (sh.notes.length ? '、メモ' + sh.notes.length + '件' : '') + '）', shift: clone(sh) });
+    store.shifts = store.shifts.filter(x => x.id !== sh.id);
+    save(); closeEditor(); hidePlacePrompt(); toast('記録を消しました。', { id: sh.id, before: clone(sh), aid }); renderAll();
   });
+  function renderAudit(){
+    const a = store.audit;
+    $('auditBox').hidden = !a.length;
+    $('auditSum').textContent = '記録を消した・戻した履歴（' + a.length + '件）';
+    $('auditList').innerHTML = a.slice().reverse().map(x => '<li>' + esc(stamp(x.at)) + '：' + esc(x.what) + '</li>').join('');
+  }
 
-  // ---------- data ----------
-  $('btnCsv').addEventListener('click', () => {
-    const a = analyze(store.shifts);
-    const h2 = n => (Math.round(n * 100) / 100).toFixed(2);
-    const per = list => (list || []).map(p => clock(p.s) + '-' + (p.e == null ? '' : clock(p.e))).join(' ');
-    const rows = [['日付', '曜日', '始業', '終業', '拘束(時間)', '休憩(時間)', '荷待ち(時間)', '労働(時間)', '深夜(時間)', '始業から24時間の拘束(時間)', '休息期間(時間)', '法定休日', '宿泊を伴う長距離', '休憩の時間帯', '荷待ちの時間帯']];
-    a.info.forEach(x => rows.push([x.day, WD[new Date(x.sh.start).getDay()], toInput(x.sh.start).replace('T', ' '), toInput(x.sh.end).replace('T', ' '), h2(x.bound), h2(x.brk), h2(x.wait), h2(x.work), h2(x.night), h2(x.b24), x.rest == null ? '' : h2(x.rest), x.sh.holiday ? '○' : '', x.sh.lodging ? '○' : '', per(x.sh.breaks), per(x.sh.waits)]));
-    const csv = '﻿' + rows.map(r => r.map(c => /[",\n]/.test(c) ? '"' + String(c).replace(/"/g, '""') + '"' : c).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob), link = document.createElement('a');
-    const d = new Date();
-    link.href = url; link.download = '勤務の記録_' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '.csv';
+  // ---------- files ----------
+  function download(content, name, type){
+    const blob = new Blob([content], { type }), url = URL.createObjectURL(blob), link = document.createElement('a');
+    link.href = url; link.download = name;
     document.body.appendChild(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  $('btnCsv').addEventListener('click', () => {
+    sync();
+    const a = analyze(store.shifts);
+    const h2 = n => (Math.round(n * 100) / 100).toFixed(2);
+    const ll = m => hasLoc(m) ? (+m.loc.lat) + ' ' + (+m.loc.lng) + (fin(m.loc.acc) ? ' ±' + m.loc.acc + 'm' : '') : '';
+    const per = (list, base) => list.map(p => pspan(p, base) + (p.place ? ' ' + p.place : '') + (hasLoc(p.sMeta) ? ' (' + ll(p.sMeta) + ')' : '') + ' [' + recP(p) + ']').join(' / ');
+    const head = ['日付', '曜日', '始業', '終業', '拘束(時間)', '休憩(時間)', '荷待ち(時間)', '労働(時間)', '深夜(時間)', '始業から24時間の拘束(時間)', '休息期間(時間)', '法定休日', '宿泊を伴う長距離',
+      '始業の場所', '始業の位置', '終業の場所', '終業の位置', '休憩', '荷待ち', 'メモ', '記録の仕方', '変更', '送った日時'];
+    const rows = [head];
+    a.info.forEach(x => {
+      const sh = x.sh;
+      rows.push([x.day, WD[new Date(sh.start).getDay()], toInput(sh.start).replace('T', ' '), toInput(sh.end).replace('T', ' '), h2(x.bound), h2(x.brk), h2(x.wait), h2(x.work), h2(x.night), h2(x.b24), x.rest == null ? '' : h2(x.rest), sh.holiday ? '○' : '', sh.lodging ? '○' : '',
+        (sh.startMeta && sh.startMeta.place) || '', ll(sh.startMeta), (sh.endMeta && sh.endMeta.place) || '', ll(sh.endMeta), per(sh.breaks, sh.start), per(sh.waits, sh.start),
+        sh.notes.map(n => mdhm(n.at) + ' ' + n.text).join(' / '),
+        '始業：' + recOf(sh.startMeta) + ' / 終業：' + recOf(sh.endMeta), sh.history.map(h => stamp(h.at) + ' ' + h.what).join(' / '),
+        sh.sharedAt ? stamp(sh.sharedAt) + (sh.sharedVia === 'copy' ? '（コピー）' : '') : '']);
+    });
+    store.audit.forEach(x => { const r = head.map(() => ''); r[0] = '消した・戻した記録'; r[head.indexOf('変更')] = stamp(x.at) + ' ' + x.what; rows.push(r); });
+    const csv = '﻿' + rows.map(r => r.map(c => /[",\r\n]/.test(c) ? '"' + String(c).replace(/"/g, '""') + '"' : c).join(',')).join('\r\n');
+    download(csv, '勤務の記録_' + ymd() + '.csv', 'text/csv;charset=utf-8');
+  });
+  $('btnBackup').addEventListener('click', () => {
+    sync();
+    download(JSON.stringify(Object.assign({ app: 'driver-pay-checker/log', exportedAt: Date.now() }, store)), '勤務の記録_バックアップ_' + ymd() + '.json', 'application/json');
+  });
+  $('btnRestore').addEventListener('click', () => $('restoreFile').click());
+  function mergeAudit(a, b){
+    const seen = new Set(), out = [];
+    a.concat(b).forEach(x => { const k = x.at + '|' + x.what; if (!seen.has(k)){ seen.add(k); out.push(x); } });
+    return out.sort((x, y) => x.at - y.at);
+  }
+  $('restoreFile').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      let o = null;
+      try { o = JSON.parse(r.result); } catch (err){ o = null; }
+      const fresh = o && typeof o === 'object' && Array.isArray(o.shifts) ? normalize(o, true) : null;
+      if (!fresh){ alert('バックアップのファイルを読めませんでした。今の記録はそのままです。'); return; }
+      sync();
+      const cur = store.shifts, newest = list => list.length ? mdw(Math.max.apply(null, list.map(x => x.start))) : 'なし';
+      const when = fin(o.exportedAt) ? stamp(o.exportedAt) + ' に保存' : '保存した日時は不明';
+      if (!confirm('今の記録（' + cur.length + '件、いちばん新しいのは' + newest(cur) + '）を、バックアップ（' + fresh.shifts.length + '件、いちばん新しいのは' + newest(fresh.shifts) + '、' + when + '）の中身で置きかえます。\n今の記録の写しは「記録を消した・戻した履歴」に残します。よろしいですか？')) return;
+      const before = JSON.stringify(store);
+      const audit = mergeAudit(store.audit, fresh.audit);
+      audit.push({ aid: newId(), at: Date.now(), what: 'バックアップ（' + when + '、' + fresh.shifts.length + '件）から戻した。戻す前の記録' + cur.length + '件の写しを残した', shifts: clone(cur) });
+      store = { v: 1, shifts: fresh.shifts, settings: store.settings, audit };
+      save(); hidePlacePrompt(); toast('バックアップから戻しました。', { store: before });
+      const open = openShift(); viewYm = monthKey(open ? open.start : Date.now()); renderAll();
+    };
+    r.readAsText(f); e.target.value = '';
   });
   $('btnWipe').addEventListener('click', () => {
-    if (!store.shifts.length) return;
-    if (!confirm('記録を全部消します。元には戻せません。先にCSVで保存しましたか？')) return;
-    store = { v: 1, shifts: [] }; undoSnap = null; save();
-    $('toast').hidden = true; renderAll();
+    sync();
+    if (!store.shifts.length && !store.audit.length) return;
+    if (!confirm('記録を全部消します。消した履歴も残らず、元には戻せません。先にバックアップを保存しましたか？')) return;
+    store = Object.assign(blank(), { settings: store.settings }); undo = null; save();
+    $('toast').hidden = true; hidePlacePrompt(); $('notePrompt').hidden = true; renderAll();
   });
 
   function renderAll(){ renderNow(); renderMonth(); }
@@ -644,7 +1182,9 @@ function transferValues(s){
   viewYm = monthKey(open ? open.start : Date.now());
   renderAll();
   setInterval(renderNow, 30000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) renderNow(); });
+  window.addEventListener('storage', e => { if (e.key === KEY && sync()){ hidePlacePrompt(); renderAll(); } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden){ if (sync()) hidePlacePrompt(); renderAll(); } });
+  window.addEventListener('pageshow', e => { if (e.persisted){ if (sync()) hidePlacePrompt(); renderAll(); } });
 })();
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d11dfb7286ee4d17b914c859494ac4c6"}'></script><!-- End Cloudflare Web Analytics -->
